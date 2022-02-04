@@ -30,6 +30,7 @@ public:
 	virtual bool Start() override final;
 	virtual bool Update(intvl_t interval) override final;
 	virtual void Stop() override final;
+	virtual void Release() override final;
 
 public:
 	void Listen(PORT port);
