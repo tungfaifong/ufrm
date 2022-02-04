@@ -23,9 +23,9 @@ public:
 	virtual void Stop() override final;
 	virtual void Release() override final;
 
-public:
-	void OnServerRecv(NETID net_id, char * data, uint16_t size);
-	void OnIServerRecv(NETID net_id, char * data, uint16_t size);
+private:
+	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
+	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
 
 private:
 	toml::table & _config;

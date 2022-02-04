@@ -15,11 +15,11 @@ Gateway::Gateway(toml::table & config) : _config(config)
 bool Gateway::Init()
 {
 	std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"))->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){
-		self->OnServerRecv(net_id, data, size);
+		self->_OnServerRecv(net_id, data, size);
 	});
 
 	std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("ISERVER"))->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){
-		self->OnIServerRecv(net_id, data, size);
+		self->_OnIServerRecv(net_id, data, size);
 	});
 
 	return true;
@@ -66,12 +66,12 @@ void Gateway::Release()
 {
 }
 
-void Gateway::OnServerRecv(NETID net_id, char * data, uint16_t size)
+void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 {
 
 }
 
-void Gateway::OnIServerRecv(NETID net_id, char * data, uint16_t size)
+void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 {
 
 }
