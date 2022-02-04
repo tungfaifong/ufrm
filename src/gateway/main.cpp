@@ -1,5 +1,6 @@
 // Copyright (c) 2022 TungFai Fong <iam@tungfaifong.com>
 
+#include <iostream>
 #include <signal.h>
 
 #include "toml++/toml.h"
@@ -24,7 +25,16 @@ int main()
 {
 	signal(SIGUSR1, SignalHandler);
 
-	auto config = toml::parse_file("gateway.toml");
+	toml::table config;
+	try
+	{
+		config = toml::parse_file("gateway.toml");
+	}
+	catch (const toml::parse_error& err)
+	{
+		std::cerr << "Parsing config failed: " << err << std::endl;
+		return 1;
+	}
 
 	UnitManager::Instance()->Init(config["Gateway"]["interval"].value_or(1));
 
@@ -32,7 +42,9 @@ int main()
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(config["Server"]["pp_alloc_num"].value_or(1 Ki), config["Server"]["ps_alloc_num"].value_or(1 Ki), config["Server"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("ISERVER", std::move(std::make_shared<ServerUnit>(config["IServer"]["pp_alloc_num"].value_or(1 Ki), config["IServer"]["ps_alloc_num"].value_or(1 Ki), config["IServer"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(config["Timer"]["tp_alloc_num"].value_or(1 Ki), config["Timer"]["ts_alloc_num"].value_or(1 Ki))));
-	UnitManager::Instance()->Register("GATEWAY", std::move(std::make_shared<Gateway>()));
+	UnitManager::Instance()->Register("GATEWAY", std::move(std::make_shared<Gateway>(config)));
 
 	UnitManager::Instance()->Run();
+
+	return 0;
 }

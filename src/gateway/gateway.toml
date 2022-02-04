@@ -19,3 +19,14 @@ ts_alloc_num = 1024
 
 [Gateway]
 interval = 1
+port = 6666
+
+[GatewayMgr]
+ip = "127.0.0.1"
+port = 6667
+timeout = 3000
+
+[[Gamesrv]]
+ip = "127.0.0.1"
+port = 6668
+timeout = 3000
