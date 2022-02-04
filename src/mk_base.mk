@@ -20,7 +20,8 @@ INC_LUA = -I$(PATH_3RDPARTY)/lua-5.4.3/include
 INC_LUA_BRIDGE = -I$(PATH_3RDPARTY)/LuaBridge-2.7
 INC_SPDLOG = -I$(PATH_3RDPARTY)/spdlog-1.9.2
 INC_USRV = -I$(PATH_3RDPARTY)/usrv/include -I$(PATH_3RDPARTY)/usrv/include/usrv
-INC_ALL = -I$(PATH_ROOT)/src/common $(INC_ASIO) $(INC_FMT) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_USRV)
+INC_TOML = -I$(PATH_3RDPARTY)/toml++-3.0.1
+INC_ALL = -I$(PATH_ROOT)/src/common $(INC_ASIO) $(INC_FMT) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_USRV) $(INC_TOML)
 
 # lib
 LIB_FMT = -L$(PATH_3RDPARTY)/fmt-8.1.0/lib -lfmt
