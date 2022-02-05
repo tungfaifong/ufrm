@@ -74,6 +74,11 @@ public:
 		_indexs.clear();
 	}
 
+	size_t Size()
+	{
+		return _tail >= _head ? _tail - _head : _objects.size() + _tail - _head;
+	}
+
 private:
 	void _Allocate()
 	{

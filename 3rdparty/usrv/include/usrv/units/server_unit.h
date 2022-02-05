@@ -38,6 +38,7 @@ public:
 	void Disconnect(NETID net_id);
 	bool Send(NETID net_id, const char * data, uint16_t size);
 	void OnRecv(OnRecvFunc func);
+	size_t PeersNum();
 
 private:
 	bool _Recv(NETID & net_id, char * data, uint16_t & size);
