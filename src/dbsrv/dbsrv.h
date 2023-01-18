@@ -38,7 +38,14 @@ private:
 	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 
 private:
-	
+	void _Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, std::any> where);
+	bool _Insert(std::string tb_name, std::vector<std::string> column, std::vector<std::any> value);
+	bool _Update(std::string tb_name, std::unordered_map<std::string, std::any> value, std::unordered_map<std::string, std::any> where);
+	bool _Delete(std::string tb_name, std::unordered_map<std::string, std::any> where);
+
+	std::string _GetVecStr(const std::vector<std::string> & vec);
+	std::string _GetVecStr(const std::vector<std::any> & vec);
+	std::string _GetMapStr(const std::unordered_map<std::string, std::any> & map, std::string separator = ", ");
 
 private:
 	NODEID _id;

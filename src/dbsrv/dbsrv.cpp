@@ -150,3 +150,142 @@ void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSP
 		break;
 	}
 }
+
+void DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, std::any> where)
+{
+	auto c =  _GetVecStr(column);
+	c = c == "" ? "*" : c;
+	auto w = _GetMapStr(where, " and ");
+	w = w == "" ? w : " where " + w;
+	auto sql = fmt::format("select {} from {}{};", c, tb_name, w);
+	auto query = _mysql_connection.query(sql);
+	auto ret = query.store();
+}
+
+bool DBSrv::_Insert(std::string tb_name, std::vector<std::string> column, std::vector<std::any> value)
+{
+	auto sql = fmt::format("insert into {} ({}) values ({});", tb_name, _GetVecStr(column), _GetVecStr(value));
+	auto query = _mysql_connection.query(sql);
+	return query.exec();
+}
+
+bool DBSrv::_Update(std::string tb_name, std::unordered_map<std::string, std::any> value, std::unordered_map<std::string, std::any> where)
+{
+	auto w = _GetMapStr(where, " and ");
+	w = w == "" ? w : " where " + w;
+	auto sql = fmt::format("update {} set {}{};", tb_name, _GetMapStr(value), w);
+	auto query = _mysql_connection.query(sql);
+	return query.exec();
+}
+
+bool DBSrv::_Delete(std::string tb_name, std::unordered_map<std::string, std::any> where)
+{
+	auto w = _GetMapStr(where, " and ");
+	w = w == "" ? w : " where " + w;
+	auto sql = fmt::format("delete from {}{};", tb_name, w);
+	auto query = _mysql_connection.query(sql);
+	return query.exec();
+}
+
+std::string DBSrv::_GetVecStr(const std::vector<std::string> & vec)
+{
+	if(vec.empty())
+	{
+		return "";
+	}
+	std::string str = "";
+	for(auto iter = vec.begin(); iter != vec.end(); ++iter)
+	{
+		str += *iter;
+		if(std::next(iter) != vec.end())
+		{
+			str += ", ";
+		}
+	}
+	return str;
+}
+
+std::string DBSrv::_GetVecStr(const std::vector<std::any> & vec)
+{
+	if(vec.empty())
+	{
+		return "";
+	}
+	std::string str = "";
+	for(auto iter = vec.begin(); iter != vec.end(); ++iter)
+	{
+		if (iter->type() == typeid(int32_t))
+		{
+			str += fmt::format("{}", std::any_cast<int32_t>(*iter));
+		}
+		else if(iter->type() == typeid(uint32_t))
+		{
+			str += fmt::format("{}", std::any_cast<uint32_t>(*iter));
+		}
+		else if(iter->type() == typeid(int64_t))
+		{
+			str += fmt::format("{}", std::any_cast<int64_t>(*iter));
+		}
+		else if(iter->type() == typeid(uint64_t))
+		{
+			str += fmt::format("{}", std::any_cast<uint64_t>(*iter));
+		}
+		else if(iter->type() == typeid(bool))
+		{
+			str += fmt::format("{}", std::any_cast<bool>(*iter));
+		}
+		else if(iter->type() == typeid(std::string))
+		{
+			str += fmt::format("'{}'", std::any_cast<std::string>(*iter));
+		}
+
+		if(std::next(iter) != vec.end())
+		{
+			str += ", ";
+		}
+	}
+	return str;
+}
+
+std::string DBSrv::_GetMapStr(const std::unordered_map<std::string, std::any> & map, std::string separator /* = ", " */)
+{
+	if(map.empty())
+	{
+		return "";
+	}
+	std::string str = "";
+	for(auto iter = map.begin(); iter != map.end(); ++iter)
+	{
+		if (iter->second.type() == typeid(int32_t))
+		{
+			str += fmt::format("{} = {}", iter->first, std::any_cast<int32_t>(iter->second));
+		}
+		else if(iter->second.type() == typeid(uint32_t))
+		{
+			str += fmt::format("{} = {}", iter->first, std::any_cast<uint32_t>(iter->second));
+		}
+		else if(iter->second.type() == typeid(int64_t))
+		{
+			str += fmt::format("{} = {}", iter->first, std::any_cast<int64_t>(iter->second));
+		}
+		else if(iter->second.type() == typeid(uint64_t))
+		{
+			str += fmt::format("{} = {}", iter->first, std::any_cast<uint64_t>(iter->second));
+		}
+		else if(iter->second.type() == typeid(bool))
+		{
+			str += fmt::format("{} = {}", iter->first, std::any_cast<bool>(iter->second));
+		}
+		else if(iter->second.type() == typeid(std::string))
+		{
+			str += fmt::format("{} = '{}'", iter->first, std::any_cast<std::string>(iter->second));
+		}
+		
+		if(std::next(iter) != map.end())
+		{
+			str += separator;
+		}
+	}
+	return str;
+}
+
