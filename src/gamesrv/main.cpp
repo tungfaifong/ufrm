@@ -47,7 +47,7 @@ int main(int argc, char * argv[])
 	toml::table config;
 	try
 	{
-		config = toml::parse_file(PATH_ROOT + argv[1]);
+		config = toml::parse_file(PATH_ROOT + "/" + argv[1]);
 	}
 	catch (const toml::parse_error& err)
 	{

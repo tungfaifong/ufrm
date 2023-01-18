@@ -36,6 +36,7 @@ private:
 
 	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 
 private:
 	std::vector<std::unordered_map<std::string, variant_t>> _Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where);

@@ -1,6 +1,6 @@
 [Logger]
 level = 0
-file_name = "/logs/dbsrv.log"
+file_name = "logs/dbsrv.log"
 spsc_blk_num = 524288	# 一个blk为64bytes 512k * 64bytes = 32MB
 
 [Server]

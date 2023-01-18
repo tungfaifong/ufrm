@@ -6,7 +6,6 @@
 #include "usrv/interfaces/logger_interface.h"
 #include "usrv/interfaces/server_interface.h"
 
-#include "protocol/ss.pb.h"
 #include "define.h"
 
 DBSrv::DBSrv(NODEID id, toml::table & config) : _id(id), _config(config), 
@@ -54,9 +53,9 @@ bool DBSrv::Start()
 	{
 		return false;
 	}
-	if(!_mysql_connection.connect(_config["DBSrv"]["db_name"].value_or(""), _config["DBSrv"]["ip"].value_or(""), _config["DBSrv"]["username"].value_or(""), _config["DBSrv"]["password"].value_or("")))
+	if(!_mysql_connection.connect(_config["MySql"]["db_name"].value_or(""), _config["MySql"]["ip"].value_or(""), _config["MySql"]["username"].value_or(""), _config["MySql"]["password"].value_or("")))
 	{
-		LOGGER_ERROR("connect mysql error db_name:{} ip:{} username:{} password:{}", _config["DBSrv"]["db_name"].value_or(""), _config["DBSrv"]["ip"].value_or(""), _config["DBSrv"]["username"].value_or(""), _config["DBSrv"]["password"].value_or(""));
+		LOGGER_ERROR("connect mysql error db_name:{} ip:{} username:{} password:{}", _config["MySql"]["db_name"].value_or(""), _config["MySql"]["ip"].value_or(""), _config["MySql"]["username"].value_or(""), _config["MySql"]["password"].value_or(""));
 		return false;
 	}
 	_mysql_connection.set_option(new mysqlpp::ReconnectOption(true));
@@ -101,6 +100,11 @@ void DBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	case SSPkgHead::RPCREQ:
 		{
 			_OnServerHanleRpcReq(net_id, head, body);
+		}
+		break;
+	case SSPkgHead::RPCRSP:
+		{
+			_OnServerHanleRpcRsp(net_id, head, body);
 		}
 		break;
 	default:
@@ -149,6 +153,11 @@ void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSP
 		LOGGER_WARN("invalid node_type:{} node_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id());
 		break;
 	}
+}
+
+void DBSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+{
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
 }
 
 std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where)

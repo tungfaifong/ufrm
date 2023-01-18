@@ -39,7 +39,7 @@ LIB_FMT = -L$(PATH_3RDPARTY)/fmt-8.1.0/lib -lfmt
 LIB_LUA = -L$(PATH_3RDPARTY)/lua-5.4.3/lib -llua
 LIB_PROTOBUF = -L$(PATH_3RDPARTY)/protobuf-3.19.4/lib -lprotobuf -lprotobuf-lite
 LIB_MYSQL = -L$(PATH_3RDPARTY)/mysql/lib -lmysqlclient
-LIB_MYSQL++ = -L$(PATH_3RDPARTY)/mysql++-3.3.0/lib -lmysqlpp
+LIB_MYSQL++ = -L$(PATH_3RDPARTY)/mysql++-3.3.0/lib -lmysqlpp -Wl,-rpath=$(PATH_3RDPARTY)/mysql++-3.3.0/lib
 LIB_ALL = $(LIB_COMMON) $(LIB_USRV) $(LIB_FMT) $(LIB_LUA) $(LIB_PROTOBUF) $(LIB_MYSQL) $(LIB_MYSQL++)
 
 LINK_FLAGS = $(LIB_ALL) -lpthread -ldl
