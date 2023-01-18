@@ -35,7 +35,7 @@ void PXClient::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBod
 {
 	if(proxy_id == INVALID_NODE_ID)
 	{
-		proxy_id = _GetConsistentHashingProxy();
+		proxy_id = _GetConsistentHashProxy();
 	}
 	_SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::FORWARD, msg_type, rpc_id);
 }
@@ -44,7 +44,7 @@ void PXClient::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, N
 {
 	if(proxy_id == INVALID_NODE_ID)
 	{
-		proxy_id = _GetConsistentHashingProxy();
+		proxy_id = _GetConsistentHashProxy();
 	}
 	_SendToProxy(node_type, INVALID_NODE_ID, id, body, proxy_id, SSPkgHead::BROADCAST);
 }
@@ -53,8 +53,10 @@ void PXClient::OnDisconnect(NETID net_id)
 {
 	if(_nid2proxy.find(net_id) != _nid2proxy.end())
 	{
-		_proxys.erase(_nid2proxy[net_id]);
+		auto node_id = _nid2proxy[net_id];
+		_proxys.erase(node_id);
 		_nid2proxy.erase(net_id);
+		_consistent_hash.RemoveNode(node_id);
 	}
 }
 
@@ -68,13 +70,19 @@ void PXClient::OnNodePublish(NODETYPE node_type, NODEID node_id, SSLSLCPublish::
 	{
 	case SSLSLCPublish::REGISTER:
 		{
-			_ConnectToProxy(node_id, ip, port);
+			if(_ConnectToProxy(node_id, ip, port))
+			{
+				_consistent_hash.AddNode(node_id);
+			}
 		}
 		break;
 	case SSLSLCPublish::CHANGE:
 		{
 			_DisconnectToProxy(node_id);
-			_ConnectToProxy(node_id, ip, port);
+			if(_ConnectToProxy(node_id, ip, port))
+			{
+				_consistent_hash.AddNode(node_id);
+			}
 		}
 		break;
 	case SSLSLCPublish::UNREGISTER:
@@ -127,34 +135,40 @@ future<> PXClient::_ConnectToProxys()
 	auto proxys = co_await _lb_client.GetAllNodes(PROXY);
 	for(const auto & [node_id, proxy] : proxys)
 	{
-		_ConnectToProxy(node_id, proxy.ip, proxy.port);
+		if(_ConnectToProxy(node_id, proxy.ip, proxy.port))
+		{
+			_consistent_hash.AddNode(node_id);
+		}
 	}
 	_HeartBeat();
 	_lb_client.Subscribe(PROXY);
 }
 
-void PXClient::_ConnectToProxy(NODEID node_id, IP ip, PORT port)
+bool PXClient::_ConnectToProxy(NODEID node_id, IP ip, PORT port)
 {
 	auto net_id = _server->Connect(ip, port, _config.timeout);
 	if(net_id == INVALID_NET_ID)
 	{
 		LOGGER_WARN("Connect to Proxy failed, srv_ip:{} srv_port:{}", ip, port);
-		return;
+		return false;
 	}
 	_nid2proxy[net_id] = node_id;
 	_proxys[node_id] = net_id;
 
 	PKG_CREATE(body, SSPkgBody);
 	_SendToProxy(PROXY, node_id, SSID_PC_PX_NODE_REGISTER, body, node_id);
+
+	return true;
 }
 
-void PXClient::_DisconnectToProxy(NODEID node_id)
+bool PXClient::_DisconnectToProxy(NODEID node_id)
 {
 	if(_proxys.find(node_id) == _proxys.end())
 	{
-		return;
+		return false;
 	}
 	_server->Disconnect(_proxys[node_id]);
+	return true;
 }
 
 void PXClient::_HeartBeat()
@@ -178,7 +192,7 @@ future<> PXClient::_CoroHeartBeat(NODEID node_id)
 	LOGGER_INFO("heart beat RSP success");
 }
 
-NODEID PXClient::_GetConsistentHashingProxy()
+NODEID PXClient::_GetConsistentHashProxy()
 {
-	return INVALID_NODE_ID; // todo
+	return _consistent_hash.GetNode(fmt::format("{}#{}", ENUM_NAME(_config.node_type), std::to_string(_config.node_id)));
 }

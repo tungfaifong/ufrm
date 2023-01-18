@@ -5,6 +5,7 @@
 
 #include "usrv/units/server_unit.h"
 
+#include "consistent_hash/consistent_hash.hpp"
 #include "coroutine/coroutine_mgr.h"
 #include "lb_client/lb_client.h"
 #include "protocol/ss.pb.h"
@@ -43,14 +44,14 @@ private:
 	awaitable_func _RpcProxy(NODEID node_id, SSID id, SSPkgBody * body);
 
 	future<> _ConnectToProxys();
-	void _ConnectToProxy(NODEID node_id, IP ip, PORT port);
-	void _DisconnectToProxy(NODEID node_id);
+	bool _ConnectToProxy(NODEID node_id, IP ip, PORT port);
+	bool _DisconnectToProxy(NODEID node_id);
 
 	void _HeartBeat();
 	future<> _CoroHeartBeat(NODEID node_id);
 
 private:
-	NODEID _GetConsistentHashingProxy();
+	NODEID _GetConsistentHashProxy();
 
 private:
 	Config _config;
@@ -60,6 +61,8 @@ private:
 
 	std::unordered_map<NETID, NODEID> _nid2proxy;
 	std::unordered_map<NODEID, NETID> _proxys;
+
+	ConsistentHash _consistent_hash;
 };
 
 #endif // UFRM_PX_CLIENT_H

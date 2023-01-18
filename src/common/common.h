@@ -7,6 +7,8 @@
 
 using namespace usrv;
 
+using uint128_t = __uint128_t;
+
 using NODEID = uint32_t;
 using ROLEID = uint32_t;
 
