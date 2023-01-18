@@ -119,7 +119,16 @@ void Gateway::_OnServerDisc(NETID net_id)
 {
 	if(_nid2role.find(net_id) != _nid2role.end())
 	{
-		_roles.erase(_nid2role[net_id]);
+		auto role = _roles[_nid2role[net_id]];
+
+		PKG_CREATE(body, SSGWGSPkgBody);
+		body->mutable_forward_cs_pkg()->set_role_id(role.role_id);
+		body->mutable_forward_cs_pkg()->set_game_id(role.game_id);
+		body->mutable_forward_cs_pkg()->mutable_cs_pkg()->mutable_head()->set_id(CSID_LOGOUT_REQ);
+		body->mutable_forward_cs_pkg()->mutable_cs_pkg()->mutable_body()->mutable_logout_req();
+		_SendToGameSrv(role.game_id, SSID_GW_GS_FORWAR_CS_PKG, body);
+
+		_roles.erase(role.role_id);
 		_nid2role.erase(net_id);
 	}
 

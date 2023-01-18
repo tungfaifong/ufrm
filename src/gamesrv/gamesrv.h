@@ -35,6 +35,7 @@ private:
 	void _OnServerDisc(NETID net_id);
 
 	void _SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToClient(ROLEID role_id, CSID id, CSPkgBody * body);
 	void _SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	void _BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID);
 
@@ -61,6 +62,8 @@ private:
 	std::unordered_map<NODEID, NETID> _gateways;
 
 	PXClient _px_client;
+
+	std::unordered_map<ROLEID, NODEID> _roles;
 };
 
 #endif // UFRM_GAMESRV_H

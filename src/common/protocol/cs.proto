@@ -36,6 +36,16 @@ message CSLogoutReq
 
 }
 
+message CSHeartBeatReq
+{
+
+}
+
+message SCHeartBeatRsp
+{
+
+}
+
 // pkg
 message CSPkgHead
 {
@@ -50,6 +60,9 @@ message CSPkgBody
 		SCAuthRsp auth_rsp = 2;
 		CSLoginReq login_req = 3;
 		SCLoginRsp login_rsp = 4;
+		CSLogoutReq logout_req = 5;
+		CSHeartBeatReq heart_beat_req = 6;
+		SCHeartBeatRsp heart_beat_rsp = 7;
 	}
 }
 

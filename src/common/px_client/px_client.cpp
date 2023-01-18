@@ -113,8 +113,7 @@ void PXClient::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBo
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
 	head->set_proxy_type(proxy_type);
-	auto ss_body = pkg.mutable_body();
-	*ss_body = *body;
+	pkg.set_allocated_body(body);
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{

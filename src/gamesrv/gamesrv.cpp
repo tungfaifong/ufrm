@@ -157,6 +157,20 @@ void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
 }
 
+void GameSrv::_SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)
+{
+	if(_roles.find(role_id) == _roles.end())
+	{
+		return;
+	}
+	PKG_CREATE(pkg, SSGWGSPkgBody);
+	pkg->mutable_forward_cs_pkg()->set_role_id(role_id);
+	pkg->mutable_forward_cs_pkg()->set_game_id(_id);
+	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->mutable_head()->set_id(id);
+	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->set_allocated_body(body);
+	_SendToGateway(_roles[role_id], SSID_GS_GW_FORWAR_SC_PKG, pkg);
+}
+
 void GameSrv::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, msg_type, rpc_id);
@@ -247,6 +261,32 @@ void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGW
 
 void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 {
+	auto gateway_node_id = _gateways[_nid2gateway[net_id]];
+	switch(pkg.cs_pkg().head().id())
+	{
+	case CSID_LOGIN_REQ:
+		{
+			_roles[pkg.role_id()] = gateway_node_id;
+		}
+		break;
+	case CSID_LOGOUT_REQ:
+		{
+			if(_roles.find(pkg.role_id()) != _roles.end())
+			{
+				_roles.erase(pkg.role_id());
+			}
+		}
+		break;
+	case CSID_HEART_BEAT_REQ:
+		{
+			PKG_CREATE(cs_body, CSPkgBody);
+			cs_body->mutable_heart_beat_rsp();
+			_SendToClient(pkg.role_id(), SCID_HEART_BEAT_RSP, cs_body);
+		}
+		break;
+	default:
+		break;
+	}
 	auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
 	lua->OnRecv(net_id, pkg.SerializePartialAsString().c_str(), (uint16_t)pkg.ByteSizeLong());
 }
