@@ -347,7 +347,7 @@ future<> Gateway::_CoroHeartBeat(NODEID node_id)
 	}
 }
 
-future<> Gateway::_OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & req)
+future<> Gateway::_OnAuth(NETID net_id, CSPkgHead head, CSAuthReq req)
 {
 	auto io_node = co_await _lb_client.GetLeastLoadNode(IOSRV);
 
