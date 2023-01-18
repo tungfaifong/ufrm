@@ -538,7 +538,7 @@ namespace pblua
 	{
 		auto descriptor = message->GetDescriptor();
 		lua_ref.push();
-		return EncodeMessage(message, descriptor, lua_ref.state(), 0);
+		return EncodeMessage(message, descriptor, lua_ref.state(), lua_absindex(lua_ref.state(), -1));
 	}
 
 	luabridge::LuaRef PB2LuaRef(const google::protobuf::Message & message, lua_State * L)
