@@ -27,7 +27,7 @@ std::shared_ptr<CoroutineMgr::CoroObj> CoroutineMgr::Insert(std::coroutine_handl
 	return _coro_objs[id];
 }
 
-void CoroutineMgr::Resume(COROID coro_id, CORORESULT result, std::string && data)
+void CoroutineMgr::Resume(COROID coro_id, CoroResult result, std::string && data)
 {
 	auto coro_obj = _coro_objs[coro_id];
 	if(!coro_obj)
@@ -51,7 +51,7 @@ void CoroutineMgr::_CheckTimeout()
 		auto coro_obj = iter->second;
 		if(now >= coro_obj->timeout)
 		{
-			coro_obj->result = CORORESULT::TIMEOUT;
+			coro_obj->result = CoroResult::TIMEOUT;
 			coro_obj->coro.resume();
 			iter = _coro_objs.Erase(iter);
 		}

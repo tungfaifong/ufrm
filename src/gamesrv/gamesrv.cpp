@@ -218,7 +218,7 @@ void GameSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const S
 
 void GameSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializePartialAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CoroResult::SUCCESS, std::move(body.SerializePartialAsString()));
 }
 
 void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body)

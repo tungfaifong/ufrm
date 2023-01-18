@@ -263,7 +263,7 @@ void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const 
 
 void Gateway::_OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializePartialAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CoroResult::SUCCESS, std::move(body.SerializePartialAsString()));
 }
 
 void Gateway::_OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body)
@@ -358,7 +358,7 @@ future<> Gateway::_CoroHeartBeat(NODEID node_id)
 {
 	PKG_CREATE(body, SSGWGSPkgBody);
 	auto [result, data] = co_await _RpcGameSrv(node_id, SSID_GW_GS_HEART_BEAT_REQ, body);
-	if(result == CORORESULT::TIMEOUT)
+	if(result == CoroResult::TIMEOUT)
 	{
 		LOGGER_WARN("heart beat timeout");
 		co_return;

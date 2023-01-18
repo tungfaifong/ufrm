@@ -75,7 +75,7 @@ future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes
 		PKG_CREATE(body, SSLCLSPkgBody);
 		body->mutable_get_all_nodes_req()->set_node_type(node_type);
 		auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_ALL_NODES_REQ, body);
-		if(result == CORORESULT::TIMEOUT)
+		if(result == CoroResult::TIMEOUT)
 		{
 			LOGGER_WARN("get all nodes timeout");
 			co_return _nodes[node_type];
@@ -96,7 +96,7 @@ future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
 	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_get_least_load_node_req()->set_node_type(node_type);
 	auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ, body);
-	if(result == CORORESULT::TIMEOUT)
+	if(result == CoroResult::TIMEOUT)
 	{
 		LOGGER_WARN("get least load node timeout");
 		co_return Node{DEFAULT_IP, DEFAULT_PORT};
@@ -216,7 +216,7 @@ future<> LBClient::_CoroHeartBeat()
 	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_heart_beat_req()->set_load(_load());
 	auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_HEART_BEAT_REQ, body);
-	if(result == CORORESULT::TIMEOUT)
+	if(result == CoroResult::TIMEOUT)
 	{
 		LOGGER_WARN("heart beat timeout");
 		co_return;
