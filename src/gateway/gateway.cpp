@@ -39,7 +39,7 @@ bool Gateway::Init()
 	_iserver->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnIServerDisc(net_id); });
 
 	_lb_client.Init(_iserver,
-		[self = shared_from_this()](){ return 1; }, // TODO
+		[self = shared_from_this()](){ return self->_roles.size(); },
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
 			self->_OnNodePublish(node_type, node_id, publish_type, ip, port);
 			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
@@ -369,7 +369,7 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 		LOGGER_ERROR("net_id:{} is invalid", net_id);
 		return;
 	}
-	auto role_id =  _nid2role[net_id];
+	auto role_id = _nid2role[net_id];
 	auto role = _roles[role_id];
 	auto game_id = role.game_id;
 	if(_gamesrvs.find(game_id) == _gamesrvs.end())

@@ -36,7 +36,7 @@ bool GameSrv::Init()
 	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
 	_lb_client.Init(_server,
-		[self = shared_from_this()](){ return 1; }, // TODO
+		[self = shared_from_this()](){ return self->_roles.size(); },
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
 			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
 		});
