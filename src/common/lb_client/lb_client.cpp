@@ -154,7 +154,7 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 
 awaitable LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)
 {
-	return awaitable(std::bind(&LBClient::_SendToLBSrv, this, id, body, MSGT_RPCREQ, std::placeholders::_1));
+	return awaitable([this, id, body](COROID coro_id){ _SendToLBSrv(id, body, MSGT_RPCREQ, coro_id); });
 }
 
 bool LBClient::_Connect()
@@ -170,8 +170,8 @@ bool LBClient::_Connect()
 
 void LBClient::_HeartBeat()
 {
-	CORO_SPAWN(std::bind(&LBClient::_CoroHeartBeat, this));
-	_timer_heart_beat = timer::CreateTimer(HEART_BEAT_INTERVAL, std::bind(&LBClient::_HeartBeat, this));
+	CORO_SPAWN([this](){ return _CoroHeartBeat(); });
+	_timer_heart_beat = timer::CreateTimer(HEART_BEAT_INTERVAL, [this](){ _HeartBeat(); });
 }
 
 coroutine LBClient::_CoroHeartBeat()

@@ -60,5 +60,5 @@ void CoroutineMgr::_CheckTimeout()
 			++iter;
 		}
 	}
-	_timer_handler = timer::CreateTimer(TIMEOUT, std::bind(&CoroutineMgr::_CheckTimeout, shared_from_this()));
+	_timer_handler = timer::CreateTimer(TIMEOUT, [self = shared_from_this()](){ self->_CheckTimeout(); });
 }

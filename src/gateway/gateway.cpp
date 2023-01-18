@@ -28,12 +28,12 @@ bool Gateway::Init()
 	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 	_iserver = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("ISERVER"));
 
-	_server->OnConn(std::bind(&Gateway::_OnServerConn, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	_server->OnRecv(std::bind(&Gateway::_OnServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	_server->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
-	_iserver->OnConn(std::bind(&Gateway::_OnServerConn, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	_iserver->OnRecv(std::bind(&Gateway::_OnIServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	_iserver->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
+	_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	_iserver->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnIServerConn(net_id, ip, port); });
+	_iserver->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnIServerRecv(net_id, data, size); });
+	_iserver->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnIServerDisc(net_id); });
 
 	_lb_client.Init(_iserver, [self = shared_from_this()](){ return 0; });
 

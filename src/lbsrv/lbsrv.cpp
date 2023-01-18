@@ -24,9 +24,9 @@ bool LBSrv::Init()
 
 	auto server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 
-	server->OnConn(std::bind(&LBSrv::_OnServerConn, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	server->OnRecv(std::bind(&LBSrv::_OnServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
-	server->OnDisc(std::bind(&LBSrv::_OnServerDisc, shared_from_this(), std::placeholders::_1));
+	server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+	server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
 	return true;
 }
