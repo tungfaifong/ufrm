@@ -19,6 +19,8 @@ NAMESPACE_NAME \
 
 NAMESPACE_OPEN
 
+static constexpr uint32_t USRV_VERSION = 0001000;
+
 #define Ki * 1024
 #define Mi Ki Ki
 
