@@ -34,9 +34,9 @@ void LuaExpose(luabridge::Namespace ns)
 {
 	pblua::Init();
 	ns.beginNamespace("pblua")
-			.addFunction("parse", pblua::Parse)
-			.addFunction("encode", pblua::Encode)
-			.addFunction("decode", pblua::Decode)
+			.addFunction("Parse", pblua::Parse)
+			.addFunction("Encode", pblua::Encode)
+			.addFunction("Decode", pblua::Decode)
 		.endNamespace()
 		.beginNamespace("net")
 			.addFunction("SendToClient", SendToClient)

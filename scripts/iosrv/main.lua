@@ -5,17 +5,17 @@ package.path = package.path .. ';./scripts/?.lua;./scripts/iosrv/?.lua'
 require "common.util"
 
 function Start()
-	pblua.parse("common.proto")
-	pblua.parse("cs.proto")
-	pblua.parse("csid.proto")
-	pblua.parse("io.proto")
-	pblua.parse("ioid.proto")
-	pblua.parse("ss.proto")
-	pblua.parse("ssdcds.proto")
-	pblua.parse("ssgwgs.proto")
-	pblua.parse("ssid.proto")
-	pblua.parse("sslcls.proto")
-	pblua.parse("sspcpx.proto")
+	pblua.Parse("common.proto")
+	pblua.Parse("cs.proto")
+	pblua.Parse("csid.proto")
+	pblua.Parse("io.proto")
+	pblua.Parse("ioid.proto")
+	pblua.Parse("ss.proto")
+	pblua.Parse("ssdcds.proto")
+	pblua.Parse("ssgwgs.proto")
+	pblua.Parse("ssid.proto")
+	pblua.Parse("sslcls.proto")
+	pblua.Parse("sspcpx.proto")
 	return true
 end
 
@@ -30,8 +30,6 @@ function OnConn(net_id, ip, port)
 end
 
 function OnRecv(net_id, data)
-	local pkg = pblua.decode("SSPkg", data)
-	logger.debug("Serialize:" .. Serialize(pkg))
 end
 
 function OnDisc(net_id)

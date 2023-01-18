@@ -28,11 +28,11 @@ namespace pblua
 	bool DecodeField(const google::protobuf::Message & message, const google::protobuf::FieldDescriptor * field, lua_State * L);
 	bool DecodeMessage(const google::protobuf::Message & message, const google::protobuf::Descriptor * descriptor, lua_State * L);
 
-	// ret = pblua.parse("obj.proto")
+	// ret = pblua.Parse("obj.proto")
 	int Parse(lua_State * L);
-	// data = pblua.encode("Obj", obj)
+	// data = pblua.Encode("Obj", obj)
 	int Encode(lua_State * L);
-	// obj = pblua.decode("Obj", data)
+	// obj = pblua.Decode("Obj", data)
 	int Decode(lua_State * L);
 	
 	bool LuaRef2PB(google::protobuf::Message * message, luabridge::LuaRef & lua_ref);
