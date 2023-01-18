@@ -2,6 +2,7 @@
 
 #include "lb_client.h"
 
+#include "magic_enum.hpp"
 #include "usrv/interfaces/logger_interface.h"
 #include "usrv/interfaces/timer_interface.h"
 
@@ -114,7 +115,7 @@ void LBClient::OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody 
 		}
 		break;
 	default:
-		LOGGER_WARN("LBClient::OnRecv WARN: invalid node_type:{} node_id:{} id:{}", head.from_node_type(), head.from_node_id(), head.id());
+		LOGGER_WARN("LBClient::OnRecv WARN: invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(SSLCLSID(head.id())));
 		break;
 	}
 }
@@ -164,11 +165,11 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("LBClient::_SendToLBSrv ERROR: pkg size too long, id:{} size:{}", id, size);
+		LOGGER_ERROR("LBClient::_SendToLBSrv ERROR: pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
 		return;
 	}
 	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("LBClient::_SendToLBSrv msg_type:{} id:{} rpc_id:{}", msg_type, id, rpc_id);
+	LOGGER_TRACE("LBClient::_SendToLBSrv msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
 }
 
 awaitable_func LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)

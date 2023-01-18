@@ -7,4 +7,6 @@
 
 #define CO_SPAWN(future) future.coro.resume()
 
+#define ENUM_NAME(enum) magic_enum::enum_name(enum)
+
 #endif // UFRM_DEFINE_H

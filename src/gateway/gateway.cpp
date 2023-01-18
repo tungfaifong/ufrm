@@ -2,6 +2,7 @@
 
 #include "gateway.h"
 
+#include "magic_enum.hpp"
 #include "usrv/interfaces/logger_interface.h"
 #include "usrv/interfaces/server_interface.h"
 #include "usrv/interfaces/timer_interface.h"
@@ -98,6 +99,21 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
+	switch(head.from_node_type())
+	{
+		case LBSRV:
+		{
+			LOGGER_TRACE("Gateway::_OnIServerRecv node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(SSLCLSID(head.id())), head.rpc_id());
+		}
+		break;
+		case GAMESRV:
+		{
+		
+		}
+		break;
+		default:
+			break;
+	}
 	switch (head.msg_type())
 	{
 	case MSGT_NORMAL:
@@ -111,10 +127,9 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 		}
 		break;
 	default:
-		LOGGER_WARN("Gateway::_OnIServerRecv WARN: invalid node_type:{} node_id:{} msg_type:{}", head.from_node_type(), head.from_node_id(), head.msg_type());
+		LOGGER_WARN("Gateway::_OnIServerRecv WARN: invalid node_type:{} node_id:{} msg_type:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()));
 		break;
 	}
-	LOGGER_TRACE("Gateway::_OnIServerRecv node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", head.from_node_type(), head.from_node_id(), head.msg_type(), head.id(), head.rpc_id());
 }
 
 void Gateway::_OnIServerDisc(NETID net_id)
@@ -137,7 +152,7 @@ void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const 
 		}
 		break;
 	default:
-		LOGGER_WARN("Gateway::_OnIServerRecv WARN: invalid node_type:{} node_id:{}", head.from_node_type(), head.from_node_id());
+		LOGGER_WARN("Gateway::_OnIServerRecv WARN: invalid node_type:{} node_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id());
 		break;
 	}
 }
