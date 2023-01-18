@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+enum CSID
+{
+	CSID_AUTH = 0;
+	SCID_AUTH = 1;
+	CSID_LOGIN_REQ = 2;
+	SCID_LOGIN_RSP = 3;
+}

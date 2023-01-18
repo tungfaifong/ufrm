@@ -3,6 +3,7 @@
 syntax = "proto3";
 
 import "common.proto";
+import "cs.proto";
 
 message SSGWGSInit
 {
@@ -16,6 +17,13 @@ message SSGSGWHertBeatRsp
 {
 }
 
+message SSGWGSFORWARDCSPKG
+{
+	uint32 role_id = 1;
+	uint32 game_id = 2;
+	CSPkg cs_pkg = 3;
+}
+
 message SSGWGSPkgBody
 {
 	oneof body
@@ -23,5 +31,6 @@ message SSGWGSPkgBody
 		SSGWGSInit init = 1;
 		SSGWGSHertBeatReq heart_beat_req = 2;
 		SSGSGWHertBeatRsp heart_beat_rsp = 3;
+		SSGWGSFORWARDCSPKG forward_cs_pkg = 4;
 	}
 }

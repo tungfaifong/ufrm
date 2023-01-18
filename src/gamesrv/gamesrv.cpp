@@ -190,7 +190,11 @@ void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSP
 			_OnGatewayInit(net_id, head, body.init());
 		}
 		break;
-
+	case SSID_GW_GS_FORWAR_CS_PKG:
+		{
+			_OnRecvClient(body.forward_cs_pkg().role_id(), body.forward_cs_pkg().cs_pkg());
+		}
+		break;
 	default:
 		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
 		break;
@@ -213,6 +217,11 @@ void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGW
 		break;
 	}
 	_SendToGateway(head.from_node_id(), id, rsp_body, MSGT_RPCRSP, head.rpc_id());
+}
+
+void GameSrv::_OnRecvClient(ROLEID role_id, const CSPkg & pkg)
+{
+	
 }
 
 void GameSrv::_OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body)

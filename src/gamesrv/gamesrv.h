@@ -42,6 +42,8 @@ private:
 	void _OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
 	void _OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
 
+	void _OnRecvClient(ROLEID role_id, const CSPkg & pkg);
+
 private:
 	void _OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body);
 	void _OnGatewayHeartBeatReq(NETID net_id, const SSPkgHead & head, const SSGWGSHertBeatReq & body, SSID & id, SSGWGSPkgBody * rsp_body);

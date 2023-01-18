@@ -11,6 +11,7 @@
 #include "usrv/unit.h"
 
 #include "lb_client/lb_client.h"
+#include "protocol/cs.pb.h"
 #include "protocol/sslcls.pb.h"
 #include "common.h"
 
@@ -20,6 +21,13 @@ class Gateway : public Unit, public std::enable_shared_from_this<Gateway>
 {
 public:
 	static constexpr intvl_t HEART_BEAT_INTERVAL = 30000;
+
+	struct Role
+	{
+		NETID net_id;
+		ROLEID role_id;
+		NODEID game_id;
+	};
 
 	Gateway(NODEID id, toml::table & config);
 	virtual ~Gateway() = default;
@@ -44,6 +52,8 @@ private:
 	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 
+	void _OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
+
 private:
 	future<> _ConnectToGameSrvs();
 	void _OnNodePublish(NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port);
@@ -53,6 +63,10 @@ private:
 
 	void _HeartBeat();
 	future<> _CoroHeartBeat(NODEID node_id);
+
+	void _OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & body);
+	void _ForwardToGameSrv(NETID net_id, const CSPkg & pkg);
+	void _ForwardToClient(ROLEID role_id, const CSPkg & pkg);
 
 private:
 	NODEID _id;
@@ -67,6 +81,9 @@ private:
 	std::unordered_map<NODEID, NETID> _gamesrvs;
 
 	TIMERID _timer_heart_beat {INVALID_TIMER_ID};
+
+	std::unordered_map<NETID, ROLEID> _nid2role;
+	std::unordered_map<ROLEID, Role> _roles;
 };
 
 #endif // UFRM_GATEWAY_H

@@ -8,9 +8,7 @@
 using namespace usrv;
 
 using NODEID = uint32_t;
-
-static const IP DEFAULT_IP {""};
-static constexpr PORT DEFAULT_PORT = 0;
+using ROLEID = uint32_t;
 
 static constexpr NODEID INVALID_NODE_ID = 0;
 

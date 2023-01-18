@@ -1,0 +1,47 @@
+syntax = "proto3";
+
+import "common.proto";
+import "csid.proto";
+
+message CSAuthReq
+{
+	uint32 role_id = 1;
+	uint32 game_id = 2;
+}
+
+message SCAuthRsp
+{
+
+}
+
+message CSLoginReq
+{
+}
+
+message SCLoginRsp
+{
+
+}
+
+// pkg
+message CSPkgHead
+{
+	CSID id = 1;
+}
+
+message CSPkgBody
+{
+	oneof body
+	{
+		CSAuthReq auth_req = 1;
+		SCAuthRsp auth_rsp = 2;
+		CSLoginReq login_req = 3;
+		SCLoginRsp login_rsp = 4;
+	}
+}
+
+message CSPkg
+{
+	CSPkgHead head = 1;
+	CSPkgBody body = 2;
+}
