@@ -7,6 +7,8 @@
 #include <functional>
 #include <memory>
 
+#include "usrv/util/time.h"
+
 using COROID = size_t;
 enum CORORESULT
 {
@@ -22,6 +24,7 @@ struct coroutine : std::coroutine_handle<promise>
 
 	COROID id;
 	CORORESULT result;
+	std_clock_t timeout;
 };
 
 struct promise

@@ -3,6 +3,8 @@
 #ifndef UFRM_LBSRV_H
 #define UFRM_LBSRV_H
 
+#include <unordered_map>
+
 #include "toml++/toml.h"
 #include "usrv/unit.h"
 
@@ -40,7 +42,7 @@ private:
 	toml::table & _config;
 
 	std::unordered_map<NETID, NODEID> _nid2nid;
-	std::unordered_map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
+	// std::unordered_map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
 };
 
 #endif // UFRM_LBSRV_H
