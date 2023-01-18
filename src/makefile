@@ -17,6 +17,9 @@ SHELL:
 		fi;\
 	done
 
+install:
+	@for dir in $(PROCESSES); do( $(MAKE) -C $$dir $(MAKECMDGOALS) ) done
+
 clean:
 	cd ./common && make $(MAKECMDGOALS);
-	@for dir in $(PROCESSES); do( $(MAKE) -C $$dir clean ) done
+	@for dir in $(PROCESSES); do( $(MAKE) -C $$dir $(MAKECMDGOALS) ) done

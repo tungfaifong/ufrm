@@ -15,6 +15,7 @@ PATH_ROOT = $(HOME)/projects/ufrm
 PATH_SRC = $(PATH_ROOT)/src
 PATH_3RDPARTY = $(PATH_ROOT)/3rdparty
 PATH_BUILD = out
+PATH_INSTALL = $(PATH_ROOT)/bin
 
 # include
 INC_COMMON = -I$(PATH_ROOT)/src/common
@@ -45,3 +46,6 @@ BIN_PROTOBUF = $(PATH_3RDPARTY)/protobuf-3.19.4/bin
 # define
 DEFINE_SPDLOG = -DSPDLOG_FMT_EXTERNAL
 DEFINE += $(DEFINE_SPDLOG)
+
+# install
+INSTALL = install -p -m 0777

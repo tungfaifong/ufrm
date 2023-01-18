@@ -22,6 +22,9 @@ ifneq ($(MAKECMDGOALS), clean)
 -include $(DEP_FILE)
 endif
 
+install:
+	$(INSTALL) $(PATH_BUILD)/$(TARGET) $(PATH_INSTALL)
+
 clean:
 	@rm -rf $(PATH_BUILD)
 	@echo clean all....

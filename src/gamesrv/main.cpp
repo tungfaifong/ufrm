@@ -31,7 +31,7 @@ int main()
 	toml::table config;
 	try
 	{
-		config = toml::parse_file(PATH_ROOT + "/gamesrv.toml");
+		config = toml::parse_file(PATH_ROOT + "/config/gamesrv.toml");
 	}
 	catch (const toml::parse_error& err)
 	{

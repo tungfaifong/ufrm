@@ -20,7 +20,8 @@ message SCAuthRsp
 
 message CSLoginReq
 {
-
+	uint32 role_id = 1;
+	uint32 game_id = 2;
 }
 
 message SCLoginRsp

@@ -28,7 +28,7 @@ int main()
 	toml::table config;
 	try
 	{
-		config = toml::parse_file(PATH_ROOT + "/gateway.toml");
+		config = toml::parse_file(PATH_ROOT + "/config/gateway.toml");
 	}
 	catch (const toml::parse_error& err)
 	{

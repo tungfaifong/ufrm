@@ -3,6 +3,7 @@
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/dynamic_message.h"
 #include "lua.hpp"
+#include "usrv/util/common.h"
 
 namespace pblua
 {
@@ -402,7 +403,7 @@ namespace pblua
 	// common
 	bool _parse(const char* file, lua_State * L)
 	{
-		importer->Import(file);
+		auto file_descriptor = importer->Import(file);
 
 		return true;
 	}
@@ -484,7 +485,7 @@ namespace pblua
 	static void init()
 	{
 		source_tree = new google::protobuf::compiler::DiskSourceTree();
-		source_tree->MapPath("", "./");
+		source_tree->MapPath("", usrv::PATH_ROOT + "/src/common/protocol/");
 		error_collector = new ErrorCollector();
 		importer = new google::protobuf::compiler::Importer(source_tree, error_collector);
 		message_factory = new google::protobuf::DynamicMessageFactory();
