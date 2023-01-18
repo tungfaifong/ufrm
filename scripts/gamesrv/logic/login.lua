@@ -66,8 +66,6 @@ function LoginLogic:_OnLoginReq(user_id, data)
 			return
 		end
 
-		logger.debug("role info >>>> " .. Serialize(rows))
-
 		local role = RoleMgr:Instance():GetRoleByUserID(user_id)
 		if not role then
 			role = RoleMgr:Instance():CreateRole(user_id)
