@@ -222,6 +222,16 @@ void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
 	LOGGER_TRACE("send client msg id:{}", ENUM_NAME(pkg.head().id()));
 }
 
+void Gateway::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+{
+	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, msg_type, rpc_id);
+}
+
+void Gateway::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */)
+{
+	_px_client.BroadcastToProxy(node_type, id, body, proxy_id);
+}
+
 void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
 	switch (head.from_node_type())
