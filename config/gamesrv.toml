@@ -25,7 +25,7 @@ port = 6668
 id = 1
 ip = "127.0.0.1"
 port = 6667
-timeout = 3000
+timeout = 1000
 
 [Proxy]
-timeout = 3000
+timeout = 1000
