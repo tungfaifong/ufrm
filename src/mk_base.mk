@@ -1,5 +1,6 @@
 CC = gcc
 CXX = g++
+AR = ar crv
 
 ifeq ($(MAKECMDGOALS), debug)
 	CXX_FLAGS = -Wall -fdiagnostics-color=always -g -std=c++20
@@ -21,15 +22,21 @@ INC_LUA_BRIDGE = -I$(PATH_3RDPARTY)/LuaBridge-2.7
 INC_SPDLOG = -I$(PATH_3RDPARTY)/spdlog-1.9.2
 INC_USRV = -I$(PATH_3RDPARTY)/usrv/include -I$(PATH_3RDPARTY)/usrv/include/usrv
 INC_TOML = -I$(PATH_3RDPARTY)/toml++-3.0.1
-INC_ALL = -I$(PATH_ROOT)/src/common $(INC_ASIO) $(INC_FMT) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_USRV) $(INC_TOML)
+INC_PROTOBUF = -I$(PATH_3RDPARTY)/protobuf-3.19.4/include
+INC_ALL = -I$(PATH_ROOT)/src/common $(INC_ASIO) $(INC_FMT) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_USRV) $(INC_TOML) $(INC_PROTOBUF)
 
 # lib
+LIB_COMMON = -L$(PATH_SRC)/common/out -lcommon
 LIB_FMT = -L$(PATH_3RDPARTY)/fmt-8.1.0/lib -lfmt
 LIB_LUA = -L$(PATH_3RDPARTY)/lua-5.4.3/lib -llua
 LIB_USRV = -L$(PATH_3RDPARTY)/usrv/lib -lusrv
-LIB_ALL = $(LIB_FMT) $(LIB_LUA) $(LIB_USRV)
+LIB_PROTOBUF = -L$(PATH_3RDPARTY)/protobuf-3.19.4/lib -lprotobuf -lprotobuf-lite
+LIB_ALL = $(LIB_COMMON) $(LIB_FMT) $(LIB_LUA) $(LIB_USRV) $(LIB_PROTOBUF)
 
 LINK_FLAGS = $(LIB_ALL) -lpthread -ldl
+
+# bin
+BIN_PROTOBUF = $(PATH_3RDPARTY)/protobuf-3.19.4/bin
 
 # define
 DEFINE_SPDLOG = -DSPDLOG_FMT_EXTERNAL

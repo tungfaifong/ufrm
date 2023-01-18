@@ -1,0 +1,45 @@
+syntax = "proto3";
+
+import "ssgwgm.proto";
+
+enum PROCTYPE
+{
+	GATEWAY = 0;
+	GATEWAY_MGR = 1;
+	GAMESRV = 2;
+	PROXY = 3;
+	DBSRV = 4;
+	CGISRV = 5;
+}
+
+enum SSTYPE
+{
+	SS_GWGM = 0; // gateway <-> gateway mgr
+	SS_GWGS = 1; // gateway <-> gamesrv
+	SS_GMPX = 2; // gateway mgr <-> proxy
+	SS_GSPX = 3; // gamesrv <-> proxy
+	SS_DSPX = 4; // dbsrv <-> proxy
+	SS_CSPX = 5; // cgisrv <-> proxy
+}
+
+message SSPkgHead
+{
+	SSTYPE type = 1;
+	uint32 id = 2;
+	PROCTYPE proc_type = 3;
+	uint32 proc_id = 4;
+}
+
+message SSPkgBody
+{
+	oneof body
+	{
+		SSGWGMPkgBody gwgm_body = 1;
+	}
+}
+
+message SSPkg
+{
+	SSPkgHead head = 1;
+	SSPkgBody body = 2;
+}

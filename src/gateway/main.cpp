@@ -42,7 +42,7 @@ int main()
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(config["Server"]["pp_alloc_num"].value_or(1 Ki), config["Server"]["ps_alloc_num"].value_or(1 Ki), config["Server"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("ISERVER", std::move(std::make_shared<ServerUnit>(config["IServer"]["pp_alloc_num"].value_or(1 Ki), config["IServer"]["ps_alloc_num"].value_or(1 Ki), config["IServer"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(config["Timer"]["tp_alloc_num"].value_or(1 Ki), config["Timer"]["ts_alloc_num"].value_or(1 Ki))));
-	UnitManager::Instance()->Register("GATEWAY", std::move(std::make_shared<Gateway>(config)));
+	UnitManager::Instance()->Register("GATEWAY", std::move(std::make_shared<Gateway>(config["Gateway"]["id"].value_or(INVALID_PROC_ID), config)));
 
 	UnitManager::Instance()->Run();
 
