@@ -5,6 +5,6 @@
 
 #define PKG_CREATE(pkg, PKG_TYPE) PKG_TYPE * pkg = new PKG_TYPE()
 
-#define CORO_SPAWN(future) future.coro.resume()
+#define CO_SPAWN(future) future.coro.resume()
 
 #endif // UFRM_DEFINE_H

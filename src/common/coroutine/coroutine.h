@@ -30,7 +30,7 @@ struct promise
 	}
 	T result() { return value; }
 
-	std::coroutine_handle<promise<T>> caller {nullptr};
+	std::coroutine_handle<> caller {nullptr};
 	T value;
 };
 
@@ -44,14 +44,14 @@ struct promise<void>
 	void return_void() {}
 	void result() {}
 
-	std::coroutine_handle<promise<void>> caller {nullptr};
+	std::coroutine_handle<> caller {nullptr};
 };
 
 template<typename T>
 struct awaitable
 {
 	bool await_ready() { return false; }
-	auto await_suspend(std::coroutine_handle<promise<T>> caller)
+	auto await_suspend(std::coroutine_handle<> caller)
 	{
 		coro.promise().caller = caller;
 		return coro;

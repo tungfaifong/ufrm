@@ -8,8 +8,8 @@
 #include "toml++/toml.h"
 #include "usrv/unit.h"
 
-#include "common.h"
 #include "protocol/ss.pb.h"
+#include "common.h"
 
 using namespace usrv;
 

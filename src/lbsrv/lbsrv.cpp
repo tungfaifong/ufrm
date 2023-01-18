@@ -6,8 +6,8 @@
 #include "usrv/interfaces/server_interface.h"
 #include "usrv/interfaces/timer_interface.h"
 
-#include "define.h"
 #include "protocol/ss.pb.h"
+#include "define.h"
 
 LBSrv::LBSrv(NODEID id, toml::table & config) : _id(id), _config(config)
 {

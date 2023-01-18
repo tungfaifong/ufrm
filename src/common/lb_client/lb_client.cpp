@@ -170,7 +170,7 @@ bool LBClient::_Connect()
 
 void LBClient::_HeartBeat()
 {
-	CORO_SPAWN(_CoroHeartBeat());
+	CO_SPAWN(_CoroHeartBeat());
 	_timer_heart_beat = timer::CreateTimer(HEART_BEAT_INTERVAL, [this](){ _HeartBeat(); });
 }
 

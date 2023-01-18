@@ -4,10 +4,10 @@
 #include <signal.h>
 
 #include "toml++/toml.h"
-#include "usrv/unit_manager.h"
 #include "usrv/units/logger_unit.h"
 #include "usrv/units/server_unit.h"
 #include "usrv/units/timer_unit.h"
+#include "usrv/unit_manager.h"
 
 #include "gateway.h"
 

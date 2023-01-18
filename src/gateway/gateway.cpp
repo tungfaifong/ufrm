@@ -8,6 +8,7 @@
 
 #include "coroutine/coroutine_mgr.h"
 #include "protocol/ss.pb.h"
+#include "define.h"
 
 Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config), 
 	_lb_client(GATEWAY, _id, _config["Gateway"]["ip"].value_or(DEFAULT_IP), _config["Gateway"]["port"].value_or(DEFAULT_PORT), \
