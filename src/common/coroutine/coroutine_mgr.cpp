@@ -14,6 +14,7 @@ void CoroutineMgr::Stop()
 {
 	timer::RemoveTimer(_timer_handler);
 	_timer_handler = INVALID_TIMER_ID;
+	_coroutines.Clear();
 }
 
 void CoroutineMgr::Spawn(std::function<coroutine()> func)

@@ -11,36 +11,46 @@
 
 using namespace usrv;
 
-class LBClient : public std::enable_shared_from_this<LBClient>
+class LBClient
 {
 public:
+	struct Config
+	{
+		NODETYPE node_type;
+		NODEID node_id;
+		IP ip;
+		PORT port;
+		NODEID srv_node_id;
+		IP srv_ip;
+		PORT srv_port;
+		uint32_t timeout;
+	};
+
 	static constexpr intvl_t HEART_BEAT_INTERVAL = 30000;
 
-	LBClient(NODETYPE node_type, NODEID node_id);
+	LBClient(NODETYPE node_type, NODEID node_id, IP ip, PORT port, NODEID srv_node_id, IP srv_ip, PORT srv_port, uint32_t timeout);
 	~LBClient() = default;
 
-	bool Init(NODEID srv_node_id, std::shared_ptr<ServerUnit> server, std::function<uint32_t()> load);
+	bool Init(std::shared_ptr<ServerUnit> server, std::function<uint32_t()> load);
 	bool Start();
+	void Release();
 
 public:
-	bool Connect(IP srv_ip, PORT srv_port, uint32_t timeout);
-	void RegisterToLBSrv(NODETYPE node_type, IP ip, PORT port);
 	void GetAllNodes(NODETYPE node_type);
 	void GetLeastLoadNode(NODETYPE node_type);
 
-	NETID SrvNetId();
-
 private:
+	bool _Connect();
+	void _RegisterToLBSrv();
+
 	void _SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
 
 	void _HeartBeat();
 	coroutine _CoroHeartBeat();
 
 private:
-	NODETYPE _node_type;
-	NODEID _node_id;
+	Config _config;
 	std::shared_ptr<ServerUnit> _server;
-	NODEID _srv_node_id;
 	NETID _srv_net_id { INVALID_NET_ID };
 	TIMERID _timer_heart_beat {INVALID_TIMER_ID};
 	std::function<uint32_t()> _load;

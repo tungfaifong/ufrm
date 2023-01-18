@@ -7,15 +7,32 @@ import "common.proto";
 enum SSLCLSID
 {
 	SSID_LC_LS_NODE_REGISTER = 0;
-	SSID_LC_LS_HEAT_BEAT_REQ = 1;
-	SSID_LS_LC_HEAT_BEAT_RSP = 2;
+	SSID_LC_LS_NODE_UNREGISTER = 1;
+	SSID_LC_LS_HEART_BEAT_REQ = 2;
+	SSID_LS_LC_HEART_BEAT_RSP = 3;
+	SSID_LC_LS_SUB = 4;
+	SSID_LS_LC_PUB = 5;
+	SSID_LC_LS_GET_ALL_NODES_REQ = 6;
+	SSID_LS_LC_GET_ALL_NODES_RSP = 7;
+	SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ = 8;
+	SSID_LS_LC_GET_LEAST_LOAD_NODE_RSP = 9;
 }
 
-message SSLCLSNodeRegister
+message SSLCLSNode
 {
 	NODETYPE node_type = 1;
 	string ip = 2;
 	uint32 port = 3;
+}
+
+message SSLCLSNodeRegister
+{
+	SSLCLSNode node = 1;
+}
+
+message SSLCLSNodeUnregister
+{
+	NODETYPE node_type = 1;
 }
 
 message SSLCLSHeartBeatReq
@@ -25,7 +42,36 @@ message SSLCLSHeartBeatReq
 
 message SSLSLCHeartBeatRsp
 {
+}
 
+message SSLCLSSub
+{
+	NODETYPE node_type = 1;
+}
+
+message SSLSLCPub
+{
+	SSLCLSNode node = 1;
+}
+
+message SSLCLSGetAllNodesReq
+{
+	NODETYPE node_type = 1;
+}
+
+message SSLSLCGetAllNodesRsp
+{
+	repeated SSLCLSNode nodes = 1;
+}
+
+message SSLCLSGetLeastLoadNodeReq
+{
+	NODETYPE node_type = 1;
+}
+
+message SSLSLCGetLeastLoadNodeRsp
+{
+	SSLCLSNode node = 1;
 }
 
 message SSLCLSPkgBody
@@ -33,7 +79,14 @@ message SSLCLSPkgBody
 	oneof body
 	{
 		SSLCLSNodeRegister node_register = 1;
-		SSLCLSHeartBeatReq heart_beat_req = 2;
-		SSLSLCHeartBeatRsp heart_beat_rsp = 3;
+		SSLCLSNodeUnregister node_unregister = 2;
+		SSLCLSHeartBeatReq heart_beat_req = 3;
+		SSLSLCHeartBeatRsp heart_beat_rsp = 4;
+		SSLCLSSub sub = 5;
+		SSLSLCPub pub = 6;
+		SSLCLSGetAllNodesReq get_all_nodes_req = 7;
+		SSLSLCGetAllNodesRsp get_all_nodes_rsp = 8;
+		SSLCLSGetLeastLoadNodeReq get_least_load_node_req = 9;
+		SSLSLCGetLeastLoadNodeRsp get_least_load_node_rsp = 10;
 	}
 }

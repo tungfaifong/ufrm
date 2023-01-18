@@ -9,7 +9,10 @@
 #include "coroutine/coroutine_mgr.h"
 #include "protocol/ss.pb.h"
 
-Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config), _lb_client(GATEWAY, _id)
+Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config), 
+	_lb_client(GATEWAY, _id, _config["Gateway"]["ip"].value_or(DEFAULT_IP), _config["Gateway"]["port"].value_or(DEFAULT_PORT), \
+	_config["LBSrv"]["id"].value_or(INVALID_NODE_ID), _config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), \
+	_config["LBSrv"]["timeout"].value_or(0))
 {
 
 }
@@ -32,18 +35,17 @@ bool Gateway::Init()
 	_iserver->OnRecv(std::bind(&Gateway::_OnIServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	_iserver->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
 
-	_lb_client.Init(_config["LBSrv"]["id"].value_or(INVALID_NODE_ID), _iserver, [self = shared_from_this()](){ return 0; });
+	_lb_client.Init(_iserver, [self = shared_from_this()](){ return 0; });
 
 	return true;
 }
 
 bool Gateway::Start()
-{
-	if(!_lb_client.Connect(_config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), _config["LBSrv"]["timeout"].value_or(0)))
+{	
+	if(!CoroutineMgr::Instance()->Start())
 	{
 		return false;
 	}
-	_lb_client.RegisterToLBSrv(GATEWAY, _config["Gateway"]["ip"].value_or(DEFAULT_IP), _config["Gateway"]["port"].value_or(DEFAULT_PORT));
 	if(!_lb_client.Start())
 	{
 		return false;
@@ -58,12 +60,15 @@ bool Gateway::Update(intvl_t interval)
 
 void Gateway::Stop()
 {
+	CoroutineMgr::Instance()->Stop();
 }
 
 void Gateway::Release()
 {
 	_server = nullptr;
 	_iserver = nullptr;
+	_lb_client.Release();
+	Unit::Release();
 }
 
 void Gateway::_OnServerConn(NETID net_id, IP ip, PORT port)

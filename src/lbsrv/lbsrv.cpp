@@ -47,6 +47,7 @@ void LBSrv::Stop()
 
 void LBSrv::Release()
 {
+	Unit::Release();
 }
 
 void LBSrv::_OnServerConn(NETID net_id, IP ip, PORT port)
@@ -143,13 +144,13 @@ void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSL
 void LBSrv::_OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeRegister & body)
 {
 	_nid2node[net_id] = std::pair<NODETYPE, NODEID>(head.from_node_type(), head.from_node_id());
-	_nodes[body.node_type()][head.from_node_id()] = Node {net_id, body.ip(), (PORT)body.port(), 0};
-	LOGGER_INFO("LBSrv::_OnNodeRegister success net_id:{} node_type:{} node_id:{} ip:{} port:{}", net_id, head.from_node_type(), head.from_node_id(), body.ip(), body.port());
+	_nodes[body.node().node_type()][head.from_node_id()] = Node {net_id, body.node().ip(), (PORT)body.node().port(), 0};
+	LOGGER_INFO("LBSrv::_OnNodeRegister success net_id:{} node_type:{} node_id:{} ip:{} port:{}", net_id, head.from_node_type(), head.from_node_id(), body.node().ip(), body.node().port());
 }
 
 void LBSrv::_OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body)
 {
 	auto [node_type, node_id] = _nid2node[net_id];
 	_nodes[node_type][node_id].load = body.load();
-	id = SSID_LS_LC_HEAT_BEAT_RSP;
+	id = SSID_LS_LC_HEART_BEAT_RSP;
 }
