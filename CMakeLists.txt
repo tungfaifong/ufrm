@@ -49,6 +49,10 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 # define
 add_definitions(-DSPDLOG_FMT_EXTERNAL)
 
+list(APPEND CMAKE_MODULE_PATH "${PATH_ROOT}/cmake")
+
+include(srv)
+
 add_subdirectory(src)
 
 install(TARGETS commonsrv dbsrv gamesrv gateway lbsrv proxy
