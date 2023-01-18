@@ -45,7 +45,7 @@ public:
 	void RegisterToLBSrv(NODETYPE node_type, NODEID node_id, IP ip, PORT port);
 	void UnregisterToLBSrv(NODETYPE node_type, NODEID node_id);
 	void Subscribe(NODETYPE node_type);
-	void GetAllNodes(NODETYPE node_type);
+	future<const std::unordered_map<NODEID, Node> &> GetAllNodes(NODETYPE node_type);
 	future<Node> GetLeastLoadNode(NODETYPE node_type);
 
 	void OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);

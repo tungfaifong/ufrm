@@ -36,7 +36,7 @@ bool Gateway::Init()
 	_iserver->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnIServerRecv(net_id, data, size); });
 	_iserver->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnIServerDisc(net_id); });
 
-	_lb_client.Init(_iserver, [self = shared_from_this()](){ return 0; });
+	_lb_client.Init(_iserver, [self = shared_from_this()](){ return 1; }); // TODO
 
 	return true;
 }

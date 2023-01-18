@@ -24,14 +24,31 @@ struct promise
 	std::suspend_always initial_suspend() noexcept { return {}; }
 	final_awaitable<T> final_suspend() noexcept;
 	void unhandled_exception() {}
-	void return_value(T value) noexcept
+	void return_value(T && v) noexcept
 	{
-		value = value;
+		value = std::move(v);
 	}
 	T result() { return value; }
 
 	std::coroutine_handle<> caller {nullptr};
 	T value;
+};
+
+template<typename T>
+struct promise<T&>
+{
+	future<T&> get_return_object();
+	std::suspend_always initial_suspend() noexcept { return {}; }
+	final_awaitable<T&> final_suspend() noexcept;
+	void unhandled_exception() {}
+	void return_value(T & v) noexcept
+	{
+		value = &v;
+	}
+	T & result() { return *value; }
+
+	std::coroutine_handle<> caller {nullptr};
+	T * value;
 };
 
 template<>
@@ -110,6 +127,18 @@ inline future<void> promise<void>::get_return_object()
 }
 
 inline final_awaitable<void> promise<void>::final_suspend() noexcept
+{
+	return {};
+}
+
+template<typename T>
+future<T&> promise<T&>::get_return_object()
+{
+	return {std::coroutine_handle<promise<T&>>::from_promise(*this)};
+}
+
+template<typename T>
+final_awaitable<T&> promise<T&>::final_suspend() noexcept
 {
 	return {};
 }

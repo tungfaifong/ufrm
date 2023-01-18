@@ -176,6 +176,16 @@ void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSL
 			_OnHeartBeatReq(net_id, body.heart_beat_req(), id, rsp_body);
 		}
 		break;
+	case SSID_LC_LS_GET_ALL_NODES_REQ:
+		{
+			_OnGetAllNodesReq(net_id, body.get_all_nodes_req(), id, rsp_body);
+		}
+		break;
+	case SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ:
+		{
+			_OnGetLeastLoadNodeReq(net_id, body.get_least_load_node_req(), id, rsp_body);
+		}
+		break;
 	default:
 		LOGGER_WARN("LBSrv::_OnServerHanleRpcReq WARN: invalid node_type:{} node_id:{} id:{}", head.from_node_type(), head.from_node_id(), head.id());
 		break;
@@ -211,6 +221,49 @@ void LBSrv::_OnSubscribe(NETID net_id, const SSPkgHead & head, const SSLCLSSubsc
 		return;
 	}
 	vec.push_back(net_id);
+}
+
+void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body)
+{
+	auto node_type = body.node_type();
+	id = SSID_LS_LC_GET_ALL_NODES_RSP;
+	auto rsp = rsp_body->mutable_get_all_nodes_rsp();
+	for(auto & [node_id, node] :_nodes[node_type])
+	{
+		auto rsp_node = rsp->add_nodes();
+		rsp_node->set_node_type(node_type);
+		rsp_node->set_node_id(node_id);
+		rsp_node->set_ip(node.ip);
+		rsp_node->set_port(node.port);
+	}
+}
+
+void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body)
+{
+	auto node_type = body.node_type();
+	NODEID min_node_id = INVALID_NODE_ID;
+	uint32_t min_load = 0;
+	for(auto & [node_id, node] : _nodes[node_type])
+	{
+		if(node.load > min_load)
+		{
+			min_node_id = node_id;
+		}
+	}
+	IP ip = DEFAULT_IP;
+	PORT port = DEFAULT_PORT;
+	if(min_node_id != INVALID_NODE_ID)
+	{
+		auto & min_node = _nodes[node_type][min_node_id];
+		ip = min_node.ip;
+		port = min_node.port;
+	}
+	id = SSID_LS_LC_GET_LEAST_LOAD_NODE_RSP;
+	auto rsp = rsp_body->mutable_get_least_load_node_rsp();
+	rsp->mutable_node()->set_node_type(node_type);
+	rsp->mutable_node()->set_node_id(min_node_id);
+	rsp->mutable_node()->set_ip(ip);
+	rsp->mutable_node()->set_port(port);
 }
 
 void LBSrv::_UnregisterNode(NODETYPE node_type, NODEID node_id)

@@ -49,6 +49,8 @@ private:
 	void _OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeUnregister & body);
 	void _OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body);
 	void _OnSubscribe(NETID net_id, const SSPkgHead & head, const SSLCLSSubscribe & body);
+	void _OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body);
+	void _OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body);
 
 private:
 	void _UnregisterNode(NODETYPE node_type, NODEID node_id);

@@ -65,9 +65,27 @@ void LBClient::Subscribe(NODETYPE node_type)
 	_SendToLBSrv(SSID_LC_LS_SUBSCRIBE, body);
 }
 
-void LBClient::GetAllNodes(NODETYPE node_type)
+future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes(NODETYPE node_type)
 {
-	
+	if(_nodes[node_type].empty())
+	{
+		PKG_CREATE(body, SSLCLSPkgBody);
+		body->mutable_get_all_nodes_req()->set_node_type(node_type);
+		auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ, body);
+		if(result == CORORESULT::TIMEOUT)
+		{
+			LOGGER_WARN("LBClient::GetAllNodes timeout");
+			co_return _nodes[node_type];
+		}
+		SSLCLSPkgBody rsp_body;
+		rsp_body.MergeFromString(data);
+		auto rsp = rsp_body.get_all_nodes_rsp();
+		for(auto & node : rsp.nodes())
+		{
+			_nodes[node_type][node.node_id()] = Node{node.ip(), (PORT)node.port()};
+		}
+	}
+	co_return _nodes[node_type];
 }
 
 future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
