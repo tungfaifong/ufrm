@@ -17,9 +17,12 @@ spsc_blk_num = 524288
 tp_alloc_num = 1024
 ts_alloc_num = 1024
 
+[Lua]
+path = "scripts/iosrv/main.lua"
+
 [IOSrv]
 id = 1
-interval = 1
+interval = 10
 ip = "127.0.0.1"
 port = 6670
 
