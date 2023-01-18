@@ -1,0 +1,51 @@
+syntax = "proto3";
+
+import "ioid.proto";
+
+message IORegisterReq
+{
+
+}
+
+message IORegisterRsp
+{
+
+}
+
+message IOAuthReq
+{
+	uint32 role_id = 1;
+	uint32 game_id = 2;
+}
+
+message IOAuthRsp
+{
+	enum RESULT
+	{
+		SUCCESS = 0;
+	}
+	RESULT result = 1;
+}
+
+// pkg
+message IOPkgHead
+{
+	IOID id = 1;
+}
+
+message IOPkgBody
+{
+	oneof body
+	{
+		IORegisterReq register_req = 1;
+		IORegisterRsp register_rsp = 2;
+		IOAuthReq auth_req = 3;
+		IOAuthRsp auth_rsp = 4;
+	}
+}
+
+message IOPkg
+{
+	IOPkgHead head = 1;
+	IOPkgBody body = 2;
+}

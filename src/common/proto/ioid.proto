@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+enum IOID
+{
+	IOID_REGISTER_REQ = 0;
+	IOID_REGISTER_RSP = 1;
+	IOID_AUTH_REQ = 2;
+	IOID_AUTH_RSP = 3;
+}

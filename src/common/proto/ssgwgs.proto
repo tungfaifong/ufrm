@@ -2,7 +2,6 @@
 
 syntax = "proto3";
 
-import "common.proto";
 import "cs.proto";
 
 message SSGWGSInit
