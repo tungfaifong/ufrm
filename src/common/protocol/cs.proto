@@ -11,16 +11,25 @@ message CSAuthReq
 
 message SCAuthRsp
 {
-
+	enum RESULT
+	{
+		SUCCESS = 0;
+	}
+	RESULT result = 1;
 }
 
 message CSLoginReq
 {
+
 }
 
 message SCLoginRsp
 {
-
+	enum RESULT
+	{
+		SUCCESS = 0;
+	}
+	RESULT result = 1;
 }
 
 message CSLogoutReq

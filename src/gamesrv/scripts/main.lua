@@ -15,6 +15,7 @@ function OnConn(role_id, ip, port)
 end
 
 function OnRecv(role_id, data)
+	logger.debug("OnRecv role_id:" .. role_id .. " data:" .. data)
 end
 
 function OnDisc(role_id)

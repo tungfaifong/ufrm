@@ -93,7 +93,7 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	LOGGER_TRACE("recv client msg net_id:{} id:{}", net_id, ENUM_NAME(head.id()));
 	switch (head.id())
 	{
-	case CSID_AUTH:
+	case CSID_AUTH_REQ:
 		{
 			_OnAuth(net_id, head, body.auth_req());
 		}
@@ -323,6 +323,11 @@ void Gateway::_OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & bo
 	auto game_id = body.game_id();
 	_nid2role[net_id] = role_id;
 	_roles[role_id] = Role {net_id, role_id, game_id};
+
+	PKG_CREATE(pkg, CSPkg);
+	pkg->mutable_head()->set_id(SCID_AUTH_RSP);
+	pkg->mutable_body()->mutable_auth_rsp()->set_result(SCAuthRsp::SUCCESS);
+	_ForwardToClient(role_id, *pkg);
 }
 
 void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)

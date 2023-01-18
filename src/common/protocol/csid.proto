@@ -2,8 +2,9 @@ syntax = "proto3";
 
 enum CSID
 {
-	CSID_AUTH = 0;
-	SCID_AUTH = 1;
+	CSID_AUTH_REQ = 0;
+	SCID_AUTH_RSP = 1;
 	CSID_LOGIN_REQ = 2;
 	SCID_LOGIN_RSP = 3;
+	CSID_LOGOUT_REQ = 4;
 }
