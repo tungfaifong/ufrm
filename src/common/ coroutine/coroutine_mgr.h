@@ -18,10 +18,10 @@ public:
 	CoroutineMgr() = default;
 	~CoroutineMgr() = default;
 
-public:
 	bool Start();
 	void Stop();
 
+public:
 	void Spawn(std::function<coroutine()> func);
 	void Resume(COROID coro_id);
 	void Update();

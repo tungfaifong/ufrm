@@ -2,10 +2,15 @@
 
 #include "lb_client.h"
 
-bool LBClient::Init(std::shared_ptr<ServerUnit> server, IP srv_ip, PORT srv_port, uint32_t timeout)
+bool LBClient::Init(std::shared_ptr<ServerUnit> server)
 {
 	_server = server;
-	_srv_net_id = server->Connect(srv_ip, srv_port, timeout);
+	return true;
+}
+
+bool LBClient::Start(IP srv_ip, PORT srv_port, uint32_t timeout)
+{
+	_srv_net_id = _server->Connect(srv_ip, srv_port, timeout);
 	if(_srv_net_id == INVALID_NET_ID)
 	{
 		return false;

@@ -11,6 +11,7 @@
 #include "usrv/units/server_unit.h"
 
 #include "common.h"
+#include "lb_client/lb_client.h"
 #include "protocol/sslcls.pb.h"
 
 using namespace usrv;
@@ -41,6 +42,8 @@ private:
 
 	std::shared_ptr<ServerUnit> _server;
 	std::shared_ptr<ServerUnit> _iserver;
+
+	LBClient _lb_client;
 };
 
 #endif // UFRM_GATEWAY_H

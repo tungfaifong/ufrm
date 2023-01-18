@@ -15,7 +15,8 @@ public:
 	LBClient() = default;
 	~LBClient() = default;
 
-	bool Init(std::shared_ptr<ServerUnit> server, IP srv_ip, PORT srv_port, uint32_t timeout);
+	bool Init(std::shared_ptr<ServerUnit> server);
+	bool Start(IP srv_ip, PORT srv_port, uint32_t timeout);
 
 public:
 	void RegisterToLBSrv(NODETYPE node_type, IP ip, PORT port);

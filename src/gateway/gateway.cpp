@@ -31,11 +31,17 @@ bool Gateway::Init()
 	_iserver->OnRecv(std::bind(&Gateway::_OnIServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	_iserver->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
 
+	_lb_client.Init(_iserver);
+
 	return true;
 }
 
 bool Gateway::Start()
 {
+	if(!_lb_client.Start(_config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), _config["LBSrv"]["timeout"].value_or(0)))
+	{
+		return false;
+	}
 	return true;
 }
 
