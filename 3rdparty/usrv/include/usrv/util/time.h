@@ -31,6 +31,16 @@ inline std_clock_t StdNow()
 	return std::chrono::steady_clock::now();
 }
 
+inline uint64_t Now()
+{
+	return std::chrono::duration_cast<s_t>(SysNow().time_since_epoch()).count();
+}
+
+inline uint64_t NowMs()
+{
+	return std::chrono::duration_cast<ms_t>(SysNow().time_since_epoch()).count();
+}
+
 inline intvl_t Ns2Ms(ns_t ns)
 {
 	return std::chrono::duration_cast<ms_t>(ns).count();

@@ -30,13 +30,13 @@ public:
 
 	void Run()
 	{
-		auto now = StdNow();
+		auto now = SysNow();
 		auto last = now;
 		auto interval = Ns2Ms(now - last);
 		auto busy = true;
 		while (!_exit)
 		{
-			now = StdNow();
+			now = SysNow();
 			interval = Ns2Ms(now - last);
 			if (interval >= _interval || busy)
 			{
