@@ -1,0 +1,71 @@
+// ss protocol dbclt to dbsrv
+
+syntax = "proto3";
+
+import "common.proto";
+
+message SSDCDSSelectReq
+{
+	string tb_name = 1;
+	repeated string column = 2;
+	map<string, Variant> where = 3;
+}
+
+message SSDSDCSelectRsp
+{
+	message VariantMap
+	{
+		map<string, Variant> value = 1;
+	}
+	repeated VariantMap result = 1;
+}
+
+message SSDCDSInsertReq
+{
+	string tb_name = 1;
+	repeated string column = 2;
+	repeated Variant value = 3;
+}
+
+message SSDSDCInsertRsp
+{
+	bool result = 1;
+}
+
+message SSDCDSUpdateReq
+{
+	string tb_name = 1;
+	map<string, Variant> value = 2;
+	map<string, Variant> where = 3;
+}
+
+message SSDSDCUpdateRsp
+{
+	bool result = 1;
+}
+
+message SSDCDSDeleteReq
+{
+	string tb_name = 1;
+	map<string, Variant> where = 2;
+}
+
+message SSDSDCDeleteRsp
+{
+	bool result = 1;
+}
+
+message SSDCDSPkgBody
+{
+	oneof body
+	{
+		SSDCDSSelectReq select_req = 1;
+		SSDSDCSelectRsp select_rsp = 2;
+		SSDCDSInsertReq insert_req = 3;
+		SSDSDCInsertRsp insert_rsp = 4;
+		SSDCDSUpdateReq update_req = 5;
+		SSDSDCUpdateRsp update_rsp = 6;
+		SSDCDSDeleteReq delete_req = 7;
+		SSDSDCDeleteRsp delete_rsp = 8;
+	}
+}

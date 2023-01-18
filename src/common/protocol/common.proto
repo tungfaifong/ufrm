@@ -9,3 +9,18 @@ enum NODETYPE
 	DBSRV = 4;
 	CGISRV = 5;
 }
+
+message Variant
+{
+	oneof value
+	{
+		bool bool_ = 1;
+		int32 int32_ = 2;
+		uint32 uint32_ = 3;
+		int64 int64_ = 4;
+		uint64 uint64_ = 5;
+		float float_ = 6;
+		double double_ = 7;
+		string string_ = 8;
+	}
+}

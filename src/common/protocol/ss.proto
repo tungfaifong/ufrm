@@ -5,6 +5,7 @@ import "ssid.proto";
 import "sslcls.proto";
 import "ssgwgs.proto";
 import "sspcpx.proto";
+import "ssdcds.proto";
 
 message SSPkgHead
 {
@@ -39,6 +40,7 @@ message SSPkgBody
 		SSLCLSPkgBody lcls_body = 1;
 		SSGWGSPkgBody gwgs_body = 2;
 		SSPCPXPkgBody pcpx_body = 3;
+		SSDCDSPkgBody dcds_body = 4;
 	}
 }
 
