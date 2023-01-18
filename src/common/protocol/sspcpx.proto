@@ -1,0 +1,34 @@
+// ss protocol pxclt to proxy
+
+syntax = "proto3";
+
+import "common.proto";
+
+message SSPCPXNodeRegister
+{
+}
+
+message SSPCPXNodeUnregister
+{
+	NODETYPE node_type = 1;
+	uint32 node_id = 2;
+}
+
+message SSPCPXHeartBeatReq
+{
+}
+
+message SSPXPCHeartBeatRsp
+{
+}
+
+message SSPCPXPkgBody
+{
+	oneof body
+	{
+		SSPCPXNodeRegister node_register = 1;
+		SSPCPXNodeUnregister node_unregister = 2;
+		SSPCPXHeartBeatReq heart_beat_req = 3;
+		SSPXPCHeartBeatRsp heart_beat_rsp = 4;
+	}
+}

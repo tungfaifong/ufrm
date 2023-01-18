@@ -19,7 +19,7 @@ bool LBSrv::Init()
 {
 	if(_id == INVALID_NODE_ID)
 	{
-		LOGGER_ERROR("gateway_mgr id is INVALID");
+		LOGGER_ERROR("lbsrv id is INVALID");
 		return false;
 	}
 
@@ -66,12 +66,12 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(head.id()), head.rpc_id());
 	switch(head.msg_type())
 	{
-	case MSGT_NORMAL:
+	case SSPkgHead::NORMAL:
 		{
 			_OnServerHandeNormal(net_id, head, body.lcls_body());
 		}
 		break;
-	case MSGT_RPCREQ:
+	case SSPkgHead::RPCREQ:
 		{
 			_OnServerHanleRpcReq(net_id, head, body.lcls_body());
 		}
@@ -90,7 +90,7 @@ void LBSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
 }
 
-bool LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+bool LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto [node_type, node_id] = _nid2node[net_id];
@@ -102,6 +102,7 @@ bool LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, MSGTYPE
 	head->set_id(id);
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
+	head->set_proxy_type(SSPkgHead::END);
 	pkg.mutable_body()->set_allocated_lcls_body(body);
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
@@ -114,7 +115,7 @@ bool LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, MSGTYPE
 	return true;
 }
 
-bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -123,6 +124,7 @@ bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody 
 	head->set_id(id);
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
+	head->set_proxy_type(SSPkgHead::END);
 	pkg.mutable_body()->set_allocated_lcls_body(body);
 	for(auto & net_id : net_ids)
 	{
@@ -191,7 +193,7 @@ void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSL
 		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
 		break;
 	}
-	_SendToLBClient(net_id, id, rsp_body, MSGT_RPCRSP, head.rpc_id());
+	_SendToLBClient(net_id, id, rsp_body, SSPkgHead::RPCRSP, head.rpc_id());
 }
 
 void LBSrv::_OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeRegister & body)

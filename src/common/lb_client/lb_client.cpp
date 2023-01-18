@@ -166,7 +166,7 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 	}
 }
 
-void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -177,6 +177,7 @@ void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* =
 	head->set_id(id);
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
+	head->set_proxy_type(SSPkgHead::END);
 	pkg.mutable_body()->set_allocated_lcls_body(body);
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
@@ -190,7 +191,7 @@ void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* =
 
 awaitable_func LBClient::_RpcLBSrv(SSID id, SSLCLSPkgBody * body)
 {
-	return awaitable_func([this, id, body](COROID coro_id){ _SendToLBSrv(id, body, MSGT_RPCREQ, coro_id); });
+	return awaitable_func([this, id, body](COROID coro_id){ _SendToLBSrv(id, body, SSPkgHead::RPCREQ, coro_id); });
 }
 
 bool LBClient::_Connect()

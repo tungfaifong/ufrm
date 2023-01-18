@@ -131,12 +131,12 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(head.id()), head.rpc_id());
 	switch (head.msg_type())
 	{
-	case MSGT_NORMAL:
+	case SSPkgHead::NORMAL:
 		{
 			_OnIServerHandeNormal(net_id, head, body);
 		}
 		break;
-	case MSGT_RPCRSP:
+	case SSPkgHead::RPCRSP:
 		{
 			_OnIServerHanleRpcRsp(net_id, head, body);
 		}
@@ -158,7 +158,7 @@ void Gateway::_OnIServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	if(_gamesrvs.find(node_id) == _gamesrvs.end())
 	{
@@ -175,6 +175,7 @@ void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGT
 	head->set_id(id);
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
+	head->set_proxy_type(SSPkgHead::END);
 	pkg.mutable_body()->set_allocated_gwgs_body(body);
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
@@ -188,7 +189,7 @@ void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGT
 
 awaitable_func Gateway::_RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body)
 {
-	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToGameSrv(node_id, id, body, MSGT_RPCREQ, coro_id); });
+	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToGameSrv(node_id, id, body, SSPkgHead::RPCREQ, coro_id); });
 }
 
 void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)

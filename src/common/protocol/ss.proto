@@ -4,16 +4,24 @@ import "common.proto";
 import "ssid.proto";
 import "sslcls.proto";
 import "ssgwgs.proto";
-
-enum MSGTYPE
-{
-	MSGT_NORMAL = 0;
-	MSGT_RPCREQ = 1;
-	MSGT_RPCRSP = 2;
-}
+import "sspcpx.proto";
 
 message SSPkgHead
 {
+	enum MSGTYPE
+	{
+		NORMAL = 0;
+		RPCREQ = 1;
+		RPCRSP = 2;
+	}
+
+	enum PROXYTYPE
+	{
+		END = 0;
+		FORWARD = 1;
+		BROADCAST = 2;
+	}
+
 	NODETYPE from_node_type = 1;
 	uint32 from_node_id = 2;
 	NODETYPE to_node_type = 3;
@@ -21,6 +29,7 @@ message SSPkgHead
 	SSID id = 5;
 	MSGTYPE msg_type = 6;
 	uint64 rpc_id = 7;
+	PROXYTYPE proxy_type = 8;
 }
 
 message SSPkgBody
@@ -29,6 +38,7 @@ message SSPkgBody
 	{
 		SSLCLSPkgBody lcls_body = 1;
 		SSGWGSPkgBody gwgs_body = 2;
+		SSPCPXPkgBody pcpx_body = 3;
 	}
 }
 

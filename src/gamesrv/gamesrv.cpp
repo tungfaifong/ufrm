@@ -82,17 +82,17 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(head.id()), head.rpc_id());
 	switch (head.msg_type())
 	{
-	case MSGT_NORMAL:
+	case SSPkgHead::NORMAL:
 		{
 			_OnServerHandeNormal(net_id, head, body);
 		}
 		break;
-	case MSGT_RPCREQ:
+	case SSPkgHead::RPCREQ:
 		{
 			_OnServerHanleRpcReq(net_id, head, body);
 		}
 		break;
-	case MSGT_RPCRSP:
+	case SSPkgHead::RPCRSP:
 		{
 			_OnServerHanleRpcRsp(net_id, head, body);
 		}
@@ -113,7 +113,7 @@ void GameSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	if(_gateways.find(node_id) == _gateways.end())
 	{
@@ -130,6 +130,7 @@ void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGT
 	head->set_id(id);
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
+	head->set_proxy_type(SSPkgHead::END);
 	pkg.mutable_body()->set_allocated_gwgs_body(body);
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
@@ -216,7 +217,7 @@ void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGW
 		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
 		break;
 	}
-	_SendToGateway(head.from_node_id(), id, rsp_body, MSGT_RPCRSP, head.rpc_id());
+	_SendToGateway(head.from_node_id(), id, rsp_body, SSPkgHead::RPCRSP, head.rpc_id());
 }
 
 void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)

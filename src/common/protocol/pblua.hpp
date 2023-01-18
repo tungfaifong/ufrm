@@ -403,7 +403,7 @@ namespace pblua
 	// common
 	bool _parse(const char* file, lua_State * L)
 	{
-		auto file_descriptor = importer->Import(file);
+		importer->Import(file);
 
 		return true;
 	}

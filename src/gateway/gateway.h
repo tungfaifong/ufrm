@@ -46,7 +46,7 @@ private:
 	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnIServerDisc(NETID net_id);
 
-	void _SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
+	void _SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	awaitable_func _RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body);
 	void _SendToClient(ROLEID role_id, const CSPkg & pkg);
 
