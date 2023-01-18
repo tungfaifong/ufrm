@@ -261,12 +261,15 @@ void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGW
 
 void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 {
-	auto gateway_node_id = _gateways[_nid2gateway[net_id]];
+	auto gateway_node_id = _nid2gateway[net_id];
 	switch(pkg.cs_pkg().head().id())
 	{
 	case CSID_LOGIN_REQ:
 		{
 			_roles[pkg.role_id()] = gateway_node_id;
+			PKG_CREATE(cs_body, CSPkgBody);
+			cs_body->mutable_login_rsp();
+			_SendToClient(pkg.role_id(), SCID_LOGIN_RSP, cs_body);
 		}
 		break;
 	case CSID_LOGOUT_REQ:

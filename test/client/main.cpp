@@ -3,18 +3,25 @@
 #include "magic_enum.hpp"
 #include "usrv/interfaces/logger_interface.h"
 #include "usrv/interfaces/server_interface.h"
+#include "usrv/interfaces/timer_interface.h"
 #include "usrv/unit_manager.h"
 #include "usrv/units/server_unit.h"
 
 #include "protocol/cs.pb.h"
+#include "common.h"
 #include "define.h"
 
 using namespace usrv;
 
+uint64_t g_TotalDelay = 0;
+uint32_t g_TotalCnt = 0;
+uint32_t g_ClientNum = 0;
+
+
 class Client : public Unit, public std::enable_shared_from_this<Client>
 {
 public:
-	Client() = default;
+	Client(ROLEID role_id):_role_id(role_id) {}
 	~Client() = default;
 
 	virtual bool Init() override final;
@@ -31,8 +38,14 @@ public:
 	void LoginReq();
 	void OnLoginRsp(const SCLoginRsp & rsp);
 
+	void HeartBeat();
+	void OnHeartBeatRsp();
+
 private:
 	NETID _server_net_id = INVALID_NET_ID;
+	ROLEID _role_id;
+	std::chrono::steady_clock::time_point _start;
+	std::chrono::steady_clock::time_point _end;
 };
 
 bool Client::Init()
@@ -68,7 +81,7 @@ bool Client::Start()
 
 bool Client::Update(intvl_t interval)
 {
-	return true;
+	return false;
 }
 
 void Client::OnRecv(NETID net_id, char * data, uint16_t size)
@@ -88,6 +101,11 @@ void Client::OnRecv(NETID net_id, char * data, uint16_t size)
 	case SCID_LOGIN_RSP:
 		{
 			OnLoginRsp(body.login_rsp());
+		}
+		break;
+	case SCID_HEART_BEAT_RSP:
+		{
+			OnHeartBeatRsp();
 		}
 		break;
 	default:
@@ -115,7 +133,7 @@ void Client::AuthReq()
 {
 	PKG_CREATE(body, CSPkgBody);
 	auto req =body->mutable_auth_req();
-	req->set_role_id(1);
+	req->set_role_id(_role_id);
 	req->set_game_id(1);
 	SendToServer(CSID_AUTH_REQ, body);
 }
@@ -134,15 +152,49 @@ void Client::LoginReq()
 
 void Client::OnLoginRsp(const SCLoginRsp & rsp)
 {
-
+	HeartBeat();
 }
 
-int main()
+void Client::HeartBeat()
 {
+	PKG_CREATE(body, CSPkgBody);
+	auto req =body->mutable_heart_beat_req();
+	SendToServer(CSID_HEART_BEAT_REQ, body);
+	_start = std::chrono::steady_clock::now();
+	timer::CreateTimer(1000, [self = shared_from_this()](){ self->HeartBeat(); });
+}
+
+void Client::OnHeartBeatRsp()
+{
+	_end = std::chrono::steady_clock::now();
+	++g_TotalCnt;
+	g_TotalDelay += std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count();
+	if(g_TotalCnt == g_ClientNum)
+	{
+		LOGGER_INFO("heart beat avg delay:{}", (float)g_TotalDelay/g_TotalCnt);
+
+		g_TotalCnt = 0;
+		g_TotalDelay = 0;
+	}
+}
+
+int main(int argc, char * argv[])
+{
+	g_ClientNum = atoi(argv[1]);
 	UnitManager::Instance()->Init(10);
-	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::Level::TRACE, "/logs/client.log", 1 Mi)));
+	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::Level::INFO, "/logs/client.log", 1 Mi)));
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(1 Ki, 1 Ki, 4 Mi)));
-	UnitManager::Instance()->Register("CLIENT", std::move(std::make_shared<Client>()));
+	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(1 Ki, 1 Ki)));
+	for(int i = 0; i < g_ClientNum; ++i)
+	{
+		auto key = "CLIENT#"+std::to_string(i+1);
+		if(!UnitManager::Instance()->Register(key.c_str(), std::move(std::make_shared<Client>(i+1))))
+		{
+			LOGGER_ERROR("key:{} error", key);
+		}
+	}
+
+	auto mgr = UnitManager::Instance();
 
 	UnitManager::Instance()->Run();
 
