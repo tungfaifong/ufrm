@@ -28,7 +28,7 @@ int main()
 	toml::table config;
 	try
 	{
-		config = toml::parse_file("lbsrv.toml");
+		config = toml::parse_file(PATH_ROOT + "/lbsrv.toml");
 	}
 	catch (const toml::parse_error& err)
 	{

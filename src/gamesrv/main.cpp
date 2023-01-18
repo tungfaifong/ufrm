@@ -29,7 +29,7 @@ int main()
 	toml::table config;
 	try
 	{
-		config = toml::parse_file("gamesrv.toml");
+		config = toml::parse_file(PATH_ROOT + "/gamesrv.toml");
 	}
 	catch (const toml::parse_error& err)
 	{
@@ -43,7 +43,7 @@ int main()
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(config["Server"]["pp_alloc_num"].value_or(1 Ki), config["Server"]["ps_alloc_num"].value_or(1 Ki), config["Server"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(config["Timer"]["tp_alloc_num"].value_or(1 Ki), config["Timer"]["ts_alloc_num"].value_or(1 Ki))));
 	UnitManager::Instance()->Register("LUA", std::move(std::make_shared<LuaUnit>(config["Lua"]["path"].value_or(""))));
-	UnitManager::Instance()->Register("GAMESRV", std::move(std::make_shared<GameSrv>(config["GAMESRV"]["id"].value_or(INVALID_NODE_ID), config)));
+	UnitManager::Instance()->Register("GAMESRV", std::move(std::make_shared<GameSrv>(config["GameSrv"]["id"].value_or(INVALID_NODE_ID), config)));
 
 	UnitManager::Instance()->Run();
 
