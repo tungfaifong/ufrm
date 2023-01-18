@@ -116,7 +116,7 @@ future<std::vector<std::unordered_map<std::string, variant_t>>> GameSrv::DBSelec
 	co_return ret;
 }
 
-future<bool> GameSrv::DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
+future<std::pair<uint64_t, uint64_t>> GameSrv::DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
 {
 	auto ret = co_await _db_client.Insert(node_id, tb_name, column, value);
 	co_return ret;
@@ -273,7 +273,7 @@ void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const std::st
 void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	std::shared_ptr<google::protobuf::Message> message = nullptr;
-	SSID id;
+	SSID id = SSID_INVALID;
 	switch(head.id())
 	{
 	case SSID_GW_GS_HEART_BEAT_REQ:
@@ -295,11 +295,11 @@ void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 	auto gateway_node_id = _nid2gateway[net_id];
 	switch(pkg.cs_pkg().head().id())
 	{
-	case CSID_LOGIN_REQ:
+	case CSID_AUTH_REQ:
 		{
 			if(_users.find(pkg.user_id()) != _users.end())
 			{
-				LOGGER_WARN("CSID_LOGIN_REQ user:{} repeated old_gateway_node_id:{} new_gateway_node_id:{}", pkg.user_id(), _users[pkg.user_id()], gateway_node_id);
+				LOGGER_WARN("CSID_AUTH_REQ user:{} repeated old_gateway_node_id:{} new_gateway_node_id:{}", pkg.user_id(), _users[pkg.user_id()], gateway_node_id);
 			}
 			_users[pkg.user_id()] = gateway_node_id;
 		}

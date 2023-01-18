@@ -38,7 +38,7 @@ public:
 	void BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
 	future<std::vector<std::unordered_map<std::string, variant_t>>> DBSelect(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
-	future<bool> DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
+	future<std::pair<uint64_t, uint64_t>> DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
 	future<bool> DBUpdate(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where);
 	future<bool> DBDelete(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where);
 

@@ -46,7 +46,7 @@ private:
 
 private:
 	mysqlpp::StoreQueryResult _Select(const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
-	bool _Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
+	mysqlpp::SimpleResult _Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
 	bool _Update(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where);
 	bool _Delete(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where);
 

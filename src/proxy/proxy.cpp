@@ -194,7 +194,7 @@ void Proxy::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std
 void Proxy::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	std::shared_ptr<google::protobuf::Message> message = nullptr;
-	SSID id;
+	SSID id = SSID_INVALID;
 	switch(head.id())
 	{
 	case SSID_PC_PX_HEART_BEAT_REQ:

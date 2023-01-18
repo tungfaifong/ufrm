@@ -147,7 +147,7 @@ void DBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std
 void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	std::shared_ptr<google::protobuf::Message> message = nullptr;
-	SSID id;
+	SSID id = SSID_INVALID;
 	switch(head.id())
 	{
 	case SSID_DC_DS_SELECT_REQ:
@@ -212,96 +212,7 @@ void DBSrv::_OnSelectReq(const SSDCDSSelectReq & req, SSID & id, SSDSDCSelectRsp
 		{
 			auto key = ret.field_name(i).c_str();
 			auto & value = row[key];
-			auto type = value.type();
-			if (type == typeid(bool) || type == typeid(mysqlpp::sql_bool) || type == typeid(mysqlpp::sql_bool_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_bool_(false);
-				}
-				else
-				{
-					pb_value[key].set_bool_((bool)value);
-				}
-			}
-			else if(type == typeid(uint32_t) || type == typeid(mysqlpp::sql_int_unsigned_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_uint32_(0);
-				}
-				else
-				{
-					pb_value[key].set_uint32_((uint32_t)value);
-				}
-			}
-			else if(type == typeid(int32_t) || type == typeid(mysqlpp::sql_int_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_int32_(0);
-				}
-				else
-				{
-					pb_value[key].set_int32_((int32_t)value);
-				}
-			}
-			else if(type == typeid(uint64_t) || type == typeid(mysqlpp::sql_bigint_unsigned_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_uint64_(0);
-				}
-				else
-				{
-					pb_value[key].set_uint64_((uint64_t)value);
-				}
-			}
-			else if(type == typeid(int64_t) || type == typeid(mysqlpp::sql_bigint_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_int64_(0);
-				}
-				else
-				{
-					pb_value[key].set_int64_((int64_t)value);
-				}
-			}
-			else if(type == typeid(float) || type == typeid(mysqlpp::sql_float_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_float_(0);
-				}
-				else
-				{
-					pb_value[key].set_float_((float)value);
-				}
-			}
-			else if(type == typeid(double) || type == typeid(mysqlpp::sql_double_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_double_(0);
-				}
-				else
-				{
-					pb_value[key].set_double_((double)value);
-				}
-			}
-			else if(type == typeid(std::string) || type == typeid(mysqlpp::sql_blob) ||
-					type == typeid(mysqlpp::sql_text_null) || type == typeid(mysqlpp::sql_blob_null))
-			{
-				if(value.is_null())
-				{
-					pb_value[key].set_string_("");
-				}
-				else
-				{
-					pb_value[key].set_string_((std::string)value);
-				}
-			}
+			ConvertMysqlpp2PBVariant(value, pb_value[key]);
 		}
 	}
 }
@@ -322,7 +233,8 @@ void DBSrv::_OnInsertReq(const SSDCDSInsertReq & req, SSID & id, SSDSDCInsertRsp
 	}
 	auto ret = _Insert(req.tb_name(), column, value);
 	id = SSID_DS_DC_INSERT_RSP;
-	rsp->set_result(ret);
+	rsp->set_rows(ret.rows());
+	rsp->set_insert_id(ret.insert_id());
 }
 
 void DBSrv::_OnUpdateReq(const SSDCDSUpdateReq & req, SSID & id, SSDSDCUpdateRsp * rsp)
@@ -365,7 +277,6 @@ mysqlpp::StoreQueryResult DBSrv::_Select(const std::string & tb_name, const std:
 	try
 	{
 		auto query = _mysql_connection.query(sql);
-		auto ret = std::vector< std::unordered_map<std::string, mysqlpp::String> >();
 		return query.store();
 	}
 	catch(const std::exception& e)
@@ -375,19 +286,19 @@ mysqlpp::StoreQueryResult DBSrv::_Select(const std::string & tb_name, const std:
 	}
 }
 
-bool DBSrv::_Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
+mysqlpp::SimpleResult DBSrv::_Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
 {
 	auto sql = fmt::format("insert into {} ({}) values ({});", tb_name, _GetVecStr(column), _GetVecStr(value));
 	LOGGER_TRACE("sql:{}", sql);
-	auto query = _mysql_connection.query(sql);
 	try
 	{
-		return query.exec();
+		auto query = _mysql_connection.query(sql);
+		return query.execute();
 	}
 	catch(const std::exception& e)
 	{
 		LOGGER_ERROR("insert error:{}", e.what());
-		return false;
+		return {};
 	}
 }
 

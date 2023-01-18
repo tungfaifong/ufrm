@@ -29,7 +29,8 @@ message SSDCDSInsertReq
 
 message SSDSDCInsertRsp
 {
-	bool result = 1;
+	uint64 rows = 1;
+	uint64 insert_id = 2;
 }
 
 message SSDCDSUpdateReq

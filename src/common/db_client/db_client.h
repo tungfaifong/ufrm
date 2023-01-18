@@ -13,7 +13,7 @@ public:
 
 public:
 	future<std::vector<std::unordered_map<std::string, variant_t>>> Select(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
-	future<bool> Insert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
+	future<std::pair<uint64_t, uint64_t>> Insert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
 	future<bool> Update(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where);
 	future<bool> Delete(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where);
 

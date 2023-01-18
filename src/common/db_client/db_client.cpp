@@ -31,6 +31,7 @@ future<std::vector<std::unordered_map<std::string, variant_t>>> DBClient::Select
 		co_return {};
 	}
 	SSDSDCSelectRsp rsp_body;
+	rsp_body.ParseFromString(data);
 	auto ret = std::vector<std::unordered_map<std::string, variant_t>>();
 	for(auto & row : rsp_body.result())
 	{
@@ -44,7 +45,7 @@ future<std::vector<std::unordered_map<std::string, variant_t>>> DBClient::Select
 	co_return ret;
 }
 
-future<bool> DBClient::Insert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
+future<std::pair<uint64_t, uint64_t>> DBClient::Insert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
 {
 	SSDCDSInsertReq body;
 	body.set_tb_name(tb_name);
@@ -61,11 +62,11 @@ future<bool> DBClient::Insert(NODEID node_id, const std::string & tb_name, const
 	if(result == CORORESULT::TIMEOUT)
 	{
 		LOGGER_WARN("insert timeout");
-		co_return false;
+		co_return {};
 	}
 	SSDSDCInsertRsp rsp_body;
 	rsp_body.ParseFromString(data);
-	co_return rsp_body.result();
+	co_return {rsp_body.rows(), rsp_body.insert_id()};
 }
 
 future<bool> DBClient::Update(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where)

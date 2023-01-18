@@ -11,13 +11,11 @@ function Role:__init()
 	self._user_id = 0
 	self._role_logics = {}
 	self._recv_handler = {}
-
-	require("role_logic.login.logic")
-	self._login_logic = LoginLogic.New(self)
 end
 
-function Role:Init()
-	self:_RegisterRoleLogic("login_logic", self._login_logic)
+function Role:_RegisterRoleLogic(key, logic)
+	self._role_logics[key] = logic
+	self._role_logics[key]:OnRegister()
 end
 
 function Role:Serialize()
@@ -70,9 +68,3 @@ end
 function Role:UserID()
 	return self._user_id
 end
-
-function Role:_RegisterRoleLogic(key, logic)
-	self._role_logics[key] = logic
-	self._role_logics[key]:OnRegister()
-end
-

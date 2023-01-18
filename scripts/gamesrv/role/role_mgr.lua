@@ -31,7 +31,6 @@ end
 function RoleMgr:CreateRole(user_id)
 	self._user_id_2_roles[user_id] = Role.New()
 	self._user_id_2_roles[user_id]:SetUserID(user_id)
-	self._user_id_2_roles[user_id]:Init()
 	return self._user_id_2_roles[user_id]
 end
 

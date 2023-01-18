@@ -107,6 +107,101 @@ void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v)
 	}
 }
 
+void ConvertMysqlpp2PBVariant(const mysqlpp::String & mysql_v, Variant & pb_v)
+{
+	auto type = mysql_v.type();
+	if (type == typeid(bool) || type == typeid(mysqlpp::sql_bool) || type == typeid(mysqlpp::sql_bool_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_bool_(false);
+		}
+		else
+		{
+			pb_v.set_bool_((bool)mysql_v);
+		}
+	}
+	else if(type == typeid(uint32_t) || type == typeid(mysqlpp::sql_int_unsigned_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_uint32_(0);
+		}
+		else
+		{
+			pb_v.set_uint32_((uint32_t)mysql_v);
+		}
+	}
+	else if(type == typeid(int32_t) || type == typeid(mysqlpp::sql_int_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_int32_(0);
+		}
+		else
+		{
+			pb_v.set_int32_((int32_t)mysql_v);
+		}
+	}
+	else if(type == typeid(uint64_t) || type == typeid(mysqlpp::sql_bigint_unsigned_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_uint64_(0);
+		}
+		else
+		{
+			pb_v.set_uint64_((uint64_t)mysql_v);
+		}
+	}
+	else if(type == typeid(int64_t) || type == typeid(mysqlpp::sql_bigint_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_int64_(0);
+		}
+		else
+		{
+			pb_v.set_int64_((int64_t)mysql_v);
+		}
+	}
+	else if(type == typeid(float) || type == typeid(mysqlpp::sql_float_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_float_(0);
+		}
+		else
+		{
+			pb_v.set_float_((float)mysql_v);
+		}
+	}
+	else if(type == typeid(double) || type == typeid(mysqlpp::sql_double_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_double_(0);
+		}
+		else
+		{
+			pb_v.set_double_((double)mysql_v);
+		}
+	}
+	else if(type == typeid(std::string) || type == typeid(mysqlpp::sql_blob) ||
+			type == typeid(mysqlpp::sql_text_null) || type == typeid(mysqlpp::sql_blob_null))
+	{
+		if(mysql_v.is_null())
+		{
+			pb_v.set_string_("");
+		}
+		else
+		{
+			pb_v.set_string_((std::string)mysql_v);
+		}
+	}
+}
+
+
 void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg)
 {
 	if(logger::Level() > LoggerUnit::LEVEL::TRACE)

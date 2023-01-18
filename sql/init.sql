@@ -16,7 +16,8 @@ CREATE TABLE role(
 	`name` VARCHAR(30) NOT NULL,
 	`item` MEDIUMBLOB,
 	`logic` MEDIUMBLOB,
-	PRIMARY KEY (`role_id`)
+	PRIMARY KEY (`role_id`),
+	UNIQUE (`name`)
 );
 
 CREATE TABLE user_role(

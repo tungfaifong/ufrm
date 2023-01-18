@@ -5,6 +5,8 @@
 
 #include <variant>
 
+#include "mysql++/mysql++.h"
+
 #include "usrv/util/common.h"
 
 #include "protocol/common.pb.h"
@@ -33,6 +35,7 @@ static constexpr NODEID INVALID_NODE_ID = 0;
 
 void ConvertVariant2PBVariant(const variant_t & v, Variant & pb_v);
 void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v);
+void ConvertMysqlpp2PBVariant(const mysqlpp::String & mysql_v, Variant & pb_v);
 void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg);
 
 void SignalHandler(int signo);

@@ -371,11 +371,18 @@ future<> Gateway::_OnAuth(NETID net_id, USERID user_id, std::string token)
 
 		_users[user_id] = User {net_id, user_id, gamesrv.node_id};
 
+		// 通知gamesrv
+		SSGWGSForwardCSPkg req;
+		req.set_user_id(user_id);
+		req.mutable_cs_pkg()->mutable_head()->set_id(CSID_AUTH_REQ);
+		_SendToGameSrv(gamesrv.node_id, SSID_GW_GS_FORWAR_CS_PKG, &req);
+
+		// 通知client
 		CSPkg pkg;
 		pkg.mutable_head()->set_id(SCID_AUTH_RSP);
-		SCAuthRsp body;
-		body.set_result(SCAuthRsp::SUCCESS);
-		body.SerializeToString(pkg.mutable_data());
+		SCAuthRsp rsp;
+		rsp.set_result(SCAuthRsp::SUCCESS);
+		rsp.SerializeToString(pkg.mutable_data());
 		_SendToClient(user_id, pkg);
 	}
 	else

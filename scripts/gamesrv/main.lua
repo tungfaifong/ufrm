@@ -8,12 +8,14 @@ require "common.util"
 require "common.coroutine_mgr"
 require "common.db_client"
 require "common.net"
+require "logic.logic_mgr"
 require "role.role_mgr"
 
 function Start()
 	PBParse()
 
 	CoroutineMgr:Instance():Start()
+	LogicMgr:Instance():Init()
 
 	return true
 end
@@ -49,11 +51,15 @@ end
 function OnServerHandleNormal(net_id, head, data)
 	if head.id == SSID.SSID_GW_GS_FORWAR_CS_PKG then
 		local pkg = pblua.Decode("SSGWGSForwardCSPkg", data)
-		local role = RoleMgr:Instance():GetRoleByUserID(pkg.user_id)
-		if not role then
-			role = RoleMgr:Instance():CreateRole(pkg.user_id)
+		if LogicMgr:Instance():GetRecvHandler(pkg.cs_pkg.head.id) then
+			LogicMgr:Instance():OnRecv(pkg.user_id, pkg.cs_pkg)
+		else
+			local role = RoleMgr:Instance():GetRoleByUserID(pkg.user_id)
+			if not role then
+				role = RoleMgr:Instance():CreateRole(pkg.user_id)
+			end
+			role:OnRecv(pkg.cs_pkg)
 		end
-		role:OnRecv(pkg.cs_pkg)
 	end
 end
 

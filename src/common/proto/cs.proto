@@ -17,8 +17,34 @@ message SCAuthRsp
 	RESULT result = 1;
 }
 
+message CSGetRolesReq
+{
+}
+
+message SCGetRolesRsp
+{
+	repeated uint32 role_ids = 1;
+}
+
+message CSCreateRoleReq
+{
+	string name = 1;
+}
+
+message SCCreateRoleRsp
+{
+	enum RESULT
+	{
+		SUCCESS = 0;
+		FAILED = 1;
+	}
+	RESULT result = 1;
+	uint32 role_id = 2;
+}
+
 message CSLoginReq
 {
+	uint32 role_id = 1;
 }
 
 message SCLoginRsp
@@ -54,5 +80,5 @@ message CSPkgHead
 message CSPkg
 {
 	CSPkgHead head = 1;
-	bytes data = 2;
+	optional bytes data = 2;
 }

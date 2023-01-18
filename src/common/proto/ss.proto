@@ -45,5 +45,5 @@ message SSPkgHead
 message SSPkg
 {
 	SSPkgHead head = 1;
-	bytes data = 2;
+	optional bytes data = 2;
 }

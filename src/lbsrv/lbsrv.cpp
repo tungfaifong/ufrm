@@ -155,7 +155,7 @@ void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std
 void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	std::shared_ptr<google::protobuf::Message> message = nullptr;
-	SSID id;
+	SSID id = SSID_INVALID;
 	switch(head.id())
 	{
 	case SSID_LC_LS_HEART_BEAT_REQ:

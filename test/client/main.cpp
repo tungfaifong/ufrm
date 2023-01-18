@@ -35,6 +35,12 @@ public:
 	void AuthReq();
 	void OnAuthRsp(const SCAuthRsp & rsp);
 
+	void GetRolesReq();
+	void OnGetRolesRsp(const SCGetRolesRsp & rsp);
+
+	void CreateRoleReq();
+	void OnCreateRoleRsp(const SCCreateRoleRsp & rsp);
+
 	void LoginReq();
 	void OnLoginRsp(const SCLoginRsp & rsp);
 
@@ -73,6 +79,18 @@ void Client::OnRecv(NETID net_id, char * data, uint16_t size)
 		{
 			UNPACK(SCAuthRsp, body, pkg.data());
 			OnAuthRsp(body);
+		}
+		break;
+	case SCID_GET_ROLES_RSP:
+		{
+			UNPACK(SCGetRolesRsp, body, pkg.data());
+			OnGetRolesRsp(body);
+		}
+		break;
+	case SCID_CREATE_ROLE_RSP:
+		{
+			UNPACK(SCCreateRoleRsp, body, pkg.data());
+			OnCreateRoleRsp(body);
 		}
 		break;
 	case SCID_LOGIN_RSP:
@@ -116,8 +134,31 @@ void Client::AuthReq()
 
 void Client::OnAuthRsp(const SCAuthRsp & rsp)
 {
-	LoginReq();
+	GetRolesReq();
 	LOGGER_INFO("OnAuthRsp:{} {}", _user_id, rsp.result());
+}
+
+void Client::GetRolesReq()
+{
+	CSGetRolesReq body;
+	SendToServer(CSID_GET_ROLES_REQ, &body);
+}
+
+void Client::OnGetRolesRsp(const SCGetRolesRsp & rsp)
+{
+	CreateRoleReq();
+}
+
+void Client::CreateRoleReq()
+{
+	CSCreateRoleReq body;
+	body.set_name("testrole1");
+	SendToServer(CSID_CREATE_ROLE_REQ, &body);
+}
+
+void Client::OnCreateRoleRsp(const SCCreateRoleRsp & rsp)
+{
+	// LoginReq();
 }
 
 void Client::LoginReq()
@@ -152,7 +193,7 @@ int main(int argc, char * argv[])
 	g_ClientNum = atoi(argv[1]);
 	auto time = atoi(argv[2]) * 1000;
 	UnitManager::Instance()->Init(10);
-	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::INFO, "/logs/client.log", 1 Mi)));
+	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::TRACE, "/logs/client.log", 1 Mi)));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(1 Ki, 1 Ki)));
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(1 Ki, 1 Ki, 512 Ki)));
 	for(int i = 0; i < g_ClientNum; ++i)
