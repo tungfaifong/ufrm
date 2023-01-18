@@ -282,10 +282,11 @@ void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 	{
 	case CSID_LOGIN_REQ:
 		{
+			if(_roles.find(pkg.role_id()) != _roles.end())
+			{
+				LOGGER_WARN("CSID_LOGIN_REQ role:{} repeated old_gateway_node_id:{} new_gateway_node_id:{}", pkg.role_id(), _roles[pkg.role_id()], gateway_node_id);
+			}
 			_roles[pkg.role_id()] = gateway_node_id;
-			PKG_CREATE(cs_body, CSPkgBody);
-			cs_body->mutable_login_rsp();
-			SendToClient(pkg.role_id(), SCID_LOGIN_RSP, cs_body);
 		}
 		break;
 	case CSID_LOGOUT_REQ:
@@ -294,13 +295,10 @@ void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 			{
 				_roles.erase(pkg.role_id());
 			}
-		}
-		break;
-	case CSID_HEART_BEAT_REQ:
-		{
-			PKG_CREATE(cs_body, CSPkgBody);
-			cs_body->mutable_heart_beat_rsp();
-			SendToClient(pkg.role_id(), SCID_HEART_BEAT_RSP, cs_body);
+			else
+			{
+				LOGGER_WARN("CSID_LOGOUT_REQ invalid role:{}", pkg.role_id());
+			}
 		}
 		break;
 	default:

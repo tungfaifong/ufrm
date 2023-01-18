@@ -379,9 +379,7 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 	}
 
 	SSPkgHead::LOGICTYPE logic_type = SSPkgHead::LUA;
-	if(pkg.head().id() == CSID_LOGIN_REQ ||
-		pkg.head().id() == CSID_LOGOUT_REQ || 
-		pkg.head().id() == CSID_HEART_BEAT_REQ)
+	if(pkg.head().id() == CSID_LOGIN_REQ || pkg.head().id() == CSID_LOGOUT_REQ)
 	{
 		logic_type = SSPkgHead::BOTH;
 	}
