@@ -48,7 +48,7 @@ message SCHeartBeatRsp
 // pkg
 message CSPkgHead
 {
-	CSID id = 1;
+	optional CSID id = 1;
 }
 
 message CSPkgBody

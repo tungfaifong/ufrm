@@ -30,15 +30,15 @@ message SSPkgHead
 		LUA = 2;
 	}
 
-	NODETYPE from_node_type = 1;
-	uint32 from_node_id = 2;
-	NODETYPE to_node_type = 3;
-	uint32 to_node_id = 4;
-	SSID id = 5;
-	MSGTYPE msg_type = 6;
-	uint64 rpc_id = 7;
-	PROXYTYPE proxy_type = 8;
-	LOGICTYPE logic_type = 9;
+	optional NODETYPE from_node_type = 1;
+	optional uint32 from_node_id = 2;
+	optional NODETYPE to_node_type = 3;
+	optional uint32 to_node_id = 4;
+	optional SSID id = 5;
+	optional MSGTYPE msg_type = 6;
+	optional uint64 rpc_id = 7;
+	optional PROXYTYPE proxy_type = 8;
+	optional LOGICTYPE logic_type = 9;
 }
 
 message SSPkgBody

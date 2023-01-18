@@ -3,6 +3,7 @@
 #include "dbsrv.h"
 
 #include "magic_enum.hpp"
+#include "mysql++/dbdriver.h"
 #include "usrv/interfaces/logger_interface.h"
 #include "usrv/interfaces/server_interface.h"
 
@@ -446,16 +447,18 @@ std::string DBSrv::_GetVecStr(const std::vector<variant_t> & vec)
 	std::string str = "";
 	for(auto iter = vec.begin(); iter != vec.end(); ++iter)
 	{
-		std::visit([&str](const auto & v) {
-			if(typeid(v) == typeid(std::string))
-			{
-				str += fmt::format("'{}'", v);
-			}
-			else
-			{
+		if((VARIANTIDX)iter->index() == VARIANTIDX::STRING)
+		{
+			std::string tmp_str = std::get<std::string>(*iter);
+			_mysql_connection.driver()->escape_string(&tmp_str, 0, 0);
+			str += fmt::format("'{}'", tmp_str);
+		}
+		else
+		{
+			std::visit([&str](const auto & v) {
 				str += fmt::format("{}", v);
-			}
-		}, *iter);
+			}, *iter);
+		}
 
 		if(std::next(iter) != vec.end())
 		{
@@ -475,16 +478,18 @@ std::string DBSrv::_GetMapStr(const std::unordered_map<std::string, variant_t> &
 	for(auto iter = map.begin(); iter != map.end(); ++iter)
 	{
 		auto key = iter->first;
-		std::visit([&str, &key](const auto & v) {
-			if(typeid(v) == typeid(std::string))
-			{
-				str += fmt::format("{} = '{}'", key, v);
-			}
-			else
-			{
+		if((VARIANTIDX)iter->second.index() == VARIANTIDX::STRING)
+		{
+			std::string tmp_str = std::get<std::string>(iter->second);
+			_mysql_connection.driver()->escape_string(&tmp_str, 0, 0);
+			str += fmt::format("{} = '{}'", key, tmp_str);
+		}
+		else
+		{
+			std::visit([&str, &key](const auto & v) {
 				str += fmt::format("{} = {}", key, v);
-			}
-		}, iter->second);
+			}, iter->second);
+		}
 
 		if(std::next(iter) != map.end())
 		{
