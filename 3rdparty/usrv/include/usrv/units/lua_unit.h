@@ -15,7 +15,7 @@ NAMESPACE_OPEN
 class LuaUnit : public Unit
 {
 public:
-	using ExposeFunc = std::function<void(const luabridge::Namespace &)>;
+	using ExposeFunc = std::function<void(luabridge::Namespace)>;
 
 	LuaUnit(const std::string & path, ExposeFunc func = nullptr);
 	virtual ~LuaUnit() = default;
@@ -31,12 +31,9 @@ public:
 	inline luabridge::LuaRef GetGlobal(const char * name);
 	inline luabridge::Namespace GetGlobalNamespace();
 
-	template<typename T>
-	void OnConn(T id, const IP & ip, PORT port);
-	template<typename T>
-	void OnRecv(T id, const char * data, uint16_t size);
-	template<typename T>
-	void OnDisc(T id);
+	void OnConn(NETID net_id, const IP & ip, PORT port);
+	void OnRecv(NETID net_id, const char * data, uint16_t size);
+	void OnDisc(NETID net_id);
 	static void OnException(const luabridge::LuaException & e);
 
 private:
@@ -54,45 +51,6 @@ private:
 	std::shared_ptr<luabridge::LuaRef> _on_disc;
 	ExposeFunc _expose;
 };
-
-template<typename T>
-void LuaUnit::OnConn(T id, const IP & ip, PORT port)
-{
-	try
-	{
-		(*_on_conn)(id, ip, port);
-	}
-	catch(const luabridge::LuaException & e)
-	{
-		OnException(e);
-	}
-}
-
-template<typename T>
-void LuaUnit::OnRecv(T id, const char * data, uint16_t size)
-{
-	try
-	{
-		(*_on_recv)(id, std::string(data, size));
-	}
-	catch(const luabridge::LuaException & e)
-	{
-		OnException(e);
-	}
-}
-
-template<typename T>
-void LuaUnit::OnDisc(T id)
-{
-	try
-	{
-		(*_on_disc)(id);
-	}
-	catch(const luabridge::LuaException & e)
-	{
-		OnException(e);
-	}
-}
 
 NAMESPACE_CLOSE
 
