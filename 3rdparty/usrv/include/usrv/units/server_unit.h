@@ -68,7 +68,6 @@ private:
 	std::thread _io_thread;
 	asio::io_context _io_context;
 	asio::executor_work_guard<asio::io_context::executor_type> _work_guard;
-	asio::steady_timer _timer;
 	intvl_t _io_interval = 0;
 
 	ObjectPool<Peer> _peer_pool;
@@ -98,12 +97,14 @@ public:
 public:
 	void Start(NETID net_id, asio::ip::tcp::socket && socket, const std::shared_ptr<ServerUnit> & server);
 	void Stop();
+	void Release();
 	asio::awaitable<void> Send(const char * data, uint16_t size);
 	IP Ip();
 	PORT Port();
 
 private:
 	asio::awaitable<void> _Recv();
+	bool _CheckRelease();
 
 private:
 	NETID _net_id = INVALID_NET_ID;
@@ -111,6 +112,9 @@ private:
 	std::shared_ptr<ServerUnit> _server;
 	char _send_buffer[MESSAGE_HEAD_SIZE + MESSAGE_BODY_SIZE];
 	char _recv_buffer[MESSAGE_BODY_SIZE];
+	bool _wait_to_release;
+	uint32_t _sending;
+	bool _recving;
 };
 
 NAMESPACE_CLOSE
