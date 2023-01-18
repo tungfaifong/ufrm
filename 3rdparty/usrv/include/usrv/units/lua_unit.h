@@ -36,8 +36,9 @@ public:
 	void OnDisc(NETID net_id);
 	static void OnException(const luabridge::LuaException & e);
 
+	bool InitFunc(std::shared_ptr<luabridge::LuaRef> & func, const char * func_name);
+
 private:
-	bool _InitFunc(std::shared_ptr<luabridge::LuaRef> & func, const char * func_name);
 	void _Expose();
 
 private:
