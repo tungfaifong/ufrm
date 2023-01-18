@@ -39,12 +39,12 @@ inline void flush()
 #define LOGGER_CRITICAL(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::CRITICAL, fmt, ##__VA_ARGS__)
 #define LOGGER_FLUSH() logger::flush()
 
-inline void lua_log(uint8_t level, const std::string & msg, lua_State *L)
+inline void lua_log(LoggerUnit::Level level, const std::string & msg, lua_State *L)
 {
 	lua_Debug info;
 	lua_getstack(L, 1, &info);
 	lua_getinfo(L, "Sln", &info);
-	log(info.short_src, info.currentline, (info.name ? info.name : "?"), (LoggerUnit::Level)level, "{}", msg);
+	log(info.short_src, info.currentline, (info.name ? info.name : "?"), level, "{}", msg);
 };
 
 inline void lua_trace(const std::string & msg, lua_State *L) { lua_log(LoggerUnit::Level::TRACE, msg, L); }

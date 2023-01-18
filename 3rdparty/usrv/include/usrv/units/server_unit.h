@@ -21,7 +21,7 @@ class ServerUnit : public Unit, public std::enable_shared_from_this<ServerUnit>
 public:
 	static constexpr uint16_t OPF = 1024;	// operation per frame
 
-	enum MSGTYPE
+	enum class MSGTYPE
 	{
 		MSGT_CONN = 0,
 		MSGT_RECV,

@@ -19,7 +19,7 @@ class LoggerUnit : public Unit, public std::enable_shared_from_this<LoggerUnit>
 {
 public:
 	static constexpr uint16_t MAX_LOG_SIZE = UINT16_MAX;
-	enum Level
+	enum class Level
 	{
 		TRACE = 0,
 		DEBUG,
@@ -70,7 +70,7 @@ template<typename ... Args> void LoggerUnit::Log(Level level, fmt::format_string
 
 	SpscQueue::Header header;
 	header.size = log.size();
-	header.data16 = level;
+	header.data16 = static_cast<uint16_t>(level);
 	header.data32 = 0;
 
 	auto tid = std::this_thread::get_id();
