@@ -2,6 +2,8 @@
 
 #include "common.h"
 
+#include <signal.h>
+
 #include "interfaces/logger_interface.h"
 
 #include "protocol/cs.pb.h"
@@ -132,4 +134,40 @@ void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg)
 	}
 
 	LOGGER_TRACE("{} msg pkg:\n{}", prefix, pkg->DebugString());
+}
+
+void SignalHandler(int signo)
+{
+	switch(signo)
+	{
+		case SIGILL:
+		case SIGTRAP:
+		case SIGABRT:
+		case SIGBUS:
+		case SIGFPE:
+		case SIGSEGV:
+		case SIGSYS:
+		{
+			signal(signo, SIG_DFL);
+			logger::on_abort();
+		}
+		break;
+		case SIGUSR1:
+			UnitManager::Instance()->SetExit(true);
+			break;
+		default:
+			break;
+	}
+}
+
+void SignalInit()
+{
+	signal(SIGILL, SignalHandler);
+	signal(SIGTRAP, SignalHandler);
+	signal(SIGABRT, SignalHandler);
+	signal(SIGBUS, SignalHandler);
+	signal(SIGFPE, SignalHandler);
+	signal(SIGSEGV, SignalHandler);
+	signal(SIGSEGV, SignalHandler);
+	signal(SIGUSR1, SignalHandler);
 }

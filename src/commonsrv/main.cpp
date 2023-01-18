@@ -15,14 +15,6 @@
 
 using namespace usrv;
 
-void SignalHandler(int signum)
-{
-	if(signum == SIGUSR1)
-	{
-		UnitManager::Instance()->SetExit(true);
-	}
-}
-
 int main(int argc, char * argv[])
 {
 	if(argc != 2)
@@ -31,7 +23,7 @@ int main(int argc, char * argv[])
 		return 1;
 	}
 
-	signal(SIGUSR1, SignalHandler);
+	SignalInit();
 
 	toml::table config;
 	try
