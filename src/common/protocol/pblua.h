@@ -35,7 +35,8 @@ namespace pblua
 	// obj = pblua.decode("Obj", data)
 	int Decode(lua_State * L);
 	
-	luabridge::LuaRef PB2LuaRef(const char * proto, lua_State * L, const google::protobuf::Message & message);
+	bool LuaRef2PB(google::protobuf::Message * message, luabridge::LuaRef & lua_ref);
+	luabridge::LuaRef PB2LuaRef(const google::protobuf::Message & message, lua_State * L);
 
 	void Init();
 }

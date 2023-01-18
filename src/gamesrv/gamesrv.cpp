@@ -174,7 +174,14 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	if(head.logic_type() == SSPkgHead::LUA || head.logic_type() == SSPkgHead::BOTH)
 	{
 		auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
-		(*_lua_on_recv_pkg)(net_id, pblua::PB2LuaRef("SSPkg", lua->GetLuaState(), pkg));
+		try
+		{
+			(*_lua_on_recv_pkg)(net_id, pblua::PB2LuaRef(pkg, lua->GetLuaState()));
+		}
+		catch(const luabridge::LuaException & e)
+		{
+			lua->OnException(e);
+		}
 	}
 }
 
