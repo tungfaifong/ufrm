@@ -11,7 +11,7 @@
 class ConsistentHash
 {
 public:
-	static constexpr size_t VIRTUAL_NODE_NUM = 1 Mi;
+	static constexpr size_t VIRTUAL_NODE_NUM = 1 Ki;
 
 	ConsistentHash() {}
 	~ConsistentHash() {}
