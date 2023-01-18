@@ -14,7 +14,7 @@ set(PATH_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
 set(PATH_SRC ${PATH_ROOT}/src)
 set(PATH_3RD ${PATH_ROOT}/3rdparty)
 
-set(PATH_BIN_PROTOBUF ${PATH_3RD}/protobuf-3.19.4/bin)
+set(PATH_BIN_PROTOBUF ${PATH_3RD}/protobuf-3.21.12/bin)
 
 set(PATH_INC_3RD
 	${PATH_3RD}/usrv/include
@@ -27,7 +27,7 @@ set(PATH_INC_3RD
 	${PATH_3RD}/LuaBridge-2.7
 	${PATH_3RD}/spdlog-1.9.2
 	${PATH_3RD}/toml++-3.0.1
-	${PATH_3RD}/protobuf-3.19.4/include
+	${PATH_3RD}/protobuf-3.21.12/include
 	${PATH_3RD}/magic_enum-0.7.3
 	${PATH_3RD}/mysql/include
 	${PATH_3RD}/mysql++-3.3.0/include)
@@ -37,7 +37,7 @@ set(PATH_LIB_3RD
 	${PATH_3RD}/fmt-8.1.0/lib
 	${PATH_3RD}/jemalloc-5.3.0/lib
 	${PATH_3RD}/lua-5.4.3/lib
-	${PATH_3RD}/protobuf-3.19.4/lib
+	${PATH_3RD}/protobuf-3.21.12/lib
 	${PATH_3RD}/mysql/lib
 	${PATH_3RD}/mysql++-3.3.0/lib)
 
