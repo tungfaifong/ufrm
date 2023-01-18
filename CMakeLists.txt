@@ -6,8 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 # set(CMAKE_CXX_FLAGS_DEBUG "-Wall -fdiagnostics-color=always -g -std=c++20")
-set(CMAKE_CXX_FLAGS_DEBUG "-Wall -fdiagnostics-color=always -g")
-set(CMAKE_CXX_FLAGS_RELEASE "-Wall -fdiagnostics-color=always -g -O2") 
+# set(CMAKE_CXX_FLAGS_DEBUG "-Wall -fdiagnostics-color=always -g")
+# set(CMAKE_CXX_FLAGS_RELEASE "-Wall -fdiagnostics-color=always -g -O2") 
 
 # path
 set(PATH_ROOT ${CMAKE_CURRENT_SOURCE_DIR})
@@ -48,7 +48,7 @@ set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # define
 add_definitions(-DSPDLOG_FMT_EXTERNAL)
-add_definitions("-Wall -fdiagnostics-color=always -g")
+add_definitions("-Wall -fdiagnostics-color=always -g -O2")
 
 list(APPEND CMAKE_MODULE_PATH "${PATH_ROOT}/cmake")
 
