@@ -31,7 +31,9 @@ public:
 	inline luabridge::LuaRef GetGlobal(const char * name);
 	inline luabridge::Namespace GetGlobalNamespace();
 
-	void OnRecvFunc(NETID net_id, char * data, uint16_t size);
+	void OnConn(NETID net_id, const IP & ip, PORT port);
+	void OnRecv(NETID net_id, char * data, uint16_t size);
+	void OnDisc(NETID net_id);
 	static void OnException(const luabridge::LuaException & e);
 
 private:
@@ -44,7 +46,9 @@ private:
 	std::shared_ptr<luabridge::LuaRef> _start;
 	std::shared_ptr<luabridge::LuaRef> _update;
 	std::shared_ptr<luabridge::LuaRef> _stop;
+	std::shared_ptr<luabridge::LuaRef> _on_conn;
 	std::shared_ptr<luabridge::LuaRef> _on_recv;
+	std::shared_ptr<luabridge::LuaRef> _on_disc;
 	ExposeFunc _expose;
 };
 	
