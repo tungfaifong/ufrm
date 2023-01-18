@@ -37,10 +37,7 @@ void CoroutineMgr::Resume(COROID coro_id, CORORESULT result, const std::string &
 	coro_obj->result = result;
 	coro_obj->data = data;
 	coro_obj->coro.resume();
-	if(coro_obj->coro.done())
-	{
-		_coro_objs.Erase(coro_id);
-	}
+	_coro_objs.Erase(coro_id);
 }
 
 void CoroutineMgr::_CheckTimeout()
@@ -52,6 +49,7 @@ void CoroutineMgr::_CheckTimeout()
 		if(now >= coro_obj->timeout)
 		{
 			coro_obj->result = CORORESULT::TIMEOUT;
+			coro_obj->data = "";
 			coro_obj->coro.resume();
 			iter = _coro_objs.Erase(iter);
 		}
