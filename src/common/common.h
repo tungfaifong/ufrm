@@ -14,6 +14,4 @@ static constexpr PORT DEFAULT_PORT = 6666;
 
 static constexpr NODEID INVALID_NODE_ID = 0;
 
-#define CREATE_PKG(pkg, PKG_TYPE) PKG_TYPE * pkg = new PKG_TYPE()
-
 #endif // UFRM_COMMON_H

@@ -5,6 +5,8 @@
 #include "usrv/interfaces/logger_interface.h"
 #include "usrv/interfaces/timer_interface.h"
 
+#include "define.h"
+
 LBClient::LBClient(NODETYPE node_type, NODEID node_id, IP ip, PORT port, NODEID srv_node_id, IP srv_ip, PORT srv_port, uint32_t timeout) : 
 	_config(node_type, node_id, ip, port, srv_node_id, srv_ip, srv_port, timeout)
 {
@@ -37,7 +39,7 @@ void LBClient::Release()
 
 void LBClient::RegisterToLBSrv(NODETYPE node_type, NODEID node_id, IP ip, PORT port)
 {
-	CREATE_PKG(body, SSLCLSPkgBody);
+	PKG_CREATE(body, SSLCLSPkgBody);
 	auto node_register = body->mutable_node_register();
 	node_register->mutable_node()->set_node_type(node_type);
 	node_register->mutable_node()->set_node_id(node_id);
@@ -48,7 +50,7 @@ void LBClient::RegisterToLBSrv(NODETYPE node_type, NODEID node_id, IP ip, PORT p
 
 void LBClient::UnregisterToLBSrv(NODETYPE node_type, NODEID node_id)
 {
-	CREATE_PKG(body, SSLCLSPkgBody);
+	PKG_CREATE(body, SSLCLSPkgBody);
 	auto node_unregister = body->mutable_node_unregister();
 	node_unregister->set_node_type(node_type);
 	node_unregister->set_node_id(node_id);
@@ -57,7 +59,7 @@ void LBClient::UnregisterToLBSrv(NODETYPE node_type, NODEID node_id)
 
 void LBClient::Subscribe(NODETYPE node_type)
 {
-	CREATE_PKG(body, SSLCLSPkgBody);
+	PKG_CREATE(body, SSLCLSPkgBody);
 	auto subscribe = body->mutable_subscribe();
 	subscribe->set_node_type(node_type);
 	_SendToLBSrv(SSID_LC_LS_SUBSCRIBE, body);
@@ -68,9 +70,20 @@ void LBClient::GetAllNodes(NODETYPE node_type)
 	
 }
 
-void LBClient::GetLeastLoadNode(NODETYPE node_type)
+coroutine LBClient::GetLeastLoadNode(NODETYPE node_type)
 {
-	
+	PKG_CREATE(body, SSLCLSPkgBody);
+	body->mutable_get_least_load_node_req()->set_node_type(node_type);
+	auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ, body);
+	if(result == CORORESULT::TIMEOUT)
+	{
+		LOGGER_WARN("LBClient::GetLeastLoadNode timeout");
+		co_return;
+	}
+	SSLCLSPkgBody rsp_body;
+	rsp_body.MergeFromString(data);
+	auto rsp = rsp_body.get_least_load_node_rsp();
+	// return Node {rsp.node().ip(), (PORT)rsp.node().port()};
 }
 
 void LBClient::OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
@@ -139,6 +152,11 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 }
 
+awaitable LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)
+{
+	return awaitable(std::bind(&LBClient::_SendToLBSrv, this, id, body, MSGT_RPCREQ, std::placeholders::_1));
+}
+
 bool LBClient::_Connect()
 {
 	_srv_net_id = _server->Connect(_config.srv_ip, _config.srv_port, _config.timeout);
@@ -152,15 +170,15 @@ bool LBClient::_Connect()
 
 void LBClient::_HeartBeat()
 {
-	CoroutineMgr::Instance()->Spawn(std::bind(&LBClient::_CoroHeartBeat, this));
+	CORO_SPAWN(std::bind(&LBClient::_CoroHeartBeat, this));
 	_timer_heart_beat = timer::CreateTimer(HEART_BEAT_INTERVAL, std::bind(&LBClient::_HeartBeat, this));
 }
 
 coroutine LBClient::_CoroHeartBeat()
 {
-	CREATE_PKG(body, SSLCLSPkgBody);
+	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_heart_beat_req()->set_load(_load());
-	auto [result, data] = co_await awaitable(std::bind(&LBClient::_SendToLBSrv, this, SSID_LC_LS_HEART_BEAT_REQ, body, MSGT_RPCREQ, std::placeholders::_1));
+	auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_HEART_BEAT_REQ, body);
 	if(result == CORORESULT::TIMEOUT)
 	{
 		LOGGER_WARN("LBClient::_CoroHeartBeat timeout");

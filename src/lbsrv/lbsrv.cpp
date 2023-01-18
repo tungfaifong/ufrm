@@ -6,6 +6,7 @@
 #include "usrv/interfaces/server_interface.h"
 #include "usrv/interfaces/timer_interface.h"
 
+#include "define.h"
 #include "protocol/ss.pb.h"
 
 LBSrv::LBSrv(NODEID id, toml::table & config) : _id(id), _config(config)
@@ -164,7 +165,7 @@ void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSL
 
 void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
 {
-	CREATE_PKG(rsp_body, SSLCLSPkgBody);
+	PKG_CREATE(rsp_body, SSLCLSPkgBody);
 	SSLCLSID id;
 	switch(head.id())
 	{
@@ -245,7 +246,7 @@ void LBSrv::_Unsubscribe(NETID net_id)
 
 void LBSrv::_Publish(SSLSLCPublish::CHANGETYPE change_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port)
 {
-	CREATE_PKG(body, SSLCLSPkgBody);
+	PKG_CREATE(body, SSLCLSPkgBody);
 	auto publish = body->mutable_publish();
 	publish->set_change_type(change_type);
 	publish->mutable_node()->set_node_type(node_type);

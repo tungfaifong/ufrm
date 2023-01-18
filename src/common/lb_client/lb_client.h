@@ -46,7 +46,7 @@ public:
 	void UnregisterToLBSrv(NODETYPE node_type, NODEID node_id);
 	void Subscribe(NODETYPE node_type);
 	void GetAllNodes(NODETYPE node_type);
-	void GetLeastLoadNode(NODETYPE node_type);
+	coroutine GetLeastLoadNode(NODETYPE node_type);
 
 	void OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
 
@@ -55,6 +55,7 @@ private:
 
 private:
 	void _SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
+	awaitable _RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body);
 
 	bool _Connect();
 	void _HeartBeat();
