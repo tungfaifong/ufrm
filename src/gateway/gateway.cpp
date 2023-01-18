@@ -51,7 +51,7 @@ bool Gateway::Start()
 
 bool Gateway::Update(intvl_t interval)
 {
-	return true;
+	return false;
 }
 
 void Gateway::Stop()
@@ -136,7 +136,7 @@ bool Gateway::_ConnectToGamesrvs()
 		if(net_id == INVALID_NET_ID)
 		{
 			LOGGER_ERROR("Gateway::Start ERROR: gamesrv connect failed ip:{} port:{}", ip, port);
-			return false;
+			// return false;
 		}
 		_gamesrv_net_ids[id] = net_id;
 		SSGWGSPkgBody body;

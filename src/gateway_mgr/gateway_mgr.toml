@@ -1,0 +1,18 @@
+[Logger]
+level = 0
+file_name = "/logs/gateway_mgr.log"
+spsc_blk_num = 524288	# 一个blk为64bytes 512k * 64bytes = 32MB
+
+[Server]
+pp_alloc_num = 1024
+ps_alloc_num = 1024
+spsc_blk_num = 524288
+
+[Timer]
+tp_alloc_num = 1024
+ts_alloc_num = 1024
+
+[GatewayMgr]
+id = 1
+interval = 1
+port = 6667
