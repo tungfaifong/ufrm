@@ -39,10 +39,16 @@ private:
 	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 
 private:
-	std::vector<std::unordered_map<std::string, variant_t>> _Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where);
-	bool _Insert(std::string tb_name, std::vector<std::string> column, std::vector<variant_t> value);
-	bool _Update(std::string tb_name, std::unordered_map<std::string, variant_t> value, std::unordered_map<std::string, variant_t> where);
-	bool _Delete(std::string tb_name, std::unordered_map<std::string, variant_t> where);
+	void _OnSelectReq(const SSDCDSSelectReq & req, SSID & id, SSDSDCSelectRsp * rsp);
+	void _OnInsertReq(const SSDCDSInsertReq & req, SSID & id, SSDSDCInsertRsp * rsp);
+	void _OnUpdateReq(const SSDCDSUpdateReq & req, SSID & id, SSDSDCUpdateRsp * rsp);
+	void _OnDeleteReq(const SSDCDSDeleteReq & req, SSID & id, SSDSDCDeleteRsp * rsp);
+
+private:
+	std::vector<std::unordered_map<std::string, variant_t>> _Select(const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
+	bool _Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
+	bool _Update(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where);
+	bool _Delete(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where);
 
 	std::string _GetVecStr(const std::vector<std::string> & vec);
 	std::string _GetVecStr(const std::vector<variant_t> & vec);

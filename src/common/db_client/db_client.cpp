@@ -11,7 +11,7 @@ DBClient::DBClient(PXClient & px_client) : _px_client(px_client)
 
 }
 
-future<std::vector<std::unordered_map<std::string, variant_t>>> DBClient::Select(NODEID node_id, std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where)
+future<std::vector<std::unordered_map<std::string, variant_t>>> DBClient::Select(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where)
 {
 	PKG_CREATE(body, SSPkgBody);
 	auto req = body->mutable_dcds_body()->mutable_select_req();
@@ -20,10 +20,10 @@ future<std::vector<std::unordered_map<std::string, variant_t>>> DBClient::Select
 	{
 		req->add_column(c);
 	}
-	auto & w = *req->mutable_where();
-	for(auto & [key, value] : where)
+	auto & pb_where = *req->mutable_where();
+	for(auto & [k, v] : where)
 	{
-		ConvertVariant2PBVariant(value, w[key]);
+		ConvertVariant2PBVariant(v, pb_where[k]);
 	}
 	auto [result, data] = co_await _px_client.RpcProxy(DBSRV, node_id, SSID_DC_DS_SELECT_REQ, body);
 	if(result == CORORESULT::TIMEOUT)
@@ -38,16 +38,16 @@ future<std::vector<std::unordered_map<std::string, variant_t>>> DBClient::Select
 	for(auto & row : rsp.result())
 	{
 		std::unordered_map<std::string, variant_t> w;
-		for(auto & [key, value] : row.value())
+		for(auto & [k, v] : row.value())
 		{
-			ConvertPBVariant2Variant(value, w[key]);
+			ConvertPBVariant2Variant(v, w[k]);
 		}
 		ret.emplace_back(std::move(w));
 	}
 	co_return ret;
 }
 
-future<bool> DBClient::Insert(NODEID node_id, std::string tb_name, std::vector<std::string> column, std::vector<variant_t> value)
+future<bool> DBClient::Insert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
 {
 	PKG_CREATE(body, SSPkgBody);
 	auto req = body->mutable_dcds_body()->mutable_insert_req();
@@ -73,20 +73,20 @@ future<bool> DBClient::Insert(NODEID node_id, std::string tb_name, std::vector<s
 	co_return rsp.result();
 }
 
-future<bool> DBClient::Update(NODEID node_id, std::string tb_name, std::unordered_map<std::string, variant_t> value, std::unordered_map<std::string, variant_t> where)
+future<bool> DBClient::Update(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where)
 {
 	PKG_CREATE(body, SSPkgBody);
 	auto req = body->mutable_dcds_body()->mutable_update_req();
 	req->set_tb_name(tb_name);
-	auto & v = *req->mutable_value();
-	for(auto & [key, value] : where)
+	auto & pb_value = *req->mutable_value();
+	for(auto & [k, v] : where)
 	{
-		ConvertVariant2PBVariant(value, v[key]);
+		ConvertVariant2PBVariant(v, pb_value[k]);
 	}
-	auto & w = *req->mutable_where();
-	for(auto & [key, value] : where)
+	auto & pb_where = *req->mutable_where();
+	for(auto & [k, v] : where)
 	{
-		ConvertVariant2PBVariant(value, w[key]);
+		ConvertVariant2PBVariant(v, pb_where[k]);
 	}
 	auto [result, data] = co_await _px_client.RpcProxy(DBSRV, node_id, SSID_DC_DS_UPDATE_REQ, body);
 	if(result == CORORESULT::TIMEOUT)
@@ -100,15 +100,15 @@ future<bool> DBClient::Update(NODEID node_id, std::string tb_name, std::unordere
 	co_return rsp.result();
 }
 
-future<bool> DBClient::Delete(NODEID node_id, std::string tb_name, std::unordered_map<std::string, variant_t> where)
+future<bool> DBClient::Delete(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where)
 {
 	PKG_CREATE(body, SSPkgBody);
 	auto req = body->mutable_dcds_body()->mutable_delete_req();
 	req->set_tb_name(tb_name);
-	auto & w = *req->mutable_where();
-	for(auto & [key, value] : where)
+	auto & pb_where = *req->mutable_where();
+	for(auto & [k, v] : where)
 	{
-		ConvertVariant2PBVariant(value, w[key]);
+		ConvertVariant2PBVariant(v, pb_where[k]);
 	}
 	auto [result, data] = co_await _px_client.RpcProxy(DBSRV, node_id, SSID_DC_DS_DELETE_REQ, body);
 	if(result == CORORESULT::TIMEOUT)

@@ -12,10 +12,10 @@ public:
 	~DBClient() = default;
 
 public:
-	future<std::vector<std::unordered_map<std::string, variant_t>>> Select(NODEID node_id, std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where);
-	future<bool> Insert(NODEID node_id, std::string tb_name, std::vector<std::string> column, std::vector<variant_t> value);
-	future<bool> Update(NODEID node_id, std::string tb_name, std::unordered_map<std::string, variant_t> value, std::unordered_map<std::string, variant_t> where);
-	future<bool> Delete(NODEID node_id, std::string tb_name, std::unordered_map<std::string, variant_t> where);
+	future<std::vector<std::unordered_map<std::string, variant_t>>> Select(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
+	future<bool> Insert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
+	future<bool> Update(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where);
+	future<bool> Delete(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where);
 
 private:
 	PXClient & _px_client;

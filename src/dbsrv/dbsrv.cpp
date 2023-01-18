@@ -146,12 +146,35 @@ void DBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSP
 
 void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
-	switch (head.from_node_type())
+	PKG_CREATE(rsp_body, SSPkgBody);
+	SSID id;
+	switch(head.id())
 	{
+	case SSID_DC_DS_SELECT_REQ:
+		{
+			_OnSelectReq(body.dcds_body().select_req(), id, rsp_body->mutable_dcds_body()->mutable_select_rsp());
+		}
+		break;
+	case SSID_DC_DS_INSERT_REQ:
+		{
+			_OnInsertReq(body.dcds_body().insert_req(), id, rsp_body->mutable_dcds_body()->mutable_insert_rsp());
+		}
+		break;
+	case SSID_DC_DS_UPDATE_REQ:
+		{
+			_OnUpdateReq(body.dcds_body().update_req(), id, rsp_body->mutable_dcds_body()->mutable_update_rsp());
+		}
+		break;
+	case SSID_DC_DS_DELETE_REQ:
+		{
+			_OnDeleteReq(body.dcds_body().delete_req(), id, rsp_body->mutable_dcds_body()->mutable_delete_rsp());
+		}
+		break;
 	default:
 		LOGGER_WARN("invalid node_type:{} node_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id());
 		break;
 	}
+	_SendToProxy(head.from_node_type(), head.from_node_id(), id, rsp_body, INVALID_NODE_ID, head.logic_type(), SSPkgHead::RPCRSP, head.rpc_id());
 }
 
 void DBSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
@@ -159,7 +182,80 @@ void DBSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSP
 	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
 }
 
-std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where)
+void DBSrv::_OnSelectReq(const SSDCDSSelectReq & req, SSID & id, SSDSDCSelectRsp * rsp)
+{
+	auto column = std::vector<std::string>();
+	for(auto & c : req.column())
+	{
+		column.push_back(c);
+	}
+	auto where = std::unordered_map<std::string, variant_t>();
+	for(auto & [k, v] : req.where())
+	{
+		ConvertPBVariant2Variant(v, where[k]);
+	}
+	auto ret = _Select(req.tb_name(), column, where);
+	id = SSID_DS_DC_SELECT_RSP;
+	for(auto & row : ret)
+	{
+		auto rsp_row = rsp->add_result();
+		auto & pb_value = *rsp_row->mutable_value();
+		for(auto & [k, v] : row)
+		{
+			ConvertVariant2PBVariant(v, pb_value[k]);
+		}
+	}
+}
+
+void DBSrv::_OnInsertReq(const SSDCDSInsertReq & req, SSID & id, SSDSDCInsertRsp * rsp)
+{
+	auto column = std::vector<std::string>();
+	for(auto & c : req.column())
+	{
+		column.push_back(c);
+	}
+	auto value = std::vector<variant_t>();
+	for(auto & pb_v : req.value())
+	{
+		variant_t v;
+		ConvertPBVariant2Variant(pb_v, v);
+		value.push_back(v);
+	}
+	auto ret = _Insert(req.tb_name(), column, value);
+	id = SSID_DS_DC_INSERT_RSP;
+	rsp->set_result(ret);
+}
+
+void DBSrv::_OnUpdateReq(const SSDCDSUpdateReq & req, SSID & id, SSDSDCUpdateRsp * rsp)
+{
+	auto value = std::unordered_map<std::string, variant_t>();
+	for(auto & [k, v] : req.value())
+	{
+		ConvertPBVariant2Variant(v, value[k]);
+	}
+	auto where = std::unordered_map<std::string, variant_t>();
+	for(auto & [k, v] : req.where())
+	{
+		ConvertPBVariant2Variant(v, where[k]);
+	}
+	auto ret = _Update(req.tb_name(), value, where);
+	id = SSID_DS_DC_UPDATE_RSP;
+	rsp->set_result(ret);
+}
+
+void DBSrv::_OnDeleteReq(const SSDCDSDeleteReq & req, SSID & id, SSDSDCDeleteRsp * rsp)
+{
+	auto where = std::unordered_map<std::string, variant_t>();
+	for(auto & [k, v] : req.where())
+	{
+		ConvertPBVariant2Variant(v, where[k]);
+	}
+	auto ret = _Delete(req.tb_name(), where);
+	id = SSID_DS_DC_DELETE_RSP;
+	rsp->set_result(ret);
+}
+
+std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where)
 {
 	auto c =  _GetVecStr(column);
 	c = c == "" ? "*" : c;
@@ -213,7 +309,7 @@ std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(std::stri
 	return ret;
 }
 
-bool DBSrv::_Insert(std::string tb_name, std::vector<std::string> column, std::vector<variant_t> value)
+bool DBSrv::_Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
 {
 	auto sql = fmt::format("insert into {} ({}) values ({});", tb_name, _GetVecStr(column), _GetVecStr(value));
 	LOGGER_TRACE("sql:{}", sql);
@@ -221,7 +317,7 @@ bool DBSrv::_Insert(std::string tb_name, std::vector<std::string> column, std::v
 	return query.exec();
 }
 
-bool DBSrv::_Update(std::string tb_name, std::unordered_map<std::string, variant_t> value, std::unordered_map<std::string, variant_t> where)
+bool DBSrv::_Update(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where)
 {
 	auto w = _GetMapStr(where, " and ");
 	w = w == "" ? w : " where " + w;
@@ -231,7 +327,7 @@ bool DBSrv::_Update(std::string tb_name, std::unordered_map<std::string, variant
 	return query.exec();
 }
 
-bool DBSrv::_Delete(std::string tb_name, std::unordered_map<std::string, variant_t> where)
+bool DBSrv::_Delete(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where)
 {
 	auto w = _GetMapStr(where, " and ");
 	w = w == "" ? w : " where " + w;
