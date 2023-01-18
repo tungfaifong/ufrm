@@ -36,7 +36,7 @@ private:
 
 private:
 	Loop _loop;
-	std::map<const char *, std::shared_ptr<Unit>> _units;
+	std::unordered_map<const char *, std::shared_ptr<Unit>> _units;
 };
 
 NAMESPACE_CLOSE

@@ -54,7 +54,7 @@ private:
 	Loop _loop;
 	std::thread _log_thread;
 	size_t _spsc_blk_num;
-	std::map<std::thread::id, std::shared_ptr<SpscQueue>> _log_queues;
+	std::unordered_map<std::thread::id, std::shared_ptr<SpscQueue>> _log_queues;
 	std::shared_ptr<spdlog::logger> _logger;
 	char _log_buffer[MAX_LOG_SIZE];
 };
