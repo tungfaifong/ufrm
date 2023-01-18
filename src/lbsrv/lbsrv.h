@@ -28,6 +28,8 @@ public:
 	virtual void Stop() override final;
 	virtual void Release() override final;
 
+public:
+
 private:
 	void _OnServerConn(NETID net_id, IP ip, PORT port);
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
@@ -36,6 +38,9 @@ private:
 private:
 	NODEID _id;
 	toml::table & _config;
+
+	std::map<NETID, NODEID> _nid2nid;
+	std::map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
 };
 
 #endif // UFRM_LBSRV_H
