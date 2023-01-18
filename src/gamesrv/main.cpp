@@ -10,6 +10,8 @@
 #include "usrv/units/timer_unit.h"
 #include "usrv/unit_manager.h"
 
+#include "protocol/pblua.hpp"
+
 #include "gamesrv.h"
 
 using namespace usrv;
@@ -42,7 +44,14 @@ int main()
 	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>((LoggerUnit::Level)config["Logger"]["level"].value_or(0), config["Logger"]["file_name"].value_or("/logs/gamesrv.log"), config["Logger"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(config["Server"]["pp_alloc_num"].value_or(1 Ki), config["Server"]["ps_alloc_num"].value_or(1 Ki), config["Server"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(config["Timer"]["tp_alloc_num"].value_or(1 Ki), config["Timer"]["ts_alloc_num"].value_or(1 Ki))));
-	UnitManager::Instance()->Register("LUA", std::move(std::make_shared<LuaUnit>(config["Lua"]["path"].value_or(""))));
+	UnitManager::Instance()->Register("LUA", std::move(std::make_shared<LuaUnit>(config["Lua"]["path"].value_or(""), [](luabridge::Namespace ns){
+		pblua::init();
+		ns.beginNamespace("pblua")
+				.addFunction("parse", pblua::parse)
+				.addFunction("encode", pblua::encode)
+				.addFunction("decode", pblua::decode)
+			.endNamespace();
+	})));
 	UnitManager::Instance()->Register("GAMESRV", std::move(std::make_shared<GameSrv>(config["GameSrv"]["id"].value_or(INVALID_NODE_ID), config)));
 
 	UnitManager::Instance()->Run();
