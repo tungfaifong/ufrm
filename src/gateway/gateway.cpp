@@ -24,8 +24,12 @@ bool Gateway::Init()
 	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 	_iserver = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("ISERVER"));
 
+	_server->OnConn(std::bind(&Gateway::_OnServerConn, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	_server->OnRecv(std::bind(&Gateway::_OnServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	_server->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
+	_iserver->OnConn(std::bind(&Gateway::_OnServerConn, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	_iserver->OnRecv(std::bind(&Gateway::_OnIServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
+	_iserver->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
 
 	return true;
 }
@@ -114,7 +118,22 @@ bool Gateway::_ConnectToGamesrvs()
 	return true;
 }
 
+void Gateway::_OnServerConn(NETID net_id, IP ip, PORT port)
+{
+
+}
+
 void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
+{
+
+}
+
+void Gateway::_OnServerDisc(NETID net_id)
+{
+
+}
+
+void Gateway::_OnIServerConn(NETID net_id, IP ip, PORT port)
 {
 
 }
@@ -145,6 +164,11 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 	}
 }
 
+void Gateway::_OnIServerDisc(NETID net_id)
+{
+
+}
+
 void Gateway::_OnGatewayMgrRecv(SSGWGMID id, const SSGWGMPkgBody & body)
 {
 	switch(id)
@@ -164,7 +188,7 @@ void Gateway::_OnGatewayMgrRecv(SSGWGMID id, const SSGWGMPkgBody & body)
 
 void Gateway::_OnGamesrvRecv()
 {
-	
+
 }
 
 void Gateway::_HeartBeat()

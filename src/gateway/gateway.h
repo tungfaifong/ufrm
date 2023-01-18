@@ -34,8 +34,14 @@ public:
 private:
 	bool _ConnectToGatewayMgr();
 	bool _ConnectToGamesrvs();
+
+	void _OnServerConn(NETID net_id, IP ip, PORT port);
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
+	void _OnServerDisc(NETID net_id);
+	void _OnIServerConn(NETID net_id, IP ip, PORT port);
 	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
+	void _OnIServerDisc(NETID net_id);
+
 	void _OnGatewayMgrRecv(SSGWGMID id, const SSGWGMPkgBody & body);
 	void _OnGamesrvRecv();
 
