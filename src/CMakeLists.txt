@@ -1,0 +1,7 @@
+add_subdirectory(common)
+add_subdirectory(commonsrv)
+add_subdirectory(dbsrv)
+add_subdirectory(gamesrv)
+add_subdirectory(gateway)
+add_subdirectory(lbsrv)
+add_subdirectory(proxy)

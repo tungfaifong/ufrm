@@ -4,3 +4,4 @@ out
 logs
 *.pb.h
 *.pb.cc
+build
