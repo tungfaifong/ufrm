@@ -39,8 +39,8 @@ private:
 	NODEID _id;
 	toml::table & _config;
 
-	std::map<NETID, NODEID> _nid2nid;
-	std::map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
+	std::unordered_map<NETID, NODEID> _nid2nid;
+	std::unordered_map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
 };
 
 #endif // UFRM_LBSRV_H
