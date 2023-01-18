@@ -49,6 +49,11 @@ void PXClient::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, N
 	_SendToProxy(node_type, INVALID_NODE_ID, id, body, proxy_id, SSPkgHead::BROADCAST);
 }
 
+awaitable_func PXClient::RpcProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /*= INVALID_NODE_ID */)
+{
+	return awaitable_func([this, node_type, node_id, id, body, proxy_id](COROID coro_id){ SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::RPCREQ, coro_id); });
+}
+
 void PXClient::OnDisconnect(NETID net_id)
 {
 	if(_nid2proxy.find(net_id) != _nid2proxy.end())

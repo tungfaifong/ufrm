@@ -81,7 +81,7 @@ future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes
 			co_return _nodes[node_type];
 		}
 		SSPkgBody rsp_body;
-		rsp_body.MergeFromString(data);
+		rsp_body.ParseFromString(data);
 		auto rsp = rsp_body.lcls_body().get_all_nodes_rsp();
 		for(auto & node : rsp.nodes())
 		{
@@ -102,7 +102,7 @@ future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
 		co_return Node{DEFAULT_IP, DEFAULT_PORT};
 	}
 	SSPkgBody rsp_body;
-	rsp_body.MergeFromString(data);
+	rsp_body.ParseFromString(data);
 	auto rsp = rsp_body.lcls_body().get_least_load_node_rsp();
 	co_return Node{rsp.node().ip(), (PORT)rsp.node().port()};
 }

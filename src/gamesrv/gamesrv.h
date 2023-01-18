@@ -10,6 +10,7 @@
 #include "usrv/units/server_unit.h"
 #include "usrv/unit.h"
 
+#include "db_client/db_client.h"
 #include "lb_client/lb_client.h"
 #include "protocol/sslcls.pb.h"
 #include "px_client/px_client.h"
@@ -56,14 +57,14 @@ private:
 	NODEID _id;
 	toml::table & _config;
 
-	LBClient _lb_client;
-
 	std::unordered_map<NETID, NODEID> _nid2gateway;
 	std::unordered_map<NODEID, NETID> _gateways;
 
-	PXClient _px_client;
-
 	std::unordered_map<ROLEID, NODEID> _roles;
+
+	LBClient _lb_client;
+	PXClient _px_client;
+	DBClient _db_client;
 };
 
 #endif // UFRM_GAMESRV_H

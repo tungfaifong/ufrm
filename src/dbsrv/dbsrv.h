@@ -38,7 +38,7 @@ private:
 	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 
 private:
-	std::vector< std::unordered_map<std::string, variant_t> > _Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where);
+	std::vector<std::unordered_map<std::string, variant_t>> _Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where);
 	bool _Insert(std::string tb_name, std::vector<std::string> column, std::vector<variant_t> value);
 	bool _Update(std::string tb_name, std::unordered_map<std::string, variant_t> value, std::unordered_map<std::string, variant_t> where);
 	bool _Delete(std::string tb_name, std::unordered_map<std::string, variant_t> where);

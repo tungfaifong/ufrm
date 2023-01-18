@@ -151,7 +151,7 @@ void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSP
 	}
 }
 
-std::vector< std::unordered_map<std::string, variant_t> > DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where)
+std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, variant_t> where)
 {
 	auto c =  _GetVecStr(column);
 	c = c == "" ? "*" : c;

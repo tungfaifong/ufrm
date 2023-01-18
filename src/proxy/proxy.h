@@ -53,10 +53,10 @@ private:
 	NODEID _id;
 	toml::table & _config;
 
-	LBClient _lb_client;
-
 	std::unordered_map<NETID, std::pair<NODETYPE, NODEID>> _nid2node;
 	std::unordered_map<NODEID, NETID> _nodes[NODETYPE_ARRAYSIZE];
+	
+	LBClient _lb_client;
 };
 
 #endif // UFRM_PROXY_H

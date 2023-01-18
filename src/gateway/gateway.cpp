@@ -15,7 +15,8 @@ Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config),
 	_lb_client(GATEWAY, _id, _config["Gateway"]["ip"].value_or(DEFAULT_IP), _config["Gateway"]["port"].value_or(DEFAULT_PORT), \
 	_config["LBSrv"]["id"].value_or(INVALID_NODE_ID), _config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), \
 	_config["LBSrv"]["timeout"].value_or(0)), 
-	_px_client(GATEWAY, _id, _config["Proxy"]["timeout"].value_or(0), _lb_client)
+	_px_client(GATEWAY, _id, _config["Proxy"]["timeout"].value_or(0), _lb_client),
+	_db_client(_px_client)
 {
 
 }
@@ -263,7 +264,7 @@ void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const 
 
 void Gateway::_OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializePartialAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
 }
 
 void Gateway::_OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body)

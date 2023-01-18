@@ -7,6 +7,8 @@
 
 #include "usrv/util/common.h"
 
+#include "protocol/common.pb.h"
+
 using namespace usrv;
 
 using uint128_t = __uint128_t;
@@ -27,5 +29,8 @@ using NODEID = uint32_t;
 using ROLEID = uint32_t;
 
 static constexpr NODEID INVALID_NODE_ID = 0;
+
+void ConvertVariant2PBVariant(const variant_t & v, Variant & pb_v);
+void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v);
 
 #endif // UFRM_COMMON_H

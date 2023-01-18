@@ -10,6 +10,7 @@
 #include "usrv/units/server_unit.h"
 #include "usrv/unit.h"
 
+#include "db_client/db_client.h"
 #include "lb_client/lb_client.h"
 #include "protocol/cs.pb.h"
 #include "protocol/sslcls.pb.h"
@@ -78,8 +79,6 @@ private:
 	std::shared_ptr<ServerUnit> _server;
 	std::shared_ptr<ServerUnit> _iserver;
 
-	LBClient _lb_client;
-
 	std::unordered_map<NETID, NODEID> _nid2gamesrv;
 	std::unordered_map<NODEID, NETID> _gamesrvs;
 
@@ -88,7 +87,9 @@ private:
 	std::unordered_map<NETID, ROLEID> _nid2role;
 	std::unordered_map<ROLEID, Role> _roles;
 
+	LBClient _lb_client;
 	PXClient _px_client;
+	DBClient _db_client;
 };
 
 #endif // UFRM_GATEWAY_H
