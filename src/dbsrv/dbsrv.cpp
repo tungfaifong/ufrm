@@ -260,39 +260,16 @@ std::string DBSrv::_GetVecStr(const std::vector<variant_t> & vec)
 	std::string str = "";
 	for(auto iter = vec.begin(); iter != vec.end(); ++iter)
 	{
-		auto idx = (VariantIdx)iter->index();
-		if (idx == VariantIdx::BOOL)
-		{
-			str += fmt::format("{}", std::get<bool>(*iter));
-		}
-		else if(idx == VariantIdx::UINT32)
-		{
-			str += fmt::format("{}", std::get<uint32_t>(*iter));
-		}
-		else if(idx == VariantIdx::INT32)
-		{
-			str += fmt::format("{}", std::get<int32_t>(*iter));
-		}
-		else if(idx == VariantIdx::UINT64)
-		{
-			str += fmt::format("{}", std::get<uint64_t>(*iter));
-		}
-		else if(idx == VariantIdx::INT64)
-		{
-			str += fmt::format("{}", std::get<int64_t>(*iter));
-		}
-		else if(idx == VariantIdx::FLOAT)
-		{
-			str += fmt::format("{}", std::get<float>(*iter));
-		}
-		else if(idx == VariantIdx::DOUBLE)
-		{
-			str += fmt::format("{}", std::get<double>(*iter));
-		}
-		else if(idx == VariantIdx::STRING)
-		{
-			str += fmt::format("'{}'", std::get<std::string>(*iter));
-		}
+		std::visit([&str](const auto & v) {
+			if(typeid(v) == typeid(std::string))
+			{
+				str += fmt::format("'{}'", v);
+			}
+			else
+			{
+				str += fmt::format("{}", v);
+			}
+		}, *iter);
 
 		if(std::next(iter) != vec.end())
 		{
@@ -311,39 +288,17 @@ std::string DBSrv::_GetMapStr(const std::unordered_map<std::string, variant_t> &
 	std::string str = "";
 	for(auto iter = map.begin(); iter != map.end(); ++iter)
 	{
-		auto idx = (VariantIdx)iter->second.index();
-		if (idx == VariantIdx::BOOL)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<bool>(iter->second));
-		}
-		else if(idx == VariantIdx::UINT32)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<uint32_t>(iter->second));
-		}
-		else if(idx == VariantIdx::INT32)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<int32_t>(iter->second));
-		}
-		else if(idx == VariantIdx::UINT64)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<uint64_t>(iter->second));
-		}
-		else if(idx == VariantIdx::INT64)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<int64_t>(iter->second));
-		}
-		else if(idx == VariantIdx::FLOAT)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<float>(iter->second));
-		}
-		else if(idx == VariantIdx::DOUBLE)
-		{
-			str += fmt::format("{} = {}", iter->first, std::get<double>(iter->second));
-		}
-		else if(idx == VariantIdx::STRING)
-		{
-			str += fmt::format("{} = '{}'", iter->first, std::get<std::string>(iter->second));
-		}
+		auto key = iter->first;
+		std::visit([&str, &key](const auto & v) {
+			if(typeid(v) == typeid(std::string))
+			{
+				str += fmt::format("{} = '{}'", key, v);
+			}
+			else
+			{
+				str += fmt::format("{} = {}", key, v);
+			}
+		}, iter->second);
 
 		if(std::next(iter) != map.end())
 		{
