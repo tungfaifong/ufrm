@@ -105,6 +105,30 @@ void GameSrv::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NO
 	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
 }
 
+future<std::vector<std::unordered_map<std::string, variant_t>>> GameSrv::DBSelect(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where)
+{
+	auto ret = co_await _db_client.Select(node_id, tb_name, column, where);
+	co_return ret;
+}
+
+future<bool> GameSrv::DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
+{
+	auto ret = co_await _db_client.Insert(node_id, tb_name, column, value);
+	co_return ret;
+}
+
+future<bool> GameSrv::DBUpdate(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where)
+{
+	auto ret = co_await _db_client.Update(node_id, tb_name, value, where);
+	co_return ret;
+}
+
+future<bool> GameSrv::DBDelete(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where)
+{
+	auto ret = co_await _db_client.Delete(node_id, tb_name, where);
+	co_return ret;
+}
+
 void GameSrv::_OnServerConn(NETID net_id, IP ip, PORT port)
 {
 	LOGGER_INFO("onconnect success net_id:{} ip:{} port:{}", net_id, ip, port);

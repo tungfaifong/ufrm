@@ -4,6 +4,7 @@
 
 #include "usrv/unit_manager.h"
 
+#include "protocol/pblua.hpp"
 #include "define.h"
 #include "gamesrv.h"
 
@@ -29,4 +30,19 @@ void BroadcastToProxy(uint16_t node_type, uint32_t id, const char * data, uint16
 	PKG_CREATE(body, SSPkgBody);
 	body->ParseFromArray(body, size);
 	gamesrv->BroadcastToProxy((NODETYPE)node_type, (SSID)id, body, proxy_id, (SSPkgHead::LOGICTYPE)logic_type);
+}
+
+void LuaExpose(luabridge::Namespace ns)
+{
+	pblua::init();
+	ns.beginNamespace("pblua")
+			.addFunction("parse", pblua::parse)
+			.addFunction("encode", pblua::encode)
+			.addFunction("decode", pblua::decode)
+		.endNamespace()
+		.beginNamespace("gamesrv")
+			.addFunction("SendToClient", SendToClient)
+			.addFunction("SendToProxy", SendToProxy)
+			.addFunction("BroadcastToProxy", BroadcastToProxy)
+		.endNamespace();
 }

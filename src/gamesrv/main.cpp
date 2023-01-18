@@ -10,8 +10,6 @@
 #include "usrv/units/timer_unit.h"
 #include "usrv/unit_manager.h"
 
-#include "protocol/pblua.hpp"
-
 #include "common/interface.h"
 #include "gamesrv.h"
 
@@ -23,22 +21,6 @@ void SignalHandler(int signum)
 	{
 		UnitManager::Instance()->SetExit(true);
 	}
-}
-
-void LuaExpose(luabridge::Namespace ns)
-{
-	pblua::init();
-	ns.beginNamespace("pblua")
-			.addFunction("parse", pblua::parse)
-			.addFunction("encode", pblua::encode)
-			.addFunction("decode", pblua::decode)
-		.endNamespace()
-		.beginNamespace("gamesrv")
-			.addFunction("SendToClient", SendToClient)
-			.addFunction("SendToProxy", SendToProxy)
-			.addFunction("BroadcastToProxy", BroadcastToProxy)
-		.endNamespace();
-
 }
 
 int main(int argc, char * argv[])

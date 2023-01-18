@@ -35,6 +35,11 @@ public:
 	void SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	void BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
+	future<std::vector<std::unordered_map<std::string, variant_t>>> DBSelect(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
+	future<bool> DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
+	future<bool> DBUpdate(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where);
+	future<bool> DBDelete(NODEID node_id, const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where);
+
 private:
 	void _OnServerConn(NETID net_id, IP ip, PORT port);
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
