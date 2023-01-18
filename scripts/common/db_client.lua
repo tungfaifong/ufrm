@@ -22,9 +22,8 @@ db_client.Select = function(coro_id, node_id, tb_name, column, where)
 	local ret = {}
 	for _, row in pairs(rsp.result) do
 		local w = {}
-		for k, v in pairs(row) do
-			w[k] = {}
-			ConvertPBVariant2Variant(v, w[k])
+		for k, v in pairs(row.value) do
+			w[k] = ConvertPBVariant2Variant(v)
 		end
 		table.insert(ret, w)
 	end

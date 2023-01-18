@@ -88,7 +88,7 @@ void DBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	TRACE_MSG("recv ss", pkg);
+	TraceMsg("recv ss", &pkg);
 	switch (head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
@@ -271,37 +271,41 @@ std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(const std
 		auto map = std::unordered_map<std::string, variant_t>();
 		for (size_t i = 0; i < store.num_fields(); ++i)
 		{
-			if (row[i].type().c_type() == typeid(bool))
+			auto key = store.field_name(i).c_str();
+			auto type = store.field_type(i);
+			if (type == typeid(bool))
 			{
-				map[store.field_name(i)] = (bool)row[i];
+				map[key] = (bool)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(uint32_t))
+			else if(type == typeid(mysqlpp::sql_smallint_unsigned) ||
+					type == typeid(mysqlpp::sql_int_unsigned) ||
+					type == typeid(mysqlpp::sql_mediumint_unsigned))
 			{
-				map[store.field_name(i)] = (uint32_t)row[i];
+				map[key] = (uint32_t)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(int32_t))
+			else if(type == typeid(int32_t))
 			{
-				map[store.field_name(i)] = (int32_t)row[i];
+				map[key] = (int32_t)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(uint64_t))
+			else if(type == typeid(uint64_t))
 			{
-				map[store.field_name(i)] = (uint64_t)row[i];
+				map[key] = (uint64_t)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(int64_t))
+			else if(type == typeid(int64_t))
 			{
-				map[store.field_name(i)] = (int64_t)row[i];
+				map[key] = (int64_t)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(float))
+			else if(type == typeid(float))
 			{
-				map[store.field_name(i)] = (float)row[i];
+				map[key] = (float)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(double))
+			else if(type == typeid(double))
 			{
-				map[store.field_name(i)] = (double)row[i];
+				map[key] = (double)row[key];
 			}
-			else if(row[i].type().c_type() == typeid(std::string))
+			else if(type == typeid(std::string))
 			{
-				map[store.field_name(i)] = (std::string)row[i];
+				map[key] = (std::string)row[key];
 			}
 		}
 		ret.push_back(map);

@@ -63,7 +63,7 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	TRACE_MSG("recv ss", pkg);
+	TraceMsg("recv ss", &pkg);
 	switch(head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
@@ -120,7 +120,7 @@ void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody 
 			continue;
 		}
 		_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-		TRACE_MSG("send ss", pkg);
+		TraceMsg("send ss", &pkg);
 	}
 }
 

@@ -2,6 +2,11 @@
 
 #include "common.h"
 
+#include "interfaces/logger_interface.h"
+
+#include "protocol/cs.pb.h"
+#include "protocol/ss.pb.h"
+
 void ConvertVariant2PBVariant(const variant_t & v, Variant & pb_v)
 {
 	switch((VARIANTIDX)v.index())
@@ -98,4 +103,33 @@ void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v)
 	default:
 		break;
 	}
+}
+
+void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg)
+{
+	if(pkg->GetTypeName() == "CSPkg")
+	{
+		CSPkg * cs_pkg = (CSPkg *)pkg;
+		if (cs_pkg->head().id() == CSID_HEART_BEAT_REQ ||
+			cs_pkg->head().id() == SCID_HEART_BEAT_RSP)
+		{
+			return;
+		}
+	}
+
+	if(pkg->GetTypeName() == "SSPkg")
+	{
+		SSPkg * ss_pkg = (SSPkg *)pkg;
+		if (ss_pkg->head().id() == SSID_LC_LS_HEART_BEAT_REQ ||
+			ss_pkg->head().id() == SSID_LS_LC_HEART_BEAT_RSP ||
+			ss_pkg->head().id() == SSID_GW_GS_HEART_BEAT_REQ ||
+			ss_pkg->head().id() == SSID_GS_GW_HEART_BEAT_RSP ||
+			ss_pkg->head().id() == SSID_PC_PX_HEART_BEAT_REQ ||
+			ss_pkg->head().id() == SSID_PX_PC_HEART_BEAT_RSP)
+		{
+			return;
+		}
+	}
+
+	LOGGER_TRACE("{} msg pkg:\n{}", prefix, pkg->DebugString());
 }

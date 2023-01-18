@@ -25,13 +25,11 @@
 		return;\
 	}\
 	server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);\
-	TRACE_MSG("send ss", pkg);
+	TraceMsg("send ss", &pkg);
 
 #define CO_SPAWN(future) future.coro.resume()
 
 #define ENUM_NAME(enum) magic_enum::enum_name(enum)
-
-#define TRACE_MSG(prefix, pkg) \
-	LOGGER_TRACE("{} msg pkg:\n{}", prefix, pkg.DebugString());
+	
 
 #endif // UFRM_DEFINE_H

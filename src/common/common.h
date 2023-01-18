@@ -32,5 +32,6 @@ static constexpr NODEID INVALID_NODE_ID = 0;
 
 void ConvertVariant2PBVariant(const variant_t & v, Variant & pb_v);
 void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v);
+void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg);
 
 #endif // UFRM_COMMON_H

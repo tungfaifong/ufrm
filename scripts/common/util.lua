@@ -60,23 +60,23 @@ function ConvertVariant2PBVariant(v, pb_v)
 	end
 end
 
-function ConvertPBVariant2Variant(pb_v, v)
-	if pb_v.bool_ then
-		v = pb_v.bool_
-	elseif pb_v.int32_ then
-		v = pb_v.int32_
-	elseif pb_v.uint32_ then
-		v = pb_v.uint32_
-	elseif pb_v.int64_ then
-		v = pb_v.int64_
-	elseif pb_v.uint64_ then
-		v = pb_v.uint64_
-	elseif pb_v.float_ then
-		v = pb_v.float_
-	elseif pb_v.double_ then
-		v = pb_v.double_
-	elseif pb_v.string_ then
-		v = pb_v.string_
+function ConvertPBVariant2Variant(pb_v)
+	if pb_v.bool_ ~= nil then
+		return pb_v.bool_
+	elseif pb_v.int32_ ~= nil then
+		return pb_v.int32_
+	elseif pb_v.uint32_ ~= nil then
+		return pb_v.uint32_
+	elseif pb_v.int64_ ~= nil then
+		return pb_v.int64_
+	elseif pb_v.uint64_ ~= nil then
+		return pb_v.uint64_
+	elseif pb_v.float_ ~= nil then
+		return pb_v.float_
+	elseif pb_v.double_ ~= nil then
+		return pb_v.double_
+	elseif pb_v.string_ ~= nil then
+		return pb_v.string_
 	end
 end
 

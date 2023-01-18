@@ -345,7 +345,7 @@ namespace pblua
 	bool DecodeOptional(const google::protobuf::Message & message, const google::protobuf::FieldDescriptor * field, lua_State * L)
 	{
 		auto reflection = message.GetReflection();
-		if (field->cpp_type() == google::protobuf::FieldDescriptor::CPPTYPE_MESSAGE && !reflection->HasField(message, field))
+		if (!reflection->HasField(message, field))
 		{
 			lua_pushnil(L);
 			return true;

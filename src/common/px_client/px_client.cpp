@@ -175,7 +175,6 @@ future<> PXClient::_CoroHeartBeat(NODEID node_id)
 		LOGGER_WARN("heart beat timeout");
 		co_return;
 	}
-	LOGGER_INFO("heart beat RSP success");
 }
 
 NODEID PXClient::_GetConsistentHashProxy()

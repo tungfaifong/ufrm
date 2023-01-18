@@ -203,5 +203,4 @@ future<> LBClient::_CoroHeartBeat()
 		LOGGER_WARN("heart beat timeout");
 		co_return;
 	}
-	LOGGER_INFO("heart beat RSP success");
 }

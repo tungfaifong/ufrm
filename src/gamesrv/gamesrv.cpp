@@ -146,7 +146,7 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	TRACE_MSG("recv ss", pkg);
+	TraceMsg("recv ss", &pkg);
 	if(head.logic_type() == SSPkgHead::CPP || head.logic_type() == SSPkgHead::BOTH)
 	{
 		switch (head.msg_type())
