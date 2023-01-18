@@ -49,7 +49,10 @@ int main(int argc, char * argv[])
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(config["Timer"]["tp_alloc_num"].value_or(1 Ki), config["Timer"]["ts_alloc_num"].value_or(1 Ki))));
 	UnitManager::Instance()->Register("PROXY", std::move(std::make_shared<Proxy>(config["Proxy"]["id"].value_or(INVALID_NODE_ID), config)));
 
-	UnitManager::Instance()->Run();
+	if(!UnitManager::Instance()->Run())
+	{
+		return 1;
+	}
 
 	return 0;
 }

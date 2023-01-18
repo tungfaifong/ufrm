@@ -1,11 +1,14 @@
-cd .. && nohup ./bin/lbsrv /config/lbsrv.toml > /dev/null 2>&1 & 
-sleep 1
-cd .. && nohup ./bin/proxy /config/proxy.toml > /dev/null 2>&1 & 
-sleep 1
-cd .. && nohup ./bin/dbsrv /config/dbsrv.toml > /dev/null 2>&1 & 
-sleep 1
-cd .. && nohup ./bin/commonsrv /config/iosrv.toml > /dev/null 2>&1 & 
-sleep 1
-cd .. && nohup ./bin/gamesrv /config/gamesrv.toml > /dev/null 2>&1 & 
-sleep 1
-cd .. && nohup ./bin/gateway /config/gateway.toml > /dev/null 2>&1 & 
+srvs="lbsrv:lbsrv.toml \
+    proxy:proxy.toml \
+    dbsrv:dbsrv.toml \
+    commonsrv:iosrv.toml \
+    gamesrv:gamesrv.toml \
+    gateway:gateway.toml"
+
+for srv in ${srvs}
+do
+    k=${srv%:*}
+    v=${srv#*:}
+    cd .. && nohup ./bin/${k} /config/${v} > /dev/null 2>&1 &
+    sleep 0.1
+done

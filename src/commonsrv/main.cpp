@@ -52,7 +52,10 @@ int main(int argc, char * argv[])
 	UnitManager::Instance()->Register("LUA", std::move(std::make_shared<LuaUnit>(config["Lua"]["path"].value_or(""), LuaExpose)));
 	UnitManager::Instance()->Register("COMMONSRV", std::move(std::make_shared<CommonSrv>((NODETYPE)config["CommonSrv"]["type"].value_or((uint32_t)INVALID_NODE_TYPE), config["CommonSrv"]["id"].value_or(INVALID_NODE_ID), config)));
 
-	UnitManager::Instance()->Run();
+	if(!UnitManager::Instance()->Run())
+	{
+		return 1;
+	}
 
 	return 0;
 }
