@@ -14,10 +14,10 @@ end
 function LoginLogic:_OnLoginReq(pkg)
 	local login_rsp = {}
 	login_rsp.result = SCLoginRsp.RESULT.SUCCESS
-	net.SendToClient(self._role:ID(), CSID.SCID_LOGIN_RSP, {["login_rsp"] = login_rsp})
+	SendToClient(self._role:ID(), CSID.SCID_LOGIN_RSP, {["login_rsp"] = login_rsp})
 end
 
 function LoginLogic:_OnHeartBeatReq(pkg)
 	local heart_beat_rsp = {}
-	net.SendToClient(self._role:ID(), CSID.SCID_HEART_BEAT_RSP, {["heart_beat_rsp"] = heart_beat_rsp})
+	SendToClient(self._role:ID(), CSID.SCID_HEART_BEAT_RSP, {["heart_beat_rsp"] = heart_beat_rsp})
 end
