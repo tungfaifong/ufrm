@@ -18,6 +18,8 @@ public:
 	class Iterator
 	{
 		public:
+			using IteratorType = std::pair<size_t, const std::shared_ptr<T> &>;
+
 			Iterator(ObjectMap & map, size_t id):_map(map), _id(id) {}
 			~Iterator() = default;
 
@@ -26,7 +28,8 @@ public:
 				_map = iter._map;
 				_id = iter._id;
 			}
-			auto operator *() { return std::pair<size_t, const std::shared_ptr<T> &>(_id, _map._objects[_id].obj); }
+			auto operator *() { return IteratorType(_id, _map._objects[_id].obj); }
+			auto operator ->() { return std::make_shared<IteratorType>(_id, _map._objects[_id].obj); }
 			Iterator & operator ++()
 			{
 				_id = _map._objects[_id].next;
