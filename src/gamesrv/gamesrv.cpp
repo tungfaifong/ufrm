@@ -81,6 +81,30 @@ void GameSrv::Release()
 	Unit::Release();
 }
 
+void GameSrv::SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)
+{
+	if(_roles.find(role_id) == _roles.end())
+	{
+		return;
+	}
+	PKG_CREATE(pkg, SSGWGSPkgBody);
+	pkg->mutable_forward_cs_pkg()->set_role_id(role_id);
+	pkg->mutable_forward_cs_pkg()->set_game_id(_id);
+	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->mutable_head()->set_id(id);
+	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->set_allocated_body(body);
+	_SendToGateway(_roles[role_id], SSID_GS_GW_FORWAR_SC_PKG, pkg);
+}
+
+void GameSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+{
+	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, msg_type, rpc_id);
+}
+
+void GameSrv::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
+{
+	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
+}
+
 void GameSrv::_OnServerConn(NETID net_id, IP ip, PORT port)
 {
 	LOGGER_INFO("onconnect success net_id:{} ip:{} port:{}", net_id, ip, port);
@@ -93,26 +117,35 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	auto head = pkg.head();
 	auto body = pkg.body();
 	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), SSID_Name(head.id()), head.rpc_id());
-	switch (head.msg_type())
+	if(head.logic_type() == SSPkgHead::CPP || head.logic_type() == SSPkgHead::BOTH)
 	{
-	case SSPkgHead::NORMAL:
+		switch (head.msg_type())
 		{
-			_OnServerHandeNormal(net_id, head, body);
+		case SSPkgHead::NORMAL:
+			{
+				_OnServerHandeNormal(net_id, head, body);
+			}
+			break;
+		case SSPkgHead::RPCREQ:
+			{
+				_OnServerHanleRpcReq(net_id, head, body);
+			}
+			break;
+		case SSPkgHead::RPCRSP:
+			{
+				_OnServerHanleRpcRsp(net_id, head, body);
+			}
+			break;
+		default:
+			LOGGER_WARN("invalid node_type:{} node_id:{} msg_type:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()));
+			break;
 		}
-		break;
-	case SSPkgHead::RPCREQ:
-		{
-			_OnServerHanleRpcReq(net_id, head, body);
-		}
-		break;
-	case SSPkgHead::RPCRSP:
-		{
-			_OnServerHanleRpcRsp(net_id, head, body);
-		}
-		break;
-	default:
-		LOGGER_WARN("invalid node_type:{} node_id:{} msg_type:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()));
-		break;
+	}
+
+	if(head.logic_type() == SSPkgHead::LUA || head.logic_type() == SSPkgHead::BOTH)
+	{
+		auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
+		lua->OnRecv(net_id, data, size);
 	}
 }
 
@@ -138,30 +171,6 @@ void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 	}
 	auto net_id = _gateways[node_id];
 	SEND_SSPKG(_server, net_id, GAMESRV, _id, GATEWAY, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_gwgs_body, body);
-}
-
-void GameSrv::_SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)
-{
-	if(_roles.find(role_id) == _roles.end())
-	{
-		return;
-	}
-	PKG_CREATE(pkg, SSGWGSPkgBody);
-	pkg->mutable_forward_cs_pkg()->set_role_id(role_id);
-	pkg->mutable_forward_cs_pkg()->set_game_id(_id);
-	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->mutable_head()->set_id(id);
-	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->set_allocated_body(body);
-	_SendToGateway(_roles[role_id], SSID_GS_GW_FORWAR_SC_PKG, pkg);
-}
-
-void GameSrv::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
-{
-	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, msg_type, rpc_id);
-}
-
-void GameSrv::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
-{
-	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
 }
 
 void GameSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
@@ -252,7 +261,7 @@ void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 			_roles[pkg.role_id()] = gateway_node_id;
 			PKG_CREATE(cs_body, CSPkgBody);
 			cs_body->mutable_login_rsp();
-			_SendToClient(pkg.role_id(), SCID_LOGIN_RSP, cs_body);
+			SendToClient(pkg.role_id(), SCID_LOGIN_RSP, cs_body);
 		}
 		break;
 	case CSID_LOGOUT_REQ:
@@ -267,14 +276,12 @@ void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 		{
 			PKG_CREATE(cs_body, CSPkgBody);
 			cs_body->mutable_heart_beat_rsp();
-			_SendToClient(pkg.role_id(), SCID_HEART_BEAT_RSP, cs_body);
+			SendToClient(pkg.role_id(), SCID_HEART_BEAT_RSP, cs_body);
 		}
 		break;
 	default:
 		break;
 	}
-	auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
-	lua->OnRecv(net_id, pkg.SerializePartialAsString().c_str(), (uint16_t)pkg.ByteSizeLong());
 }
 
 void GameSrv::_OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body)

@@ -106,6 +106,7 @@ void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody 
 	head->set_msg_type(msg_type);
 	head->set_rpc_id(rpc_id);
 	head->set_proxy_type(SSPkgHead::END);
+	head->set_logic_type(SSPkgHead::CPP);
 	pkg.mutable_body()->set_allocated_lcls_body(body);
 	for(auto & net_id : net_ids)
 	{
