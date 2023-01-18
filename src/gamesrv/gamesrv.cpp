@@ -77,6 +77,7 @@ bool GameSrv::Update(intvl_t interval)
 void GameSrv::Stop()
 {
 	CoroutineMgr::Instance()->Stop();
+	_lua_on_recv_pkg = nullptr;
 }
 
 void GameSrv::Release()
