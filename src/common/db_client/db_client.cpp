@@ -79,7 +79,7 @@ future<bool> DBClient::Update(NODEID node_id, const std::string & tb_name, const
 	auto req = body->mutable_dcds_body()->mutable_update_req();
 	req->set_tb_name(tb_name);
 	auto & pb_value = *req->mutable_value();
-	for(auto & [k, v] : where)
+	for(auto & [k, v] : value)
 	{
 		ConvertVariant2PBVariant(v, pb_value[k]);
 	}

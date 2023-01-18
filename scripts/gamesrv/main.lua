@@ -3,9 +3,10 @@
 package.path = package.path .. ';./scripts/?.lua;./scripts/gamesrv/?.lua'
 
 require "common.base_class"
-require "common.coroutine_mgr"
 require "common.define"
 require "common.util"
+require "common.coroutine_mgr"
+require "common.db_client"
 require "common.net"
 require "role.role_mgr"
 

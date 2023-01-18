@@ -42,7 +42,7 @@ function Role:OnRecv(pkg)
 		logger.warn("invalid csid:" .. pkg.head.id)
 		return
 	end
-	self._recv_handler[pkg.head.id]()
+	self._recv_handler[pkg.head.id](pkg.body)
 end
 
 function Role:RegisterRecvHandler(handlers)

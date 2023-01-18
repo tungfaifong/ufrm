@@ -17,3 +17,9 @@ function BroadcastToProxy(node_type, id, body, proxy_id, logic_type)
 	logic_type = logic_type or SSPkgHead.CPP
 	net.BroadcastToProxy(node_type, id, {["body"]=body}, proxy_id, logic_type)
 end
+
+function RpcProxy(coro_id, node_type, node_id, id, body, proxy_id)
+	proxy_id = proxy_id or 0
+	SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead.LUA, SSPkgHead.RPCREQ, coro_id)
+	return coroutine.yield()
+end

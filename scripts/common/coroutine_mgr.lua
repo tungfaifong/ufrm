@@ -36,18 +36,18 @@ function CoroutineMgr:Instance()
 	return self._instance
 end
 
-function CoroutineMgr:Create(func)
+function CoroutineMgr:Create(func, ...)
+	local args = {...}
 	self._IDX = self._IDX + 1
 	self._coros[self._IDX] = {["timeout"] = engine.NowMs() + self.TIMEOUT, ["coro"] = coroutine.create(function()
-		func(self._IDX)
+		func(self._IDX, table.unpack(args))
 	end)}
 	coroutine.resume(self._coros[self._IDX].coro)
 end
 
 function CoroutineMgr:Resume(coro_id, result, data)
 	if self._coros[coro_id] then
-		coroutine.resume(self._coros[coro_id].coro, result, data)
-		if coroutine.status(self._coros[coro_id].coro) == "dead" then
+		if not coroutine.resume(self._coros[coro_id].coro, result, data) then
 			self._coros[coro_id] = nil
 		end
 	end
@@ -57,9 +57,14 @@ function CoroutineMgr:_CheckTimeout()
 	local now = engine.NowMs()
 	for k, v in pairs(self._coros) do
 		if now >= v.timeout then
-			coroutine.resume(self._coros[k].coro, CORORESULT.TIMEOUT, nil)
-			self._coros[k] = nil
+			if not coroutine.resume(self._coros[k].coro, CORORESULT.TIMEOUT, nil) then
+				self._coros[k] = nil
+			end
 		end
 	end
 	self._timer_handler = timer.CreateTimer(self.TIMEOUT, function() self:_CheckTimeout() end)
+end
+
+function CO_SPAWN(func, ...)
+	CoroutineMgr:Instance():Create(func, ...)	
 end
