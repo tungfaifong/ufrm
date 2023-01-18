@@ -497,7 +497,7 @@ namespace pblua
 	static void init()
 	{
 		source_tree = new google::protobuf::compiler::DiskSourceTree();
-		source_tree->MapPath("", usrv::PATH_ROOT + "/src/common/protocol/");
+		source_tree->MapPath("", usrv::PATH_ROOT + "/src/common/proto/");
 		error_collector = new ErrorCollector();
 		importer = new google::protobuf::compiler::Importer(source_tree, error_collector);
 		message_factory = new google::protobuf::DynamicMessageFactory();

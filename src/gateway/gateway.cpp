@@ -378,12 +378,18 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 		return;
 	}
 
-	// 判断logic_type
+	SSPkgHead::LOGICTYPE logic_type = SSPkgHead::LUA;
+	if(pkg.head().id() == CSID_LOGIN_REQ ||
+		pkg.head().id() == CSID_LOGOUT_REQ || 
+		pkg.head().id() == CSID_HEART_BEAT_REQ)
+	{
+		logic_type = SSPkgHead::BOTH;
+	}
 
 	PKG_CREATE(body, SSGWGSPkgBody);
 	body->mutable_forward_cs_pkg()->set_role_id(role_id);
 	body->mutable_forward_cs_pkg()->set_game_id(game_id);
 	auto cs_pkg = body->mutable_forward_cs_pkg()->mutable_cs_pkg();
 	*cs_pkg = pkg;
-	_SendToGameSrv(game_id, SSID_GW_GS_FORWAR_CS_PKG, body);
+	_SendToGameSrv(game_id, SSID_GW_GS_FORWAR_CS_PKG, body, logic_type);
 }
