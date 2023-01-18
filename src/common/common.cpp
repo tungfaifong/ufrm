@@ -109,28 +109,38 @@ void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v)
 
 void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg)
 {
-	if(pkg->GetTypeName() == "CSPkg")
+	if(pkg->GetTypeName() == "CSPkgHead")
 	{
-		CSPkg * cs_pkg = (CSPkg *)pkg;
-		if (cs_pkg->head().id() == CSID_HEART_BEAT_REQ ||
-			cs_pkg->head().id() == SCID_HEART_BEAT_RSP)
+		CSPkgHead * head = (CSPkgHead *)pkg;
+		if (head->id() == CSID_HEART_BEAT_REQ ||
+			head->id() == SCID_HEART_BEAT_RSP)
 		{
 			return;
 		}
 	}
-
-	if(pkg->GetTypeName() == "SSPkg")
+	else if(pkg->GetTypeName() == "SSPkgHead")
 	{
-		SSPkg * ss_pkg = (SSPkg *)pkg;
-		if (ss_pkg->head().id() == SSID_LC_LS_HEART_BEAT_REQ ||
-			ss_pkg->head().id() == SSID_LS_LC_HEART_BEAT_RSP ||
-			ss_pkg->head().id() == SSID_GW_GS_HEART_BEAT_REQ ||
-			ss_pkg->head().id() == SSID_GS_GW_HEART_BEAT_RSP ||
-			ss_pkg->head().id() == SSID_PC_PX_HEART_BEAT_REQ ||
-			ss_pkg->head().id() == SSID_PX_PC_HEART_BEAT_RSP)
+		SSPkgHead * head = (SSPkgHead *)pkg;
+		if (head->id() == SSID_LC_LS_HEART_BEAT_REQ ||
+			head->id() == SSID_LS_LC_HEART_BEAT_RSP ||
+			head->id() == SSID_GW_GS_HEART_BEAT_REQ ||
+			head->id() == SSID_GS_GW_HEART_BEAT_RSP ||
+			head->id() == SSID_PC_PX_HEART_BEAT_REQ ||
+			head->id() == SSID_PX_PC_HEART_BEAT_RSP)
 		{
 			return;
 		}
+	}
+	else if(pkg->GetTypeName() == "CSHeartBeatReq" ||
+			pkg->GetTypeName() == "SCHeartBeatRsp" ||
+			pkg->GetTypeName() == "SSLCLSHeartBeatReq" ||
+			pkg->GetTypeName() == "SSLSLCHeartBeatRsp" ||
+			pkg->GetTypeName() == "SSGWGSHertBeatReq" ||
+			pkg->GetTypeName() == "SSGSGWHertBeatRsp" ||
+			pkg->GetTypeName() == "SSPCPXHeartBeatReq" ||
+			pkg->GetTypeName() == "SSPXPCHeartBeatRsp")
+	{
+		return;
 	}
 
 	LOGGER_TRACE("{} msg pkg:\n{}", prefix, pkg->DebugString());
