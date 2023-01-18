@@ -22,13 +22,7 @@ id = 1
 interval = 1
 port = 6666
 
-[GatewayMgr]
+[LBSrv]
 ip = "127.0.0.1"
 port = 6667
-timeout = 3000
-
-[[Gamesrv]]
-id = 1
-ip = "127.0.0.1"
-port = 6668
 timeout = 3000

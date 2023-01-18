@@ -1,2 +1,2 @@
 killall -SIGUSR1 gateway
-killall -SIGUSR1 gateway_mgr
+killall -SIGUSR1 lbsrv

@@ -1,0 +1,34 @@
+// ss protocol lbclt to lbsrv
+
+syntax = "proto3";
+
+enum SSLCLSID
+{
+	SSID_LC_LS_NODE_INIT = 0;
+	SSID_LC_LS_HEAT_BEAT_REQ = 1;
+	SSID_LS_LC_HEAT_BEAT_RSP = 2;
+}
+
+message SSLCLSNodeInit
+{
+}
+
+message SSLCLSHeartBeatReq
+{
+	uint32 load = 1;
+}
+
+message SSLSLCHeartBeatRsp
+{
+
+}
+
+message SSLCLSPkgBody
+{
+	oneof body
+	{
+		SSLCLSNodeInit node_init = 1;
+		SSLCLSHeartBeatReq heart_beat_req = 2;
+		SSLSLCHeartBeatRsp heart_beat_rsp = 3;
+	}
+}

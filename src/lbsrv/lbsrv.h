@@ -1,25 +1,26 @@
 // Copyright (c) 2022 TungFai Fong <iam@tungfaifong.com>
 
-#ifndef UFRM_GATEWAY_H
-#define UFRM_GATEWAY_H
-
-#include <map>
-#include <vector>
+#ifndef UFRM_LBSRV_H
+#define UFRM_LBSRV_H
 
 #include "toml++/toml.h"
 #include "usrv/unit.h"
-#include "usrv/units/server_unit.h"
 
 #include "common.h"
-#include "protocol/sslcls.pb.h"
 
 using namespace usrv;
 
-class Gateway : public Unit, public std::enable_shared_from_this<Gateway>
+struct Node
+{
+	NETID net_id;
+	uint32_t load;
+};
+
+class LBSrv : public Unit, public std::enable_shared_from_this<LBSrv>
 {
 public:
-	Gateway(NODEID id, toml::table & config);
-	virtual ~Gateway() = default;
+	LBSrv(NODEID id, toml::table & config);
+	virtual ~LBSrv() = default;
 
 	virtual bool Init() override final;
 	virtual bool Start() override final;
@@ -31,16 +32,10 @@ private:
 	void _OnServerConn(NETID net_id, IP ip, PORT port);
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
-	void _OnIServerConn(NETID net_id, IP ip, PORT port);
-	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
-	void _OnIServerDisc(NETID net_id);
 
 private:
 	NODEID _id;
 	toml::table & _config;
-
-	std::shared_ptr<ServerUnit> _server;
-	std::shared_ptr<ServerUnit> _iserver;
 };
 
-#endif // UFRM_GATEWAY_H
+#endif // UFRM_LBSRV_H

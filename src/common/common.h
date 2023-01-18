@@ -7,11 +7,11 @@
 
 using namespace usrv;
 
-using PROCID = uint32_t;
+using NODEID = uint32_t;
 
 static const IP DEFAULT_IP {"127.0.0.1"};
 static constexpr PORT DEFAULT_PORT = 6666;
 
-static constexpr PROCID INVALID_PROC_ID = 0;
+static constexpr NODEID INVALID_NODE_ID = 0;
 
 #endif // UFRM_COMMON_H

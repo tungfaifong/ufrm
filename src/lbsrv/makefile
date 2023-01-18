@@ -1,5 +1,5 @@
 include ../mk_base.mk
 
-TARGET := gateway_mgr
+TARGET := lbsrv
 
 include ../mk_srv.mk

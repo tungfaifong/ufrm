@@ -1,6 +1,6 @@
 [Logger]
 level = 0
-file_name = "/logs/gateway_mgr.log"
+file_name = "/logs/lbsrv.log"
 spsc_blk_num = 524288	# 一个blk为64bytes 512k * 64bytes = 32MB
 
 [Server]
@@ -12,7 +12,7 @@ spsc_blk_num = 524288
 tp_alloc_num = 1024
 ts_alloc_num = 1024
 
-[GatewayMgr]
+[LBSrv]
 id = 1
 interval = 1
 port = 6667
