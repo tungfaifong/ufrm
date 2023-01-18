@@ -151,7 +151,7 @@ void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSP
 	}
 }
 
-void DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, std::any> where)
+std::vector< std::unordered_map<std::string, std::any> > DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::unordered_map<std::string, std::any> where)
 {
 	auto c =  _GetVecStr(column);
 	c = c == "" ? "*" : c;
@@ -159,7 +159,18 @@ void DBSrv::_Select(std::string tb_name, std::vector<std::string> column, std::u
 	w = w == "" ? w : " where " + w;
 	auto sql = fmt::format("select {} from {}{};", c, tb_name, w);
 	auto query = _mysql_connection.query(sql);
-	auto ret = query.store();
+	auto ret = std::vector< std::unordered_map<std::string, std::any> >();
+	auto store = query.store();
+	for(auto & row : store)
+	{
+		auto map = std::unordered_map<std::string, std::any>();
+		for (size_t i = 0; i < store.num_fields(); ++i)
+		{
+			map[store.field_name(i)] = row[i];
+		}
+		ret.push_back(map);
+	}
+	return ret;
 }
 
 bool DBSrv::_Insert(std::string tb_name, std::vector<std::string> column, std::vector<std::any> value)
@@ -280,7 +291,7 @@ std::string DBSrv::_GetMapStr(const std::unordered_map<std::string, std::any> & 
 		{
 			str += fmt::format("{} = '{}'", iter->first, std::any_cast<std::string>(iter->second));
 		}
-		
+
 		if(std::next(iter) != map.end())
 		{
 			str += separator;
