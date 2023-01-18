@@ -4,12 +4,19 @@ import "ioid.proto";
 
 message IORegisterReq
 {
-
+	string username = 1;
+	string password = 2;
 }
 
 message IORegisterRsp
 {
-
+	enum RESULT
+	{
+		SUCCESS = 0;
+		PASSWORD_INVALID = 1;
+		USERNAME_REPEATED = 2;
+	}
+	optional RESULT result = 1;
 }
 
 message IOAuthReq
@@ -30,11 +37,11 @@ message IOAuthRsp
 // pkg
 message IOPkgHead
 {
-	IOID id = 1;
+	optional IOID id = 1;
 }
 
 message IOPkg
 {
 	IOPkgHead head = 1;
-	bytes data = 2;
+	optional bytes data = 2;
 }

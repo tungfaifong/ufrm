@@ -8,6 +8,7 @@
 #include "usrv/units/server_unit.h"
 
 #include "protocol/cs.pb.h"
+#include "protocol/io.pb.h"
 #include "common.h"
 #include "define.h"
 
@@ -19,6 +20,7 @@ uint64_t g_TotalDelay = 0;
 uint32_t g_TotalCnt = 0;
 int32_t g_ClientNum = 0;
 std::unordered_map<NETID, std::shared_ptr<Client>> g_Clients;
+std::unordered_map<NETID, std::shared_ptr<Client>> g_IOClients;
 
 class Client : public Unit, public std::enable_shared_from_this<Client>
 {
@@ -29,8 +31,12 @@ public:
 	virtual bool Start();
 
 	void OnRecv(NETID net_id, char * data, uint16_t size);
+	void OnIORecv(NETID net_id, char * data, uint16_t size);
 
 	void SendToServer(CSID id, google::protobuf::Message * body);
+	void SendToIOServer(IOID id, google::protobuf::Message * body);
+
+	void RegisterReq(std::string username, std::string password);
 
 	void AuthReq();
 	void OnAuthRsp(const SCAuthRsp & rsp);
@@ -49,6 +55,7 @@ public:
 
 private:
 	NETID _net_id = INVALID_NET_ID;
+	NETID _io_net_id = INVALID_NET_ID;
 	USERID _user_id;
 	std::chrono::steady_clock::time_point _start;
 	std::chrono::steady_clock::time_point _end;
@@ -64,7 +71,18 @@ bool Client::Start()
 		return false;
 	}
 	g_Clients[_net_id] = shared_from_this();
-	AuthReq();
+
+	_io_net_id = server::Connect("127.0.0.1", 6671, 1000);
+	if(_io_net_id == INVALID_NET_ID)
+	{
+		LOGGER_ERROR("client connect failed.");
+		return false;
+	}
+	g_IOClients[_io_net_id] = shared_from_this();
+
+	// AuthReq();
+	// RegisterReq("testrole1", "password");
+
 	return true;
 }
 
@@ -110,6 +128,24 @@ void Client::OnRecv(NETID net_id, char * data, uint16_t size)
 	}
 }
 
+void Client::OnIORecv(NETID net_id, char * data, uint16_t size)
+{
+	IOPkg pkg;
+	pkg.ParseFromArray(data, size);
+	auto head = pkg.head();
+	LOGGER_TRACE("recv iosrv msg net_id:{} id:{}", net_id, ENUM_NAME(head.id()));
+	switch (head.id())
+	{
+	case IOID_REGISTER_RSP:
+		{
+			UNPACK(IORegisterRsp, body, pkg.data());
+		}
+		break;
+	default:
+		break;
+	}
+}
+
 void Client::SendToServer(CSID id, google::protobuf::Message * body)
 {
 	CSPkg pkg;
@@ -124,6 +160,30 @@ void Client::SendToServer(CSID id, google::protobuf::Message * body)
 	}
 	server::Send(_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 	LOGGER_TRACE("send msg id:{}", ENUM_NAME(id));
+}
+
+void Client::SendToIOServer(IOID id, google::protobuf::Message * body)
+{
+	IOPkg pkg;
+	auto head = pkg.mutable_head();
+	head->set_id(id);
+	body->SerializeToString(pkg.mutable_data());
+	auto size = pkg.ByteSizeLong();
+	if(size > UINT16_MAX)
+	{
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+		return;
+	}
+	server::Send(_io_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	LOGGER_TRACE("send msg id:{}", ENUM_NAME(id));
+}
+
+void Client::RegisterReq(std::string username, std::string password)
+{
+	IORegisterReq body;
+	body.set_username(username);
+	body.set_password(password);
+	SendToIOServer(IOID_REGISTER_REQ, &body);
 }
 
 void Client::AuthReq()
@@ -214,7 +274,7 @@ int main(int argc, char * argv[])
 	auto req_num = atoi(argv[2]);
 	auto time = atoi(argv[3]) * 1000;
 	UnitManager::Instance()->Init(10);
-	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::INFO, "/logs/client.log", 1 Mi)));
+	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::TRACE, "/logs/client.log", 1 Mi)));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(1 Ki, 1 Ki)));
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(1 Ki, 1 Ki, 512 Ki)));
 	for(int i = 0; i < g_ClientNum; ++i)
@@ -237,6 +297,12 @@ int main(int argc, char * argv[])
 		if(client != g_Clients.end())
 		{
 			client->second->OnRecv(net_id, data, size);
+		}
+
+		auto io_client = g_IOClients.find(net_id);
+		if(io_client != g_IOClients.end())
+		{
+			io_client->second->OnIORecv(net_id, data, size);
 		}
 	});
 

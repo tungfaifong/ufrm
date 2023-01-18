@@ -13,7 +13,7 @@
 #include "define.h"
 
 CommonSrv::CommonSrv(NODETYPE type, NODEID id, toml::table & config) : _type(type), _id(id), _config(config), 
-	_lb_client(_type, _id, _config["CommonSrv"]["ip"].value_or(DEFAULT_IP), _config["CommonSrv"]["port"].value_or(DEFAULT_PORT), \
+	_lb_client(_type, _id, _config["CommonSrv"]["ip"].value_or(DEFAULT_IP), _config["CommonSrv"]["iport"].value_or(DEFAULT_PORT), \
 	_config["LBSrv"]["id"].value_or(INVALID_NODE_ID), _config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), \
 	_config["LBSrv"]["timeout"].value_or(0)), 
 	_px_client(_type, _id, _config["Proxy"]["timeout"].value_or(0), _lb_client)
@@ -29,26 +29,38 @@ bool CommonSrv::Init()
 		return false;
 	}
 
-	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+	if(UnitManager::Instance()->Get("SERVER"))
+	{
+		_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+		_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+		_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+		_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	}
 
-	_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
-	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
-	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	_iserver = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("ISERVER"));
 
-	_lb_client.Init(_server,
+	_iserver->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnIServerConn(net_id, ip, port); });
+	_iserver->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnIServerRecv(net_id, data, size); });
+	_iserver->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnIServerDisc(net_id); });
+
+	_lb_client.Init(_iserver,
 		[self = shared_from_this()](){ return 0; },
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port) {
 			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
 		});
 	
-	_px_client.Init(_server);
+	_px_client.Init(_iserver);
 
 	return true;
 }
 
 bool CommonSrv::Start()
 {
-	_server->Listen(_config["CommonSrv"]["port"].value_or(DEFAULT_PORT));
+	if(_server)
+	{
+		_server->Listen(_config["CommonSrv"]["port"].value_or(DEFAULT_PORT));
+	}
+	_iserver->Listen(_config["CommonSrv"]["iport"].value_or(DEFAULT_PORT));
 	if(!CoroutineMgr::Instance()->Start())
 	{
 		return false;
@@ -81,9 +93,27 @@ void CommonSrv::Stop()
 void CommonSrv::Release()
 {
 	_server = nullptr;
+	_iserver = nullptr;
 	_px_client.Release();
 	_lb_client.Release();
 	Unit::Release();
+}
+
+void CommonSrv::Send(NETID net_id, google::protobuf::Message * pkg)
+{
+	if(!_server)
+	{
+		LOGGER_ERROR("no _server.");
+		return;
+	}
+	auto size = pkg->ByteSizeLong();
+	if(size > UINT16_MAX)
+	{
+		LOGGER_ERROR("pkg size too long size:{}", size);
+		return;
+	}
+	_server->Send(net_id, pkg->SerializeAsString().c_str(), (uint16_t)size);
+	TraceMsg("send ", pkg);
 }
 
 void CommonSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
@@ -103,6 +133,29 @@ void CommonSrv::_OnServerConn(NETID net_id, IP ip, PORT port)
 
 void CommonSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 {
+	auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
+	try
+	{
+		lua->OnRecv(net_id, data, size);
+	}
+	catch(const luabridge::LuaException & e)
+	{
+		lua->OnException(e);
+	}
+}
+
+void CommonSrv::_OnServerDisc(NETID net_id)
+{
+	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
+}
+
+void CommonSrv::_OnIServerConn(NETID net_id, IP ip, PORT port)
+{
+	LOGGER_INFO("onconnect success net_id:{} ip:{} port:{}", net_id, ip, port);
+}
+
+void CommonSrv::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
+{
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
@@ -113,17 +166,17 @@ void CommonSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 		{
 		case SSPkgHead::NORMAL:
 			{
-				_OnServerHandeNormal(net_id, head, pkg.data());
+				_OnIServerHandeNormal(net_id, head, pkg.data());
 			}
 			break;
 		case SSPkgHead::RPCREQ:
 			{
-				_OnServerHanleRpcReq(net_id, head, pkg.data());
+				_OnIServerHanleRpcReq(net_id, head, pkg.data());
 			}
 			break;
 		case SSPkgHead::RPCRSP:
 			{
-				_OnServerHanleRpcRsp(net_id, head, pkg.data());
+				_OnIServerHanleRpcRsp(net_id, head, pkg.data());
 			}
 			break;
 		default:
@@ -146,14 +199,14 @@ void CommonSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	}
 }
 
-void CommonSrv::_OnServerDisc(NETID net_id)
+void CommonSrv::_OnIServerDisc(NETID net_id)
 {
 	_px_client.OnDisconnect(net_id);
 
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void CommonSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data)
+void CommonSrv::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch (head.from_node_type())
 	{
@@ -168,11 +221,11 @@ void CommonSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const
 	}
 }
 
-void CommonSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
+void CommonSrv::_OnIServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 }
 
-void CommonSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data)
+void CommonSrv::_OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, data);
 }

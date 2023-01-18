@@ -1,5 +1,10 @@
 -- Copyright (c) 2022 TungFai Fong <iam@tungfaifong.com>
 
+-- 只有commonsrv可用
+function Send(net_id, proto, body)
+	net.Send(net_id, proto, body)
+end
+
 -- 只有gamesrv可用
 function SendToClient(role_id, id, proto, body)
 	net.SendToClient(role_id, id, proto, body)

@@ -9,6 +9,13 @@
 #include "define.h"
 #include "commonsrv.h"
 
+void Send(NETID net_id, const std::string & proto, luabridge::LuaRef lua_ref)
+{
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
+	pblua::LuaRef2PB(message, proto, lua_ref);
+	std::dynamic_pointer_cast<CommonSrv>(UnitManager::Instance()->Get("COMMONSRV"))->Send(net_id, message.get());
+}
+
 void SendToProxy(uint16_t node_type, NODEID node_id, uint32_t id, const std::string & proto, luabridge::LuaRef lua_ref, NODEID proxy_id, uint16_t logic_type, uint16_t msg_type, size_t rpc_id)
 {
 	std::shared_ptr<google::protobuf::Message> message = nullptr;
@@ -32,6 +39,7 @@ void LuaExpose(luabridge::Namespace ns)
 			.addFunction("Decode", pblua::Decode)
 		.endNamespace()
 		.beginNamespace("net")
+			.addFunction("Send", Send)
 			.addFunction("SendToProxy", SendToProxy)
 			.addFunction("BroadcastToProxy", BroadcastToProxy)
 		.endNamespace();
