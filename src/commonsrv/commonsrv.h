@@ -42,6 +42,10 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
+	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+
 private:
 	NODETYPE _type;
 	NODEID _id;

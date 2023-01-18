@@ -105,14 +105,45 @@ void CommonSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 {
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
-	auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
-	try
+	auto head = pkg.head();
+	auto body = pkg.body();
+	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), SSID_Name(head.id()), head.rpc_id());
+	if(head.logic_type() == SSPkgHead::CPP || head.logic_type() == SSPkgHead::BOTH)
 	{
-		(*_lua_on_recv_pkg)(net_id, pblua::PB2LuaRef(pkg, lua->GetLuaState()));
+		switch (head.msg_type())
+		{
+		case SSPkgHead::NORMAL:
+			{
+				_OnServerHandeNormal(net_id, head, body);
+			}
+			break;
+		case SSPkgHead::RPCREQ:
+			{
+				_OnServerHanleRpcReq(net_id, head, body);
+			}
+			break;
+		case SSPkgHead::RPCRSP:
+			{
+				_OnServerHanleRpcRsp(net_id, head, body);
+			}
+			break;
+		default:
+			LOGGER_WARN("invalid node_type:{} node_id:{} msg_type:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()));
+			break;
+		}
 	}
-	catch(const luabridge::LuaException & e)
+
+	if(head.logic_type() == SSPkgHead::LUA || head.logic_type() == SSPkgHead::BOTH)
 	{
-		lua->OnException(e);
+		auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
+		try
+		{
+			(*_lua_on_recv_pkg)(net_id, pblua::PB2LuaRef(pkg, lua->GetLuaState()));
+		}
+		catch(const luabridge::LuaException & e)
+		{
+			lua->OnException(e);
+		}
 	}
 }
 
@@ -121,4 +152,28 @@ void CommonSrv::_OnServerDisc(NETID net_id)
 	_px_client.OnDisconnect(net_id);
 
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
+}
+
+void CommonSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+{
+	switch (head.from_node_type())
+	{
+	case LBSRV:
+		{
+			_lb_client.OnRecv(net_id, head, body.lcls_body());
+		}
+		break;
+	default:
+		LOGGER_WARN("invalid node_type:{} node_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id());
+		break;
+	}
+}
+
+void CommonSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+{
+}
+
+void CommonSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+{
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
 }
