@@ -26,9 +26,9 @@ inline void log(const char * file, int32_t line, const char * func, LoggerUnit::
 	log(level, "[{}:{}:{}()] {}", file, line, func, fmt::format(fmt, std::forward<Args>(args)...));
 }
 
-inline void flush()
+inline void on_abort()
 {
-	std::dynamic_pointer_cast<LoggerUnit>(UnitManager::Instance()->Get("LOGGER"))->Flush();
+	std::dynamic_pointer_cast<LoggerUnit>(UnitManager::Instance()->Get("LOGGER"))->OnAbort();
 }
 
 #define LOGGER_TRACE(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::LEVEL::TRACE, fmt, ##__VA_ARGS__)
@@ -37,7 +37,6 @@ inline void flush()
 #define LOGGER_WARN(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::LEVEL::WARN, fmt, ##__VA_ARGS__)
 #define LOGGER_ERROR(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::LEVEL::ERROR, fmt, ##__VA_ARGS__)
 #define LOGGER_CRITICAL(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::LEVEL::CRITICAL, fmt, ##__VA_ARGS__)
-#define LOGGER_FLUSH() logger::flush()
 
 inline void lua_log(LoggerUnit::LEVEL level, const std::string & msg, lua_State *L)
 {

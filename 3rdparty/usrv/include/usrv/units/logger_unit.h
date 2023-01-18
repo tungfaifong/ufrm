@@ -35,12 +35,14 @@ public:
 	virtual ~LoggerUnit();
 
 	virtual void OnRegister(const std::shared_ptr<UnitManager> & mgr) override final;
+	virtual bool Start() override final;
 	virtual void Stop() override final;
 	virtual void Release() override final;
 
 public:
 	template<typename ... Args> void Log(LEVEL level, fmt::format_string<Args...> fmt, Args && ... args);
 	void Flush();
+	void OnAbort();
 
 private:
 	void _Init();
