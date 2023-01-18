@@ -1,21 +1,13 @@
 syntax = "proto3";
 
+import "common.proto";
 import "sslcls.proto";
-
-enum NODETYPE
-{
-	GATEWAY = 0;
-	LBSRV = 1;
-	GAMESRV = 2;
-	PROXY = 3;
-	DBSRV = 4;
-	CGISRV = 5;
-}
 
 enum MSGTYPE
 {
 	NORMAL = 0;
-	RPC = 1;
+	RPC_REQ = 1;
+	RPC_RSP = 2;
 }
 
 message SSPkgHead

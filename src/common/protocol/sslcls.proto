@@ -2,6 +2,8 @@
 
 syntax = "proto3";
 
+import "common.proto";
+
 enum SSLCLSID
 {
 	SSID_LC_LS_NODE_INIT = 0;
@@ -11,6 +13,9 @@ enum SSLCLSID
 
 message SSLCLSNodeInit
 {
+	NODETYPE node_type = 1;
+	string ip = 2;
+	uint32 port = 3; 
 }
 
 message SSLCLSHeartBeatReq

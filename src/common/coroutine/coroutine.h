@@ -9,6 +9,8 @@
 
 #include "usrv/util/time.h"
 
+using namespace usrv;
+
 using COROID = size_t;
 enum CORORESULT
 {
@@ -24,6 +26,7 @@ struct coroutine : std::coroutine_handle<promise>
 
 	COROID id;
 	CORORESULT result;
+	std::string data;
 	std_clock_t timeout;
 };
 
@@ -57,4 +60,4 @@ struct awaitable
 	std::function<void()> func;
 };
 
-// UFRM_COROUTINE_H
+#endif // UFRM_COROUTINE_H

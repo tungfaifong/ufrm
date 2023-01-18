@@ -1,1 +1,11 @@
 syntax = "proto3";
+
+enum NODETYPE
+{
+	GATEWAY = 0;
+	LBSRV = 1;
+	GAMESRV = 2;
+	PROXY = 3;
+	DBSRV = 4;
+	CGISRV = 5;
+}

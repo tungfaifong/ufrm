@@ -6,9 +6,10 @@
 #include "usrv/interfaces/server_interface.h"
 #include "usrv/interfaces/timer_interface.h"
 
+#include "coroutine/coroutine_mgr.h"
 #include "protocol/ss.pb.h"
 
-Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config)
+Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config), _lb_client(GATEWAY, _id)
 {
 
 }
@@ -31,7 +32,7 @@ bool Gateway::Init()
 	_iserver->OnRecv(std::bind(&Gateway::_OnIServerRecv, shared_from_this(), std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	_iserver->OnDisc(std::bind(&Gateway::_OnServerDisc, shared_from_this(), std::placeholders::_1));
 
-	_lb_client.Init(_iserver);
+	_lb_client.Init(_config["LBSrv"]["id"].value_or(INVALID_NODE_ID), _iserver);
 
 	return true;
 }
@@ -42,6 +43,7 @@ bool Gateway::Start()
 	{
 		return false;
 	}
+	_lb_client.RegisterToLBSrv(GATEWAY, _config["Gateway"]["ip"].value_or(DEFAULT_IP), _config["Gateway"]["port"].value_or(DEFAULT_PORT));
 	return true;
 }
 
@@ -83,7 +85,27 @@ void Gateway::_OnIServerConn(NETID net_id, IP ip, PORT port)
 void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 {
 	SSPkg pkg;
-	
+	pkg.ParseFromArray(data, size);
+	auto head = pkg.head();
+	auto body = pkg.body();
+	if(head.msg_type() == RPC_RSP)
+	{
+		CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::CR_SUCCESS, std::move(body.SerializePartialAsString()));
+	}
+	else
+	{
+		switch (head.from_node_type())
+		{
+		case GAMESRV:
+			{
+				
+			}
+			break;
+		default:
+			LOGGER_WARN("Gateway::_OnIServerRecv WARN: invalid node_type:{} node_id:{}", head.from_node_type(), head.from_node_id());
+			break;
+		}
+	}
 }
 
 void Gateway::_OnIServerDisc(NETID net_id)

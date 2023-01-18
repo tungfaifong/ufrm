@@ -7,9 +7,10 @@
 bool CoroutineMgr::Start()
 {
 	_CheckTimeout();
+	return true;
 }
 
-bool CoroutineMgr::Stop()
+void CoroutineMgr::Stop()
 {
 	timer::RemoveTimer(_timer_handler);
 	_timer_handler = INVALID_TIMER_ID;
@@ -19,19 +20,20 @@ void CoroutineMgr::Spawn(std::function<coroutine()> func)
 {
 	auto id = _coroutines.Insert(std::move(std::make_shared<coroutine>(func())));
 	auto coro = _coroutines[id];
-	coro.timeout = StdNow() + ms_t(TIMEOUT);
+	coro->timeout = StdNow() + ms_t(TIMEOUT);
 	coro->promise().coro = coro;
 	coro->resume();
 }
 
-void CoroutineMgr::Resume(COROID coro_id, CORORESULT)
+void CoroutineMgr::Resume(COROID coro_id, CORORESULT result, std::string && data)
 {
 	auto coro = _coroutines[coro_id];
 	if(!coro)
 	{
 		return;
 	}
-	coro->result = CORORESULT::CR_SUCCESS;
+	coro->result = result;
+	coro->data = std::move(data);
 	coro->resume();
 	if(coro->done())
 	{
@@ -42,9 +44,10 @@ void CoroutineMgr::Resume(COROID coro_id, CORORESULT)
 void CoroutineMgr::_CheckTimeout()
 {
 	auto now = StdNow();
-	for(auto iter = _coroutines.begin(); iter != _coroutines.end())
+	for(auto iter = _coroutines.begin(); iter != _coroutines.end();)
 	{
-		if(now >= coro.timeout)
+		auto coro = (*iter).second;
+		if(now >= coro->timeout)
 		{
 			coro->result = CORORESULT::CR_TIMEOUT;
 			coro->resume();
@@ -55,5 +58,5 @@ void CoroutineMgr::_CheckTimeout()
 			++iter;
 		}
 	}
-	_timer_handler = timer::CreateTimer(TIMEOUT, std::bind(&CoroutineMgr::_CheckTimeout, this));
+	_timer_handler = timer::CreateTimer(TIMEOUT, std::bind(&CoroutineMgr::_CheckTimeout, shared_from_this()));
 }
