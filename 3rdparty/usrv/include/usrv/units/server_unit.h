@@ -53,7 +53,7 @@ public:
 
 private:
 	bool _Recv(NETID & net_id, MSGTYPE & msg_type, char * data, uint16_t & size);
-	void _IoStart();
+	void _IoInit();
 	asio::awaitable<void> _IoUpdate();
 	asio::awaitable<void> _IoListen(PORT port);
 	asio::awaitable<void> _IoConnect(const IP & ip, PORT port, std::promise<NETID> && promise_net_id);
