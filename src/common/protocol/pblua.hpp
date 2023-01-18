@@ -401,9 +401,57 @@ namespace pblua
 	}
 
 	// common
+	bool _parse_enum(const google::protobuf::EnumDescriptor * enum_desc, lua_State * L)
+	{
+		lua_getglobal(L, enum_desc->name().c_str());
+		if (!lua_isnil(L, -1))
+		{
+			lua_pop(L, 1);
+			return true;
+		}
+
+		lua_pop(L, 1);
+		lua_newtable(L);
+		for (auto i = 0; i < enum_desc->value_count(); i++)
+		{
+			auto value_desc = enum_desc->value(i);
+			lua_pushstring(L, value_desc->name().c_str());
+			lua_pushinteger(L, value_desc->number());
+			lua_settable(L, -3);
+		}
+		lua_setglobal(L, enum_desc->name().c_str());
+
+		return true;
+	}
+
+	bool _parse_message(const google::protobuf::Descriptor* message_desc, lua_State* L)
+	{
+		for (auto i = 0; i < message_desc->enum_type_count(); i++)
+		{
+			_parse_enum(message_desc->enum_type(i), L);
+		}
+
+		for (auto i = 0; i < message_desc->nested_type_count(); i++)
+		{
+			_parse_message(message_desc->nested_type(i), L);
+		}
+
+		return true;
+	}
+
 	bool _parse(const char* file, lua_State * L)
 	{
-		importer->Import(file);
+		auto file_desc = importer->Import(file);
+
+		for (auto i = 0; i < file_desc->enum_type_count(); i++)
+		{
+			_parse_enum(file_desc->enum_type(i), L);
+		}
+
+		for (auto i = 0; i < file_desc->message_type_count(); i++)
+		{
+			_parse_message(file_desc->message_type(i), L);
+		}
 
 		return true;
 	}

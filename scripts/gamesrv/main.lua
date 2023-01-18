@@ -7,7 +7,7 @@ require "common.util"
 function Start()
 	pblua.parse("common.proto")
 	pblua.parse("cs.proto")
-	pblua.parse("cdid.proto")
+	pblua.parse("csid.proto")
 	pblua.parse("io.proto")
 	pblua.parse("ioid.proto")
 	pblua.parse("ss.proto")
