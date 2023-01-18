@@ -31,9 +31,9 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
-	bool _SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	bool _SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg);
-	bool _SendToNodes(NODETYPE node_type, SSPkg & pkg);
+	void _SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg);
+	void _SendToNodes(NODETYPE node_type, SSPkg & pkg);
 
 	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPCPXPkgBody & body);
@@ -52,6 +52,8 @@ private:
 private:
 	NODEID _id;
 	toml::table & _config;
+
+	std::shared_ptr<ServerUnit> _server;
 
 	std::unordered_map<NETID, std::pair<NODETYPE, NODEID>> _nid2node;
 	std::unordered_map<NODEID, NETID> _nodes[NODETYPE_ARRAYSIZE];

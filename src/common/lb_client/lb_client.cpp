@@ -168,25 +168,7 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 
 void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	SSPkg pkg;
-	auto head = pkg.mutable_head();
-	head->set_from_node_type(_config.node_type);
-	head->set_from_node_id(_config.node_id);
-	head->set_to_node_type(LBSRV);
-	head->set_to_node_id(_config.srv_node_id);
-	head->set_id(id);
-	head->set_msg_type(msg_type);
-	head->set_rpc_id(rpc_id);
-	head->set_proxy_type(SSPkgHead::END);
-	pkg.mutable_body()->set_allocated_lcls_body(body);
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
-		return;
-	}
-	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
+	SEND_SSPKG(_server, _srv_net_id, _config.node_type, _config.node_id, LBSRV, _config.srv_node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_lcls_body, body);
 }
 
 awaitable_func LBClient::_RpcLBSrv(SSID id, SSLCLSPkgBody * body)

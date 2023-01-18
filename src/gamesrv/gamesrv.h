@@ -57,6 +57,8 @@ private:
 	NODEID _id;
 	toml::table & _config;
 
+	std::shared_ptr<ServerUnit> _server;
+
 	std::unordered_map<NETID, NODEID> _nid2gateway;
 	std::unordered_map<NODEID, NETID> _gateways;
 

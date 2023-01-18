@@ -29,26 +29,26 @@ bool GameSrv::Init()
 		return false;
 	}
 
-	auto server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 
-	server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
-	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
-	server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
-	_lb_client.Init(server,
+	_lb_client.Init(_server,
 		[self = shared_from_this()](){ return 1; }, // TODO
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
 			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
 		});
 
-	_px_client.Init(server);
+	_px_client.Init(_server);
 
 	return true;
 }
 
 bool GameSrv::Start()
 {
-	server::Listen(_config["GameSrv"]["port"].value_or(DEFAULT_PORT));
+	_server->Listen(_config["GameSrv"]["port"].value_or(DEFAULT_PORT));
 	if(!CoroutineMgr::Instance()->Start())
 	{
 		return false;
@@ -137,25 +137,7 @@ void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 		return;
 	}
 	auto net_id = _gateways[node_id];
-	SSPkg pkg;
-	auto head = pkg.mutable_head();
-	head->set_from_node_type(GAMESRV);
-	head->set_from_node_id(_id);
-	head->set_to_node_type(GATEWAY);
-	head->set_to_node_id(node_id);
-	head->set_id(id);
-	head->set_msg_type(msg_type);
-	head->set_rpc_id(rpc_id);
-	head->set_proxy_type(SSPkgHead::END);
-	pkg.mutable_body()->set_allocated_gwgs_body(body);
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
-		return;
-	}
-	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
+	SEND_SSPKG(_server, net_id, GAMESRV, _id, GATEWAY, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_gwgs_body, body);
 }
 
 void GameSrv::_SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)

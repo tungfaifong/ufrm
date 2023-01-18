@@ -23,18 +23,18 @@ bool LBSrv::Init()
 		return false;
 	}
 
-	auto server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 
-	server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
-	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
-	server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
 	return true;
 }
 
 bool LBSrv::Start()
 {
-	server::Listen(_config["LBSrv"]["port"].value_or(DEFAULT_PORT));
+	_server->Listen(_config["LBSrv"]["port"].value_or(DEFAULT_PORT));
 	return true;
 }
 
@@ -90,32 +90,13 @@ void LBSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
 }
 
-bool LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	SSPkg pkg;
 	auto [node_type, node_id] = _nid2node[net_id];
-	auto head = pkg.mutable_head();
-	head->set_from_node_type(LBSRV);
-	head->set_from_node_id(_id);
-	head->set_to_node_type(node_type);
-	head->set_to_node_id(node_id);
-	head->set_id(id);
-	head->set_msg_type(msg_type);
-	head->set_rpc_id(rpc_id);
-	head->set_proxy_type(SSPkgHead::END);
-	pkg.mutable_body()->set_allocated_lcls_body(body);
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
-		return false;
-	}
-	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
-	return true;
+	SEND_SSPKG(_server, net_id, LBSRV, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_lcls_body, body);
 }
 
-bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -137,10 +118,9 @@ bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody 
 			LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
 			continue;
 		}
-		server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+		_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 		LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
 	}
-	return true;
 }
 
 void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)

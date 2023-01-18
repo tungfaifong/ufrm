@@ -6,6 +6,7 @@
 #include <unordered_map>
 
 #include "toml++/toml.h"
+#include "usrv/units/server_unit.h"
 #include "usrv/unit.h"
 
 #include "protocol/ss.pb.h"
@@ -38,8 +39,8 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
-	bool _SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	bool _SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 
 	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
 	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
@@ -60,6 +61,8 @@ private:
 private:
 	NODEID _id;
 	toml::table & _config;
+
+	std::shared_ptr<ServerUnit> _server;
 
 	std::unordered_map<NETID, std::pair<NODETYPE, NODEID>> _nid2node;
 	std::unordered_map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];

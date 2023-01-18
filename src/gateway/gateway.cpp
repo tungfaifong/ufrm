@@ -186,25 +186,7 @@ void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 		return;
 	}
 	auto net_id = _gamesrvs[node_id];
-	SSPkg pkg;
-	auto head = pkg.mutable_head();
-	head->set_from_node_type(GATEWAY);
-	head->set_from_node_id(_id);
-	head->set_to_node_type(GAMESRV);
-	head->set_to_node_id(node_id);
-	head->set_id(id);
-	head->set_msg_type(msg_type);
-	head->set_rpc_id(rpc_id);
-	head->set_proxy_type(SSPkgHead::END);
-	pkg.mutable_body()->set_allocated_gwgs_body(body);
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
-		return;
-	}
-	_iserver->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
+	SEND_SSPKG(_iserver, net_id, GATEWAY, _id, GAMESRV, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_gwgs_body, body);
 }
 
 awaitable_func Gateway::_RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body)

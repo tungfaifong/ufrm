@@ -108,25 +108,7 @@ void PXClient::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBo
 		return;
 	}
 	auto net_id = _proxys[proxy_id];
-	SSPkg pkg;
-	auto head = pkg.mutable_head();
-	head->set_from_node_type(_config.node_type);
-	head->set_from_node_id(_config.node_id);
-	head->set_to_node_type(node_type);
-	head->set_to_node_id(node_id);
-	head->set_id(id);
-	head->set_msg_type(msg_type);
-	head->set_rpc_id(rpc_id);
-	head->set_proxy_type(proxy_type);
-	pkg.set_allocated_body(body);
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
-		return;
-	}
-	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
+	SEND_SSPKG(_server, net_id, _config.node_type, _config.node_id, node_type, node_id, id, msg_type, rpc_id, proxy_type, set_allocated_body, body);
 }
 
 awaitable_func PXClient::_RpcProxy(NODEID node_id, SSID id, SSPkgBody * body)

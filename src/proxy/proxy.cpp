@@ -27,20 +27,20 @@ bool Proxy::Init()
 		return false;
 	}
 
-	auto server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 
-	server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
-	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
-	server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
-	_lb_client.Init(server, [self = shared_from_this()](){ return 0; });
+	_lb_client.Init(_server, [self = shared_from_this()](){ return 0; });
 
 	return true;
 }
 
 bool Proxy::Start()
 {
-	server::Listen(_config["Proxy"]["port"].value_or(DEFAULT_PORT));
+	_server->Listen(_config["Proxy"]["port"].value_or(DEFAULT_PORT));
 	if(!CoroutineMgr::Instance()->Start())
 	{
 		return false;
@@ -131,37 +131,18 @@ void Proxy::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
 }
 
-bool Proxy::_SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void Proxy::_SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	SSPkg pkg;
 	auto [node_type, node_id] = _nid2node[net_id];
-	auto head = pkg.mutable_head();
-	head->set_from_node_type(PROXY);
-	head->set_from_node_id(_id);
-	head->set_to_node_type(node_type);
-	head->set_to_node_id(node_id);
-	head->set_id(id);
-	head->set_msg_type(msg_type);
-	head->set_rpc_id(rpc_id);
-	head->set_proxy_type(SSPkgHead::END);
-	pkg.mutable_body()->set_allocated_pcpx_body(body);
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
-		return false;
-	}
-	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
-	return true;
+	SEND_SSPKG(_server, net_id, PROXY, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_pcpx_body, body);
 }
 
-bool Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)
+void Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)
 {
 	if(_nodes[node_type].find(node_id) == _nodes[node_type].end())
 	{
 		LOGGER_ERROR("node:type:{} id:{} is invalid", ENUM_NAME(node_type), node_id);
-		return false;
+		return;
 	}
 	auto net_id = _nodes[node_type][node_id];
 	auto head = pkg.mutable_head();
@@ -170,14 +151,13 @@ bool Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)
 	if(size > UINT16_MAX)
 	{
 		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(head->id()), size);
-		return false;
+		return;
 	}
-	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), SSID_Name(head->id()), head->rpc_id());
-	return true;
 }
 
-bool Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
+void Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
 {
 	auto head = pkg.mutable_head();
 	head->set_proxy_type(SSPkgHead::END);
@@ -190,10 +170,9 @@ bool Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
 			LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(head->id()), size);
 			continue;
 		}
-		server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+		_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 		LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), SSID_Name(head->id()), head->rpc_id());
 	}
-	return true;
 }
 
 void Proxy::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
