@@ -64,7 +64,7 @@ void Gateway::Release()
 	_iserver = nullptr;
 }
 
-bool Gateway::SendToGatewayMgr(SSGWGMID id, SSGWGMPkgBody * body)
+bool Gateway::SendToGatewayMgr(SSGWGMID id, std::unique_ptr<SSGWGMPkgBody> && body)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -72,7 +72,7 @@ bool Gateway::SendToGatewayMgr(SSGWGMID id, SSGWGMPkgBody * body)
 	head->set_id(id);
 	head->set_proc_type(GATEWAY);
 	head->set_proc_id(_id);
-	pkg.mutable_body()->set_allocated_gwgm_body(body);
+	pkg.mutable_body()->set_allocated_gwgm_body(body.release());
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
@@ -83,7 +83,7 @@ bool Gateway::SendToGatewayMgr(SSGWGMID id, SSGWGMPkgBody * body)
 	return true;
 }
 
-bool Gateway::SendToGamesrv(PROCID proc_id, SSGWGSID id, SSGWGSPkgBody * body)
+bool Gateway::SendToGamesrv(PROCID proc_id, SSGWGSID id, std::unique_ptr<SSGWGSPkgBody> && body)
 {
 	auto game_net_id = _gamesrv_net_ids.find(proc_id);
 	if(game_net_id == _gamesrv_net_ids.end())
@@ -97,7 +97,7 @@ bool Gateway::SendToGamesrv(PROCID proc_id, SSGWGSID id, SSGWGSPkgBody * body)
 	head->set_id(id);
 	head->set_proc_type(GATEWAY);
 	head->set_proc_id(proc_id);
-	pkg.mutable_body()->set_allocated_gwgs_body(body);
+	pkg.mutable_body()->set_allocated_gwgs_body(body.release());
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
@@ -118,8 +118,8 @@ bool Gateway::_ConnectToGatewayMgr()
 		LOGGER_ERROR("Gateway::Start ERROR: gateway mgr connect failed ip:{} port:{}", gateway_mgr_ip, gateway_mgr_port);
 		return false;
 	}
-	SSGWGMPkgBody body;
-	SendToGatewayMgr(SSID_GW_GM_INIT, &body);
+	auto body = std::make_unique<SSGWGMPkgBody>();
+	SendToGatewayMgr(SSID_GW_GM_INIT, std::move(body));
 	LOGGER_INFO("Gateway::_ConnectToGatewayMgr success net_id:{}", _gateway_mgr_net_id);
 	return true;
 }
@@ -139,8 +139,8 @@ bool Gateway::_ConnectToGamesrvs()
 			// return false;
 		}
 		_gamesrv_net_ids[id] = net_id;
-		SSGWGSPkgBody body;
-		SendToGamesrv(id, SSID_GW_GS_INIT, &body);
+		auto body = std::make_unique<SSGWGSPkgBody>();
+		SendToGamesrv(id, SSID_GW_GS_INIT, std::move(body));
 		LOGGER_INFO("Gateway::_ConnectToGamesrvs success id:{} net_id:{}", id, net_id);
 	}
 
@@ -234,15 +234,15 @@ void Gateway::_OnGamesrvRecv(PROCID proc_id, SSGWGSID id, const SSGWGSPkgBody & 
 
 void Gateway::_HeartBeat()
 {
-	SSGWGMPkgBody gm_body;
-	auto gm_heart_beat = gm_body.mutable_heart_beat_req();
+	auto gm_body = std::make_unique<SSGWGMPkgBody>();
+	auto gm_heart_beat = gm_body->mutable_heart_beat_req();
 	gm_heart_beat->set_peers_num(_server->PeersNum());
-	SendToGatewayMgr(SSID_GW_GM_HEAT_BEAT_REQ, &gm_body);
+	SendToGatewayMgr(SSID_GW_GM_HEAT_BEAT_REQ, std::move(gm_body));
 
-	SSGWGSPkgBody gs_body;
+	auto gs_body = std::make_unique<SSGWGSPkgBody>();
 	for(auto & [proc_id, net_id] : _gamesrv_net_ids)
 	{
-		SendToGamesrv(net_id, SSID_GW_GS_HEAT_BEAT_REQ, &gs_body);
+		SendToGamesrv(net_id, SSID_GW_GS_HEAT_BEAT_REQ, std::move(gs_body));
 	}
 
 	timer::CreateTimer(30 * SEC2MILLISEC, std::bind(&Gateway::_HeartBeat, shared_from_this()));

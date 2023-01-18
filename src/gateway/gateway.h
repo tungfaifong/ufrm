@@ -29,8 +29,8 @@ public:
 	virtual void Release() override final;
 
 public:
-	bool SendToGatewayMgr(SSGWGMID id, SSGWGMPkgBody * body);
-	bool SendToGamesrv(PROCID proc_id, SSGWGSID id, SSGWGSPkgBody * body);
+	bool SendToGatewayMgr(SSGWGMID id, std::unique_ptr<SSGWGMPkgBody> && body);
+	bool SendToGamesrv(PROCID proc_id, SSGWGSID id, std::unique_ptr<SSGWGSPkgBody> && body);
 
 private:
 	bool _ConnectToGatewayMgr();

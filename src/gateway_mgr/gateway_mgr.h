@@ -30,7 +30,7 @@ public:
 	virtual void Release() override final;
 
 public:
-	bool SendToGateway(PROCID proc_id, SSGWGMID id, SSGWGMPkgBody * body);
+	bool SendToGateway(PROCID proc_id, SSGWGMID id, std::unique_ptr<SSGWGMPkgBody> && body);
 
 private:
 	void _OnServerConn(NETID net_id, IP ip, PORT port);

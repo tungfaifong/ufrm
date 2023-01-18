@@ -49,7 +49,7 @@ void GatewayMgr::Release()
 {
 }
 
-bool GatewayMgr::SendToGateway(PROCID proc_id, SSGWGMID id, SSGWGMPkgBody * body)
+bool GatewayMgr::SendToGateway(PROCID proc_id, SSGWGMID id, std::unique_ptr<SSGWGMPkgBody> && body)
 {
 	auto gateway = _gateways.find(proc_id);
 	if(gateway == _gateways.end())
@@ -63,7 +63,7 @@ bool GatewayMgr::SendToGateway(PROCID proc_id, SSGWGMID id, SSGWGMPkgBody * body
 	head->set_id(id);
 	head->set_proc_type(GATEWAY_MGR);
 	head->set_proc_id(_id);
-	pkg.mutable_body()->set_allocated_gwgm_body(body);
+	pkg.mutable_body()->set_allocated_gwgm_body(body.release());
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
@@ -153,6 +153,6 @@ void GatewayMgr::_OnGWHeartBeatReq(PROCID proc_id, const SSGWGMHeartBeatReq & re
 	}
 	gateway->second.peers_num = req.peers_num();
 
-	SSGWGMPkgBody body;
-	SendToGateway(proc_id, SSID_GM_GW_HEAT_BEAT_RSP, &body);
+	auto body = std::make_unique<SSGWGMPkgBody>();
+	SendToGateway(proc_id, SSID_GM_GW_HEAT_BEAT_RSP, std::move(body));
 }
