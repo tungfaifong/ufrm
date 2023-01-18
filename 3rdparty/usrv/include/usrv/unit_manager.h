@@ -23,7 +23,7 @@ public:
 	void Init(intvl_t interval);
 	bool Register(const std::string & key, std::shared_ptr<Unit> && unit);
 	std::shared_ptr<Unit> Get(const std::string & key);
-	void Run();
+	bool Run();
 	void SetExit(bool exit);
 	intvl_t Interval();
 	void LoopNotify();
