@@ -1,3 +1,5 @@
+-- Copyright (c) 2022 TungFai Fong <iam@tungfaifong.com>
+
 function SendToClient(role_id, id, body)
 	local data, size = pblua.encode("CSPkgBody", body)
 	gamesrv.SendToClient(role_id, id, data, size)
