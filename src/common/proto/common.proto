@@ -2,12 +2,13 @@ syntax = "proto3";
 
 enum NODETYPE
 {
-	GATEWAY = 0;
-	LBSRV = 1;
-	GAMESRV = 2;
-	PROXY = 3;
-	DBSRV = 4;
-	IOSRV = 5;
+	INVALID_NOTE_TYPE = 0;
+	GATEWAY = 1;
+	LBSRV = 2;
+	GAMESRV = 3;
+	PROXY = 4;
+	DBSRV = 5;
+	IOSRV = 6;
 }
 
 message Variant
