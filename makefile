@@ -2,6 +2,7 @@ TARGET = SHELL
 
 all: $(TARGET)
 release: $(TARGET)
+debug: $(TARGET)
 
 SHELL:
 	cd ./src && make $(MAKECMDGOALS);

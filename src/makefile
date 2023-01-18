@@ -4,6 +4,7 @@ TARGET = SHELL
 
 all: $(TARGET)
 release: $(TARGET)
+debug: $(TARGET)
 
 SHELL:
 	cd ./common && make $(MAKECMDGOALS); if (($$? != 0)); then echo "make common error"; exit 1; fi
