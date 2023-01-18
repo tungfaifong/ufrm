@@ -45,3 +45,26 @@ function Unserialize(str)
 	end
 	return func()
 end
+
+-- engine
+-- engine.Now()
+-- engine.NowMs()
+
+-- logger
+-- logger.trace(msg)
+-- logger.debug(msg)
+-- logger.info(msg)
+-- logger.warn(msg)
+-- logger.error(msg)
+-- logger.critical(msg)
+-- logger.flush()
+
+-- server
+-- server.Connect(ip, port, timeout)
+-- server.Disconnect(net_id)
+-- server.Send(net_id, data, size)
+
+-- timer
+-- timer.CreateTimer(time, callback)
+-- timer.CallTimer(id)
+-- timer.RemoveTimer(id)
