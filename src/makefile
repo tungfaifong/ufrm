@@ -1,4 +1,4 @@
-PROCESSES = gamesrv gateway lbsrv # cgisrv dbsrv gateway proxy
+PROCESSES = gamesrv gateway lbsrv proxy # cgisrv dbsrv
 
 TARGET = SHELL
 
