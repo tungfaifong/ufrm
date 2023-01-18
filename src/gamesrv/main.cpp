@@ -10,7 +10,7 @@
 #include "usrv/units/timer_unit.h"
 #include "usrv/unit_manager.h"
 
-#include "proto/pblua.hpp"
+#include "protocol/pblua.hpp"
 
 #include "gamesrv.h"
 
