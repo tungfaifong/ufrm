@@ -79,7 +79,7 @@ void Proxy::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), SSID_Name(head.id()), head.rpc_id());
+	TRACE_MSG("recv ss", pkg);
 	switch(head.proxy_type())
 	{
 		case SSPkgHead::END:
@@ -154,7 +154,7 @@ void Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)
 		return;
 	}
 	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), SSID_Name(head->id()), head->rpc_id());
+	TRACE_MSG("send ss", pkg);
 }
 
 void Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
@@ -171,7 +171,7 @@ void Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
 			continue;
 		}
 		_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-		LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), SSID_Name(head->id()), head->rpc_id());
+		TRACE_MSG("send ss", pkg);
 	}
 }
 

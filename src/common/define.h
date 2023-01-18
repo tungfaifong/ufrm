@@ -25,10 +25,13 @@
 		return;\
 	}\
 	server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);\
-	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), SSID_Name(id), rpc_id)
+	TRACE_MSG("send ss", pkg);
 
 #define CO_SPAWN(future) future.coro.resume()
 
 #define ENUM_NAME(enum) magic_enum::enum_name(enum)
+
+#define TRACE_MSG(prefix, pkg) \
+	LOGGER_TRACE("{} msg pkg:\n{}", prefix, pkg.DebugString());
 
 #endif // UFRM_DEFINE_H
