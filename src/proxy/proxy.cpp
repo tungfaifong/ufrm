@@ -134,7 +134,7 @@ void Proxy::_OnServerDisc(NETID net_id)
 void Proxy::_SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	auto [node_type, node_id] = _nid2node[net_id];
-	SEND_SSPKG(_server, net_id, PROXY, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_pcpx_body, body);
+	SEND_SSPKG(_server, net_id, PROXY, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_pcpx_body, body);
 }
 
 void Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)

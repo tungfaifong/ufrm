@@ -178,7 +178,7 @@ void Gateway::_OnIServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	if(_gamesrvs.find(node_id) == _gamesrvs.end())
 	{
@@ -186,12 +186,12 @@ void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 		return;
 	}
 	auto net_id = _gamesrvs[node_id];
-	SEND_SSPKG(_iserver, net_id, GATEWAY, _id, GAMESRV, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_gwgs_body, body);
+	SEND_SSPKG(_iserver, net_id, GATEWAY, _id, GAMESRV, node_id, id, msg_type, rpc_id, SSPkgHead::END, logic_type, mutable_body()->set_allocated_gwgs_body, body);
 }
 
 awaitable_func Gateway::_RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body)
 {
-	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToGameSrv(node_id, id, body, SSPkgHead::RPCREQ, coro_id); });
+	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToGameSrv(node_id, id, body, SSPkgHead::CPP, SSPkgHead::RPCREQ, coro_id); });
 }
 
 void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
@@ -215,7 +215,7 @@ void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
 
 void Gateway::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, msg_type, rpc_id);
+	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::CPP, msg_type, rpc_id);
 }
 
 void Gateway::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */)

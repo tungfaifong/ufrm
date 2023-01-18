@@ -137,7 +137,7 @@ void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 		return;
 	}
 	auto net_id = _gateways[node_id];
-	SEND_SSPKG(_server, net_id, GAMESRV, _id, GATEWAY, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_gwgs_body, body);
+	SEND_SSPKG(_server, net_id, GAMESRV, _id, GATEWAY, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_gwgs_body, body);
 }
 
 void GameSrv::_SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)
@@ -156,7 +156,7 @@ void GameSrv::_SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)
 
 void GameSrv::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, msg_type, rpc_id);
+	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::CPP, msg_type, rpc_id);
 }
 
 void GameSrv::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */)

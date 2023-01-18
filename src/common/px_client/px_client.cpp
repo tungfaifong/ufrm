@@ -31,27 +31,27 @@ void PXClient::Release()
 	_server = nullptr;
 }
 
-void PXClient::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void PXClient::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	if(proxy_id == INVALID_NODE_ID)
 	{
 		proxy_id = _GetConsistentHashProxy();
 	}
-	_SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::FORWARD, msg_type, rpc_id);
+	_SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::FORWARD, logic_type, msg_type, rpc_id);
 }
 
-void PXClient::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */)
+void PXClient::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
 {
 	if(proxy_id == INVALID_NODE_ID)
 	{
 		proxy_id = _GetConsistentHashProxy();
 	}
-	_SendToProxy(node_type, INVALID_NODE_ID, id, body, proxy_id, SSPkgHead::BROADCAST);
+	_SendToProxy(node_type, INVALID_NODE_ID, id, body, proxy_id, SSPkgHead::BROADCAST, logic_type);
 }
 
-awaitable_func PXClient::RpcProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /*= INVALID_NODE_ID */)
+awaitable_func PXClient::RpcProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /*= INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
 {
-	return awaitable_func([this, node_type, node_id, id, body, proxy_id](COROID coro_id){ SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::RPCREQ, coro_id); });
+	return awaitable_func([this, node_type, node_id, id, body, proxy_id, logic_type](COROID coro_id){ SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, SSPkgHead::RPCREQ, coro_id); });
 }
 
 void PXClient::OnDisconnect(NETID net_id)
@@ -100,7 +100,7 @@ void PXClient::OnNodePublish(NODETYPE node_type, NODEID node_id, SSLSLCPublish::
 	}
 }
 
-void PXClient::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::PROXYTYPE proxy_type /* = SSPkgHead::END */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void PXClient::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::PROXYTYPE proxy_type /* = SSPkgHead::END */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	if(_proxys.find(proxy_id) == _proxys.end())
 	{
@@ -108,12 +108,12 @@ void PXClient::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBo
 		return;
 	}
 	auto net_id = _proxys[proxy_id];
-	SEND_SSPKG(_server, net_id, _config.node_type, _config.node_id, node_type, node_id, id, msg_type, rpc_id, proxy_type, set_allocated_body, body);
+	SEND_SSPKG(_server, net_id, _config.node_type, _config.node_id, node_type, node_id, id, msg_type, rpc_id, proxy_type, logic_type, set_allocated_body, body);
 }
 
 awaitable_func PXClient::_RpcProxy(NODEID node_id, SSID id, SSPkgBody * body)
 {
-	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToProxy(PROXY, node_id, id, body, node_id, SSPkgHead::END, SSPkgHead::RPCREQ, coro_id); });
+	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToProxy(PROXY, node_id, id, body, node_id, SSPkgHead::END, SSPkgHead::CPP, SSPkgHead::RPCREQ, coro_id); });
 }
 
 future<> PXClient::_ConnectToProxys()

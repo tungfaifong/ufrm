@@ -168,7 +168,7 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 
 void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	SEND_SSPKG(_server, _srv_net_id, _config.node_type, _config.node_id, LBSRV, _config.srv_node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_lcls_body, body);
+	SEND_SSPKG(_server, _srv_net_id, _config.node_type, _config.node_id, LBSRV, _config.srv_node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_lcls_body, body);
 }
 
 awaitable_func LBClient::_RpcLBSrv(SSID id, SSLCLSPkgBody * body)

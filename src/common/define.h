@@ -5,7 +5,7 @@
 
 #define PKG_CREATE(pkg, PKG_TYPE) PKG_TYPE * pkg = new PKG_TYPE()
 
-#define SEND_SSPKG(server, net_id, node_type, node_id, to_node_type, to_node_id, id, msg_type, rpc_id, proxy_type, set_body, body) \
+#define SEND_SSPKG(server, net_id, node_type, node_id, to_node_type, to_node_id, id, msg_type, rpc_id, proxy_type, logic_type, set_body, body) \
 	SSPkg pkg;\
 	auto head = pkg.mutable_head();\
 	head->set_from_node_type(node_type);\
@@ -16,6 +16,7 @@
 	head->set_msg_type(msg_type);\
 	head->set_rpc_id(rpc_id);\
 	head->set_proxy_type(proxy_type);\
+	head->set_logic_type(logic_type);\
 	pkg.set_body(body);\
 	auto size = pkg.ByteSizeLong();\
 	if(size > UINT16_MAX)\

@@ -93,7 +93,7 @@ void LBSrv::_OnServerDisc(NETID net_id)
 void LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	auto [node_type, node_id] = _nid2node[net_id];
-	SEND_SSPKG(_server, net_id, LBSRV, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, mutable_body()->set_allocated_lcls_body, body);
+	SEND_SSPKG(_server, net_id, LBSRV, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_lcls_body, body);
 }
 
 void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
