@@ -31,12 +31,12 @@ inline void flush()
 	std::dynamic_pointer_cast<LoggerUnit>(UnitManager::Instance()->Get("LOGGER"))->Flush();
 }
 
-#define LOGGER_TRACE(fmt, ...) logger::log(__FILE__, __LINE__, __FUNCTION__, LoggerUnit::Level::TRACE, fmt, ##__VA_ARGS__)
-#define LOGGER_DEBUG(fmt, ...) logger::log(__FILE__, __LINE__, __FUNCTION__, LoggerUnit::Level::DEBUG, fmt, ##__VA_ARGS__)
-#define LOGGER_INFO(fmt, ...) logger::log(__FILE__, __LINE__, __FUNCTION__, LoggerUnit::Level::INFO, fmt, ##__VA_ARGS__)
-#define LOGGER_WARN(fmt, ...) logger::log(__FILE__, __LINE__, __FUNCTION__, LoggerUnit::Level::WARN, fmt, ##__VA_ARGS__)
-#define LOGGER_ERROR(fmt, ...) logger::log(__FILE__, __LINE__, __FUNCTION__, LoggerUnit::Level::ERROR, fmt, ##__VA_ARGS__)
-#define LOGGER_CRITICAL(fmt, ...) logger::log(__FILE__, __LINE__, __FUNCTION__, LoggerUnit::Level::CRITICAL, fmt, ##__VA_ARGS__)
+#define LOGGER_TRACE(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::TRACE, fmt, ##__VA_ARGS__)
+#define LOGGER_DEBUG(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::DEBUG, fmt, ##__VA_ARGS__)
+#define LOGGER_INFO(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::INFO, fmt, ##__VA_ARGS__)
+#define LOGGER_WARN(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::WARN, fmt, ##__VA_ARGS__)
+#define LOGGER_ERROR(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::ERROR, fmt, ##__VA_ARGS__)
+#define LOGGER_CRITICAL(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::Level::CRITICAL, fmt, ##__VA_ARGS__)
 #define LOGGER_FLUSH() logger::flush()
 
 inline void lua_log(uint8_t level, const std::string & msg, lua_State *L)
