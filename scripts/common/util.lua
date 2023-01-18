@@ -22,9 +22,9 @@ function Serialize(obj)
 		end
 		str = str .. "}"
 	elseif t == "nil" then
-		return nil
+		return "nil"
 	else
-		return nil
+		return "nil"
 	end
 	return str
 end

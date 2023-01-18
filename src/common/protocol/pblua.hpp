@@ -403,37 +403,34 @@ namespace pblua
 	// common
 	bool _parse_enum(const google::protobuf::EnumDescriptor * enum_desc, lua_State * L)
 	{
-		lua_getglobal(L, enum_desc->name().c_str());
-		if (!lua_isnil(L, -1))
-		{
-			lua_pop(L, 1);
-			return true;
-		}
-
-		lua_pop(L, 1);
-		lua_newtable(L);
-		for (auto i = 0; i < enum_desc->value_count(); i++)
+		auto enum_count = enum_desc->value_count();
+		lua_createtable(L, 0, enum_count);
+		for (auto i = 0; i < enum_count; i++)
 		{
 			auto value_desc = enum_desc->value(i);
-			lua_pushstring(L, value_desc->name().c_str());
 			lua_pushinteger(L, value_desc->number());
-			lua_settable(L, -3);
+			lua_setfield(L, -2, value_desc->name().c_str());
 		}
-		lua_setglobal(L, enum_desc->name().c_str());
 
 		return true;
 	}
 
 	bool _parse_message(const google::protobuf::Descriptor* message_desc, lua_State* L)
 	{
+		lua_newtable(L);
+
 		for (auto i = 0; i < message_desc->enum_type_count(); i++)
 		{
-			_parse_enum(message_desc->enum_type(i), L);
+			auto enum_desc = message_desc->enum_type(i);
+			_parse_enum(enum_desc, L);
+			lua_setfield(L, -2, enum_desc->name().c_str());
 		}
 
 		for (auto i = 0; i < message_desc->nested_type_count(); i++)
 		{
-			_parse_message(message_desc->nested_type(i), L);
+			auto n_message_desc = message_desc->nested_type(i);
+			_parse_message(n_message_desc, L);
+			lua_setfield(L, -2, n_message_desc->name().c_str());
 		}
 
 		return true;
@@ -445,12 +442,16 @@ namespace pblua
 
 		for (auto i = 0; i < file_desc->enum_type_count(); i++)
 		{
+			auto enum_desc = file_desc->enum_type(i);
 			_parse_enum(file_desc->enum_type(i), L);
+			lua_setglobal(L, enum_desc->name().c_str());
 		}
 
 		for (auto i = 0; i < file_desc->message_type_count(); i++)
 		{
-			_parse_message(file_desc->message_type(i), L);
+			auto message_desc = file_desc->message_type(i);
+			_parse_message(message_desc, L);
+			lua_setglobal(L, message_desc->name().c_str());
 		}
 
 		return true;
