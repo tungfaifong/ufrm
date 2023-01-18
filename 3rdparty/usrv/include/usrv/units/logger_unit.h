@@ -19,7 +19,7 @@ class LoggerUnit : public Unit, public std::enable_shared_from_this<LoggerUnit>
 {
 public:
 	static constexpr uint16_t MAX_LOG_SIZE = UINT16_MAX;
-	enum class LEVEL
+	enum class Level
 	{
 		TRACE = 0,
 		DEBUG,
@@ -31,7 +31,7 @@ public:
 		COUNT,
 	};
 
-	LoggerUnit(LEVEL level, std::string file_name, size_t spsc_blk_num);
+	LoggerUnit(Level level, std::string file_name, size_t spsc_blk_num);
 	virtual ~LoggerUnit();
 
 	virtual void OnRegister(const std::shared_ptr<UnitManager> & mgr) override final;
@@ -39,17 +39,17 @@ public:
 	virtual void Release() override final;
 
 public:
-	template<typename ... Args> void Log(LEVEL level, fmt::format_string<Args...> fmt, Args && ... args);
+	template<typename ... Args> void Log(Level level, fmt::format_string<Args...> fmt, Args && ... args);
 	void Flush();
 
 private:
 	void _Init();
 	void _LogStart();
 	bool _LogUpdate(intvl_t interval);
-	void _RealLog(LEVEL level, const char * log, uint16_t size);
+	void _RealLog(Level level, const char * log, uint16_t size);
 
 private:
-	LEVEL _level;
+	Level _level;
 	std::string _file_name;
 	Loop _loop;
 	std::thread _log_thread;
@@ -59,7 +59,7 @@ private:
 	char _log_buffer[MAX_LOG_SIZE];
 };
 
-template<typename ... Args> void LoggerUnit::Log(LEVEL level, fmt::format_string<Args...> fmt, Args && ... args)
+template<typename ... Args> void LoggerUnit::Log(Level level, fmt::format_string<Args...> fmt, Args && ... args)
 {
 	if(level < _level)
 	{
