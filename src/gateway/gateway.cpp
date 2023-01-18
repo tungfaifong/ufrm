@@ -104,7 +104,7 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	{
 	case CSID_AUTH_REQ:
 		{
-			CO_SPAWN(_OnAuth(net_id, head, body.auth_req()));
+			CO_SPAWN(_OnAuth(net_id, body.auth_req().role_id(), body.auth_req().game_id(), body.auth_req().token()));
 		}
 		break;
 	default:
@@ -347,14 +347,14 @@ future<> Gateway::_CoroHeartBeat(NODEID node_id)
 	}
 }
 
-future<> Gateway::_OnAuth(NETID net_id, CSPkgHead head, CSAuthReq req)
+future<> Gateway::_OnAuth(NETID net_id, ROLEID role_id, NODEID game_id, std::string token)
 {
 	auto io_node = co_await _lb_client.GetLeastLoadNode(IOSRV);
 
 	PKG_CREATE(body, SSPkgBody);
-	body->mutable_gwio_body()->mutable_auth_req()->set_role_id(req.role_id());
-	body->mutable_gwio_body()->mutable_auth_req()->set_game_id(req.game_id());
-	body->mutable_gwio_body()->mutable_auth_req()->set_token(req.token());
+	body->mutable_gwio_body()->mutable_auth_req()->set_role_id(role_id);
+	body->mutable_gwio_body()->mutable_auth_req()->set_game_id(game_id);
+	body->mutable_gwio_body()->mutable_auth_req()->set_token(token);
 	auto [result, data] = co_await _px_client.RpcProxy(IOSRV, io_node.node_id, SSID_GW_IO_AUTH_REQ, body, INVALID_NODE_ID, SSPkgHead::LUA);
 	if(result == CORORESULT::TIMEOUT)
 	{
@@ -368,8 +368,6 @@ future<> Gateway::_OnAuth(NETID net_id, CSPkgHead head, CSAuthReq req)
 
 	if(rsp.result() == SSIOGWAuthRsp::SUCCESS)
 	{
-		auto role_id = req.role_id();
-		auto game_id = req.game_id();
 		_nid2role[net_id] = role_id;
 		_roles[role_id] = Role {net_id, role_id, game_id};
 
