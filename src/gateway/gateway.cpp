@@ -98,7 +98,7 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	CSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	TraceMsg("recv cs", &pkg);
+	TraceMsg("recv cs head", &head);
 	switch (head.id())
 	{
 	case CSID_AUTH_REQ:
@@ -144,7 +144,7 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	TraceMsg("recv ss", &pkg);
+	TraceMsg("recv ss head", &head);
 	switch (head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
@@ -208,7 +208,7 @@ void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
 		return;
 	}
 	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	TraceMsg("send sc", &pkg);
+	TraceMsg("send sc head", &pkg.head());
 }
 
 void Gateway::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)

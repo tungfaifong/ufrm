@@ -143,7 +143,7 @@ void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg)
 		return;
 	}
 
-	LOGGER_TRACE("{} msg pkg:\n{}", prefix, pkg->DebugString());
+	LOGGER_TRACE("{} msg pkg:\n{} {{\n{}}}", prefix, pkg->GetTypeName(), pkg->DebugString());
 }
 
 void SignalHandler(int signo)

@@ -10,9 +10,7 @@ do
 	k=${srv%:*}
 	v=${srv#*:}
 	cd .. && nohup ./bin/${k} /config/${v} > /dev/null 2>&1 &
-	sleep 0.1
+	sleep 0.01
 done
-
-sleep 1.1
 
 ./check_all.sh

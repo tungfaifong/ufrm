@@ -78,7 +78,7 @@ void Proxy::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	TraceMsg("recv ss", &pkg);
+	TraceMsg("recv ss head", &head);
 	switch(head.proxy_type())
 	{
 		case SSPkgHead::END:
@@ -153,7 +153,7 @@ void Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)
 		return;
 	}
 	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	TraceMsg("send ss", &pkg);
+	TraceMsg("send ss head", head);
 }
 
 void Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
@@ -170,7 +170,7 @@ void Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
 			continue;
 		}
 		_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-		TraceMsg("send ss", &pkg);
+		TraceMsg("send ss head", head);
 	}
 }
 

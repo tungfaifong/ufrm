@@ -4,8 +4,9 @@
 #define UFRM_DEFINE_H
 
 #define UNPACK(PKG_TYPE, body, data) \
-	PKG_TYPE body; \
-	body.ParseFromString(data);
+	PKG_TYPE body;\
+	body.ParseFromString(data);\
+	TraceMsg("unpack body", &body);
 
 #define SEND_SSPKG(server, net_id, node_type, node_id, to_node_type, to_node_id, id, msg_type, rpc_id, proxy_type, logic_type, body) \
 	SSPkg pkg;\
@@ -27,7 +28,8 @@
 		return;\
 	}\
 	server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);\
-	TraceMsg("send ss", &pkg);
+	TraceMsg("send ss head", head);\
+	TraceMsg("send ss body", body);
 
 #define CO_SPAWN(future) future.coro.resume()
 

@@ -62,7 +62,7 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	TraceMsg("recv ss", &pkg);
+	TraceMsg("recv ss head", &head);
 	switch(head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
@@ -119,7 +119,8 @@ void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, google::protob
 			continue;
 		}
 		_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-		TraceMsg("send ss", &pkg);
+		TraceMsg("send ss head", head);
+		TraceMsg("send ss body", body);
 	}
 }
 
