@@ -70,7 +70,7 @@ void LBClient::GetAllNodes(NODETYPE node_type)
 	
 }
 
-future LBClient::GetLeastLoadNode(NODETYPE node_type)
+future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
 {
 	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_get_least_load_node_req()->set_node_type(node_type);
@@ -78,12 +78,12 @@ future LBClient::GetLeastLoadNode(NODETYPE node_type)
 	if(result == CORORESULT::TIMEOUT)
 	{
 		LOGGER_WARN("LBClient::GetLeastLoadNode timeout");
-		co_return;
+		co_return Node{DEFAULT_IP, DEFAULT_PORT};
 	}
 	SSLCLSPkgBody rsp_body;
 	rsp_body.MergeFromString(data);
 	auto rsp = rsp_body.get_least_load_node_rsp();
-	// return Node {rsp.node().ip(), (PORT)rsp.node().port()};
+	co_return Node{rsp.node().ip(), (PORT)rsp.node().port()};
 }
 
 void LBClient::OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
@@ -174,7 +174,7 @@ void LBClient::_HeartBeat()
 	_timer_heart_beat = timer::CreateTimer(HEART_BEAT_INTERVAL, [this](){ _HeartBeat(); });
 }
 
-future LBClient::_CoroHeartBeat()
+future<> LBClient::_CoroHeartBeat()
 {
 	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_heart_beat_req()->set_load(_load());

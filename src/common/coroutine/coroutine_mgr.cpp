@@ -17,7 +17,7 @@ void CoroutineMgr::Stop()
 	_coro_objs.Clear();
 }
 
-std::shared_ptr<CoroutineMgr::CoroObj> CoroutineMgr::Insert(coroutine & coro)
+std::shared_ptr<CoroutineMgr::CoroObj> CoroutineMgr::Insert(std::coroutine_handle<> & coro)
 {
 	auto coro_obj = std::make_shared<CoroObj>();
 	coro_obj->coro = coro;

@@ -9,8 +9,8 @@ using namespace usrv;
 
 using NODEID = uint32_t;
 
-static const IP DEFAULT_IP {"127.0.0.1"};
-static constexpr PORT DEFAULT_PORT = 6666;
+static const IP DEFAULT_IP {""};
+static constexpr PORT DEFAULT_PORT = 0;
 
 static constexpr NODEID INVALID_NODE_ID = 0;
 

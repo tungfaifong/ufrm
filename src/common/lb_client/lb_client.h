@@ -46,7 +46,7 @@ public:
 	void UnregisterToLBSrv(NODETYPE node_type, NODEID node_id);
 	void Subscribe(NODETYPE node_type);
 	void GetAllNodes(NODETYPE node_type);
-	future GetLeastLoadNode(NODETYPE node_type);
+	future<Node> GetLeastLoadNode(NODETYPE node_type);
 
 	void OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
 
@@ -59,7 +59,7 @@ private:
 
 	bool _Connect();
 	void _HeartBeat();
-	future _CoroHeartBeat();
+	future<> _CoroHeartBeat();
 
 private:
 	Config _config;

@@ -26,7 +26,7 @@ public:
 
 	struct CoroObj
 	{
-		coroutine coro;
+		std::coroutine_handle<> coro;
 		COROID id;
 		std_clock_t timeout;
 		CORORESULT result;
@@ -40,7 +40,7 @@ public:
 	void Stop();
 
 public:
-	std::shared_ptr<CoroutineMgr::CoroObj> Insert(coroutine & coro);
+	std::shared_ptr<CoroutineMgr::CoroObj> Insert(std::coroutine_handle<> & coro);
 	void Resume(COROID coro_id, CORORESULT result, std::string && data);
 	void Update();
 
@@ -55,7 +55,7 @@ private:
 struct awaitable_func
 {
 	bool await_ready() { return false; }
-	auto await_suspend(coroutine caller)
+	auto await_suspend(std::coroutine_handle<> caller)
 	{
 		coro_obj = CoroutineMgr::Instance()->Insert(caller);
 		func(coro_obj->id);
