@@ -21,8 +21,8 @@ public:
 
 public:
 	void Init(intvl_t interval);
-	bool Register(const char * key, std::shared_ptr<Unit> && unit);
-	std::shared_ptr<Unit> Get(const char * key);
+	bool Register(const std::string & key, std::shared_ptr<Unit> && unit);
+	std::shared_ptr<Unit> Get(const std::string & key);
 	void Run();
 	void SetExit(bool exit);
 	intvl_t Interval();
@@ -36,7 +36,7 @@ private:
 
 private:
 	Loop _loop;
-	std::unordered_map<const char *, std::shared_ptr<Unit>> _units;
+	std::unordered_map<std::string, std::shared_ptr<Unit>> _units;
 };
 
 NAMESPACE_CLOSE
