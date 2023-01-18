@@ -3,6 +3,7 @@ syntax = "proto3";
 import "common.proto";
 import "ssid.proto";
 import "sslcls.proto";
+import "ssgwgs.proto";
 
 enum MSGTYPE
 {
@@ -27,6 +28,7 @@ message SSPkgBody
 	oneof body
 	{
 		SSLCLSPkgBody lcls_body = 1;
+		SSGWGSPkgBody gwgs_body = 2;
 	}
 }
 

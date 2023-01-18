@@ -33,14 +33,27 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
+	void _SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
+
 	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+
+	void _OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
+	void _OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
+
+private:
+	void _OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body);
+	void _OnGatewayHeartBeatReq(NETID net_id, const SSPkgHead & head, const SSGWGSHertBeatReq & body, SSID & id, SSGWGSPkgBody * rsp_body);
 
 private:
 	NODEID _id;
 	toml::table & _config;
 
 	LBClient _lb_client;
+
+	std::unordered_map<NETID, NODEID> _nid2gateway;
+	std::unordered_map<NODEID, NETID> _gateways;
 };
 
 #endif // UFRM_GAMESRV_H

@@ -1,0 +1,27 @@
+// ss protocol gateway to gamesrv
+
+syntax = "proto3";
+
+import "common.proto";
+
+message SSGWGSInit
+{
+}
+
+message SSGWGSHertBeatReq
+{
+}
+
+message SSGSGWHertBeatRsp
+{
+}
+
+message SSGWGSPkgBody
+{
+	oneof body
+	{
+		SSGWGSInit init = 1;
+		SSGWGSHertBeatReq heart_beat_req = 2;
+		SSGSGWHertBeatRsp heart_beat_rsp = 3;
+	}
+}

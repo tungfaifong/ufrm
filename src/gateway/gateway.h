@@ -19,6 +19,8 @@ using namespace usrv;
 class Gateway : public Unit, public std::enable_shared_from_this<Gateway>
 {
 public:
+	static constexpr intvl_t HEART_BEAT_INTERVAL = 30000;
+
 	Gateway(NODEID id, toml::table & config);
 	virtual ~Gateway() = default;
 
@@ -36,8 +38,11 @@ private:
 	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnIServerDisc(NETID net_id);
 
-	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
-	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
+	void _SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
+	awaitable_func _RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body);
+
+	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 
 private:
 	future<> _ConnectToGameSrvs();
@@ -45,6 +50,9 @@ private:
 
 	void _ConnectToGameSrv(NODEID node_id, IP ip, PORT port);
 	void _DisconnectToGameSrv(NODEID node_id);
+
+	void _HeartBeat();
+	future<> _CoroHeartBeat(NODEID node_id);
 
 private:
 	NODEID _id;
@@ -57,6 +65,8 @@ private:
 
 	std::unordered_map<NETID, NODEID> _nid2gamesrv;
 	std::unordered_map<NODEID, NETID> _gamesrvs;
+
+	TIMERID _timer_heart_beat {INVALID_TIMER_ID};
 };
 
 #endif // UFRM_GATEWAY_H

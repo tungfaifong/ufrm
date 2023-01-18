@@ -80,9 +80,9 @@ future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes
 			LOGGER_WARN("get all nodes timeout");
 			co_return _nodes[node_type];
 		}
-		SSLCLSPkgBody rsp_body;
+		SSPkgBody rsp_body;
 		rsp_body.MergeFromString(data);
-		auto rsp = rsp_body.get_all_nodes_rsp();
+		auto rsp = rsp_body.lcls_body().get_all_nodes_rsp();
 		for(auto & node : rsp.nodes())
 		{
 			_nodes[node_type][node.node_id()] = Node{node.ip(), (PORT)node.port()};
@@ -101,9 +101,9 @@ future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
 		LOGGER_WARN("get least load node timeout");
 		co_return Node{DEFAULT_IP, DEFAULT_PORT};
 	}
-	SSLCLSPkgBody rsp_body;
+	SSPkgBody rsp_body;
 	rsp_body.MergeFromString(data);
-	auto rsp = rsp_body.get_least_load_node_rsp();
+	auto rsp = rsp_body.lcls_body().get_least_load_node_rsp();
 	co_return Node{rsp.node().ip(), (PORT)rsp.node().port()};
 }
 
