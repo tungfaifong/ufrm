@@ -213,14 +213,14 @@ void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
 	LOGGER_TRACE("send client msg id:{}", CSID_Name(pkg.head().id()));
 }
 
-void Gateway::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void Gateway::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
-	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, SSPkgHead::CPP, msg_type, rpc_id);
+	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, msg_type, rpc_id);
 }
 
-void Gateway::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */)
+void Gateway::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
 {
-	_px_client.BroadcastToProxy(node_type, id, body, proxy_id);
+	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
 }
 
 void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
@@ -377,6 +377,8 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 		LOGGER_ERROR("gamesrv:{} is invalid", game_id);
 		return;
 	}
+
+	// 判断logic_type
 
 	PKG_CREATE(body, SSGWGSPkgBody);
 	body->mutable_forward_cs_pkg()->set_role_id(role_id);
