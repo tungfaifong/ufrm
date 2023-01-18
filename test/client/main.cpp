@@ -23,7 +23,7 @@ std::unordered_map<NETID, std::shared_ptr<Client>> g_Clients;
 class Client : public Unit, public std::enable_shared_from_this<Client>
 {
 public:
-	Client(USERID user_id):_user_id(user_id) {}
+	Client(USERID user_id, uint32_t req_num):_user_id(user_id), _req_num(req_num) {}
 	~Client() = default;
 
 	virtual bool Start();
@@ -52,6 +52,7 @@ private:
 	USERID _user_id;
 	std::chrono::steady_clock::time_point _start;
 	std::chrono::steady_clock::time_point _end;
+	uint32_t _req_num;
 };
 
 bool Client::Start()
@@ -159,7 +160,8 @@ void Client::OnGetRolesRsp(const SCGetRolesRsp & rsp)
 void Client::CreateRoleReq()
 {
 	CSCreateRoleReq body;
-	body.set_name("testrole1");
+	auto name = "testrole" + std::to_string(_user_id);
+	body.set_name(name);
 	SendToServer(CSID_CREATE_ROLE_REQ, &body);
 }
 
@@ -184,7 +186,10 @@ void Client::LoginReq(ROLEID role_id)
 
 void Client::OnLoginRsp(const SCLoginRsp & rsp)
 {
-	HeartBeat();
+	for(uint32_t i = 0; i < _req_num; ++i)
+	{
+		HeartBeat();
+	}
 	LOGGER_INFO("OnLoginRsp:{} {}", _user_id, rsp.result());
 }
 
@@ -200,21 +205,22 @@ void Client::OnHeartBeatRsp()
 	// _end = std::chrono::steady_clock::now();
 	// LOGGER_INFO("heart beat avg delay:{}", std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count());
 	++g_TotalCnt;
-	HeartBeat();
+	timer::CreateTimer(500, [self = shared_from_this()](){self->HeartBeat();});
 }
 
 int main(int argc, char * argv[])
 {
 	g_ClientNum = atoi(argv[1]);
-	auto time = atoi(argv[2]) * 1000;
+	auto req_num = atoi(argv[2]);
+	auto time = atoi(argv[3]) * 1000;
 	UnitManager::Instance()->Init(10);
-	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::TRACE, "/logs/client.log", 1 Mi)));
+	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::INFO, "/logs/client.log", 1 Mi)));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(1 Ki, 1 Ki)));
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(1 Ki, 1 Ki, 512 Ki)));
 	for(int i = 0; i < g_ClientNum; ++i)
 	{
 		auto client_key = "CLIENT#"+std::to_string(i+1);
-		if(!UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(i+1))))
+		if(!UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(i+1, req_num))))
 		{
 			LOGGER_ERROR("key:{} error", client_key);
 		}
@@ -226,7 +232,7 @@ int main(int argc, char * argv[])
 		LOGGER_INFO("conn: net_id:{} ip:{} port:{}", net_id, ip, port);
 	});
 
-	server->OnRecv([&g_Clients](NETID net_id, char * data, uint16_t size) {
+	server->OnRecv([](NETID net_id, char * data, uint16_t size) {
 		auto client = g_Clients.find(net_id);
 		if(client != g_Clients.end())
 		{
@@ -242,7 +248,7 @@ int main(int argc, char * argv[])
 
 	UnitManager::Instance()->Run();
 
-	LOGGER_INFO("total cnt:{}", g_TotalCnt);
+	LOGGER_INFO("qps:{}", g_TotalCnt / (time / 1000));
 
 	return true;
 }
