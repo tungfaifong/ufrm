@@ -70,7 +70,7 @@ bool GatewayMgr::SendToGateway(PROCID proc_id, SSGWGMID id, std::unique_ptr<SSGW
 		LOGGER_ERROR("Gateway::SendToGateway ERROR: pkg size too long, id:{} size:{}", id, size);
 		return false;
 	}
-	iserver::Send(gateway->second.net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	server::Send(gateway->second.net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 	return true;
 }
 
