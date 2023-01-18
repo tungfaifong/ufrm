@@ -124,6 +124,11 @@ void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const 
 {
 	switch (head.from_node_type())
 	{
+	case LBSRV:
+		{
+			_lb_client.OnRecv(net_id, head, body);
+		}
+		break;
 	case GAMESRV:
 		{
 			

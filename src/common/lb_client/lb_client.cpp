@@ -24,7 +24,7 @@ bool LBClient::Start()
 	{
 		return false;
 	}
-	_RegisterToLBSrv();
+	RegisterToLBSrv(_config.node_type, _config.node_id, _config.ip, _config.port);
 	_HeartBeat();
 	return true;
 }
@@ -35,6 +35,34 @@ void LBClient::Release()
 	_load = nullptr;
 }
 
+void LBClient::RegisterToLBSrv(NODETYPE node_type, NODEID node_id, IP ip, PORT port)
+{
+	CREATE_PKG(body, SSLCLSPkgBody);
+	auto node_register = body->mutable_node_register();
+	node_register->mutable_node()->set_node_type(node_type);
+	node_register->mutable_node()->set_node_id(node_id);
+	node_register->mutable_node()->set_ip(ip);
+	node_register->mutable_node()->set_port(port);
+	_SendToLBSrv(SSID_LC_LS_NODE_REGISTER, body);
+}
+
+void LBClient::UnregisterToLBSrv(NODETYPE node_type, NODEID node_id)
+{
+	CREATE_PKG(body, SSLCLSPkgBody);
+	auto node_unregister = body->mutable_node_unregister();
+	node_unregister->set_node_type(node_type);
+	node_unregister->set_node_id(node_id);
+	_SendToLBSrv(SSID_LC_LS_NODE_UNREGISTER, body);
+}
+
+void LBClient::Subscribe(NODETYPE node_type)
+{
+	CREATE_PKG(body, SSLCLSPkgBody);
+	auto subscribe = body->mutable_subscribe();
+	subscribe->set_node_type(node_type);
+	_SendToLBSrv(SSID_LC_LS_SUBSCRIBE, body);
+}
+
 void LBClient::GetAllNodes(NODETYPE node_type)
 {
 	
@@ -42,28 +70,52 @@ void LBClient::GetAllNodes(NODETYPE node_type)
 
 void LBClient::GetLeastLoadNode(NODETYPE node_type)
 {
-
+	
 }
 
-bool LBClient::_Connect()
+void LBClient::OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
 {
-	_srv_net_id = _server->Connect(_config.srv_ip, _config.srv_port, _config.timeout);
-	if(_srv_net_id == INVALID_NET_ID)
+	switch(head.id())
 	{
-		LOGGER_ERROR("LBClient::_Connect Connect to LBSrv failed, srv_ip:{} srv_port:{}", _config.srv_ip, _config.srv_port);
-		return false;
+	case SSID_LS_LC_PUBLISH:
+		{
+			_OnPublish(net_id, head, body.publish());
+		}
+		break;
+	default:
+		LOGGER_WARN("LBClient::OnRecv WARN: invalid node_type:{} node_id:{} id:{}", head.from_node_type(), head.from_node_id(), head.id());
+		break;
 	}
-	return true;
 }
 
-void LBClient::_RegisterToLBSrv()
+void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPublish & body)
 {
-	CREATE_PKG(body, SSLCLSPkgBody);
-	auto node_register = body->mutable_node_register();
-	node_register->mutable_node()->set_node_type(_config.node_type);
-	node_register->mutable_node()->set_ip(_config.ip);
-	node_register->mutable_node()->set_port(_config.port);
-	_SendToLBSrv(SSID_LC_LS_NODE_REGISTER, body);
+	auto node_type = body.node().node_type();
+	auto node_id = body.node().node_id();
+	if(node_type < 0 || node_type >= NODETYPE_ARRAYSIZE)
+	{
+		return;
+	}
+	switch(body.change_type())
+	{
+	case SSLSLCPublish::REGISTER:
+	case SSLSLCPublish::CHANGE:
+		{
+			_nodes[node_type][node_id] = Node {body.node().ip(), (PORT)body.node().port()};
+		}
+		break;
+	case SSLSLCPublish::UNREGISTER:
+		{
+			if(_nodes[node_type].find(node_id) == _nodes[node_type].end())
+			{
+				return;
+			}
+			_nodes[node_type].erase(node_id);
+		}
+		break;
+	default:
+		break;
+	}
 }
 
 void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
@@ -85,6 +137,17 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 		return;
 	}
 	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+}
+
+bool LBClient::_Connect()
+{
+	_srv_net_id = _server->Connect(_config.srv_ip, _config.srv_port, _config.timeout);
+	if(_srv_net_id == INVALID_NET_ID)
+	{
+		LOGGER_ERROR("LBClient::_Connect Connect to LBSrv failed, srv_ip:{} srv_port:{}", _config.srv_ip, _config.srv_port);
+		return false;
+	}
+	return true;
 }
 
 void LBClient::_HeartBeat()

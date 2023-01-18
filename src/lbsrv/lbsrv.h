@@ -13,17 +13,17 @@
 
 using namespace usrv;
 
-struct Node
-{
-	NETID net_id;
-	IP ip;
-	PORT port;
-	uint32_t load;
-};
-
 class LBSrv : public Unit, public std::enable_shared_from_this<LBSrv>
 {
 public:
+	struct Node
+	{
+		NETID net_id;
+		IP ip;
+		PORT port;
+		uint32_t load;
+	};
+
 	LBSrv(NODEID id, toml::table & config);
 	virtual ~LBSrv() = default;
 
@@ -39,13 +39,21 @@ private:
 	void _OnServerDisc(NETID net_id);
 
 	bool _SendToLBClient(NETID net_id, SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
+	bool _SendToLBClients(std::vector<NETID> net_ids, SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
 
 	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
 	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
 
 private:
 	void _OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeRegister & body);
+	void _OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeUnregister & body);
 	void _OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body);
+	void _OnSubscribe(NETID net_id, const SSPkgHead & head, const SSLCLSSubscribe & body);
+
+private:
+	void _UnregisterNode(NODETYPE node_type, NODEID node_id);
+	void _Unsubscribe(NETID net_id);
+	void _Publish(SSLSLCPublish::CHANGETYPE change_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port);
 
 private:
 	NODEID _id;
@@ -53,6 +61,8 @@ private:
 
 	std::unordered_map<NETID, std::pair<NODETYPE, NODEID>> _nid2node;
 	std::unordered_map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
+
+	std::vector<NETID> _subscriber[NODETYPE_ARRAYSIZE];
 };
 
 #endif // UFRM_LBSRV_H
