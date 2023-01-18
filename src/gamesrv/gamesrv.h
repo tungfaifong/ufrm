@@ -42,7 +42,7 @@ private:
 	void _OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
 	void _OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
 
-	void _OnRecvClient(ROLEID role_id, const CSPkg & pkg);
+	void _OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg);
 
 private:
 	void _OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body);

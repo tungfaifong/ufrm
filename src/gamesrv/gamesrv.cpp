@@ -192,7 +192,7 @@ void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSP
 		break;
 	case SSID_GW_GS_FORWAR_CS_PKG:
 		{
-			_OnRecvClient(body.forward_cs_pkg().role_id(), body.forward_cs_pkg().cs_pkg());
+			_OnRecvClient(net_id, body.forward_cs_pkg());
 		}
 		break;
 	default:
@@ -219,10 +219,10 @@ void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGW
 	_SendToGateway(head.from_node_id(), id, rsp_body, MSGT_RPCRSP, head.rpc_id());
 }
 
-void GameSrv::_OnRecvClient(ROLEID role_id, const CSPkg & pkg)
+void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 {
 	auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
-	lua->OnRecv(role_id, pkg.SerializePartialAsString().c_str(), (uint16_t)pkg.ByteSizeLong());
+	lua->OnRecv(net_id, pkg.SerializePartialAsString().c_str(), (uint16_t)pkg.ByteSizeLong());
 }
 
 void GameSrv::_OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body)

@@ -17,7 +17,7 @@ message SSGSGWHertBeatRsp
 {
 }
 
-message SSGWGSFORWARDCSPKG
+message SSGWGSForwardCSPkg
 {
 	uint32 role_id = 1;
 	uint32 game_id = 2;
@@ -31,6 +31,6 @@ message SSGWGSPkgBody
 		SSGWGSInit init = 1;
 		SSGWGSHertBeatReq heart_beat_req = 2;
 		SSGSGWHertBeatRsp heart_beat_rsp = 3;
-		SSGWGSFORWARDCSPKG forward_cs_pkg = 4;
+		SSGWGSForwardCSPkg forward_cs_pkg = 4;
 	}
 }

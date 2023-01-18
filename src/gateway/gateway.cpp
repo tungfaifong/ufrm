@@ -347,6 +347,8 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 	}
 
 	PKG_CREATE(body, SSGWGSPkgBody);
+	body->mutable_forward_cs_pkg()->set_role_id(role_id);
+	body->mutable_forward_cs_pkg()->set_game_id(game_id);
 	auto cs_pkg = body->mutable_forward_cs_pkg()->mutable_cs_pkg();
 	*cs_pkg = pkg;
 	_SendToGameSrv(game_id, SSID_GW_GS_FORWAR_CS_PKG, body);

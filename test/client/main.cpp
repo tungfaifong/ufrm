@@ -129,8 +129,6 @@ void Client::LoginReq()
 {
 	PKG_CREATE(body, CSPkgBody);
 	auto req = body->mutable_login_req();
-	req->set_role_id(1);
-	req->set_game_id(1);
 	SendToServer(CSID_LOGIN_REQ, body);
 }
 

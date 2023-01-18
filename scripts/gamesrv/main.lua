@@ -6,6 +6,7 @@ require "common.util"
 
 function Start()
 	pblua.parse("cs.proto")
+	pblua.parse("ssgwgs.proto")
 	return true
 end
 
@@ -16,15 +17,13 @@ end
 function Stop()
 end
 
-function OnConn(role_id, ip, port)
+function OnConn(net_id, ip, port)
 end
 
-function OnRecv(role_id, data)
-	logger.debug("OnRecv role_id:" .. role_id .. " data:" .. data)
-	local pkg = pblua.decode("CSPkg", data)
-	logger.debug("pkg headid:" .. pkg.head.id .. "")
-	logger.debug("dump" .. dump(pkg))
+function OnRecv(net_id, data)
+	local pkg = pblua.decode("SSGWGSForwardCSPkg", data)
+	logger.debug("dump:" .. dump(pkg))
 end
 
-function OnDisc(role_id)
+function OnDisc(net_id)
 end
