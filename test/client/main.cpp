@@ -46,21 +46,24 @@ private:
 	ROLEID _role_id;
 	std::chrono::steady_clock::time_point _start;
 	std::chrono::steady_clock::time_point _end;
+	std::shared_ptr<ServerUnit> _server;
 };
 
 bool Client::Init()
 {
-	auto server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+	auto server_key = "SERVER#"+std::to_string(_role_id);
 
-	server->OnConn([](NETID net_id, IP ip, PORT port){
+	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get(server_key.c_str()));
+
+	_server->OnConn([](NETID net_id, IP ip, PORT port){
 		LOGGER_INFO("conn: net_id:{} ip:{} port:{}", net_id, ip, port);
 	});
 
-	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size) {
+	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size) {
 		self->OnRecv(net_id, data, size);
 	});
 
-	server->OnDisc([](NETID net_id){
+	_server->OnDisc([](NETID net_id){
 		LOGGER_INFO("conn: net_id:{}", net_id);
 	});
 
@@ -69,7 +72,7 @@ bool Client::Init()
 
 bool Client::Start()
 {
-	_server_net_id = server::Connect("127.0.0.1", 6666, 1000);
+	_server_net_id = _server->Connect("127.0.0.1", 6666, 1000);
 	if(_server_net_id == INVALID_NET_ID)
 	{
 		LOGGER_ERROR("client connect failed.");
@@ -125,7 +128,7 @@ void Client::SendToServer(CSID id, CSPkgBody * body)
 		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
 		return;
 	}
-	server::Send(_server_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	_server->Send(_server_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 	LOGGER_TRACE("send msg id:{}", ENUM_NAME(id));
 }
 
@@ -141,6 +144,7 @@ void Client::AuthReq()
 void Client::OnAuthRsp(const SCAuthRsp & rsp)
 {
 	LoginReq();
+	LOGGER_INFO("OnAuthRsp:{} {}", _role_id, rsp.result());
 }
 
 void Client::LoginReq()
@@ -153,6 +157,7 @@ void Client::LoginReq()
 void Client::OnLoginRsp(const SCLoginRsp & rsp)
 {
 	HeartBeat();
+	LOGGER_INFO("OnLoginRsp:{} {}", _role_id, rsp.result());
 }
 
 void Client::HeartBeat()
@@ -167,15 +172,7 @@ void Client::HeartBeat()
 void Client::OnHeartBeatRsp()
 {
 	_end = std::chrono::steady_clock::now();
-	++g_TotalCnt;
-	g_TotalDelay += std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count();
-	if(g_TotalCnt == g_ClientNum)
-	{
-		LOGGER_INFO("heart beat avg delay:{}", (float)g_TotalDelay/g_TotalCnt);
-
-		g_TotalCnt = 0;
-		g_TotalDelay = 0;
-	}
+	LOGGER_INFO("heart beat avg delay:{}", std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count());
 }
 
 int main(int argc, char * argv[])
@@ -183,18 +180,16 @@ int main(int argc, char * argv[])
 	g_ClientNum = atoi(argv[1]);
 	UnitManager::Instance()->Init(10);
 	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::INFO, "/logs/client.log", 1 Mi)));
-	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(1 Ki, 1 Ki, 4 Mi)));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(1 Ki, 1 Ki)));
 	for(int i = 0; i < g_ClientNum; ++i)
 	{
-		auto key = "CLIENT#"+std::to_string(i+1);
-		if(!UnitManager::Instance()->Register(key.c_str(), std::move(std::make_shared<Client>(i+1))))
+		auto server_key = "SERVER#"+std::to_string(i+1);
+		auto client_key = "CLIENT#"+std::to_string(i+1);
+		if(!UnitManager::Instance()->Register(server_key.c_str(), std::move(std::make_shared<ServerUnit>(16, 16, 4 Mi))) || !UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(i+1))))
 		{
-			LOGGER_ERROR("key:{} error", key);
+			LOGGER_ERROR("key:{} error", server_key);
 		}
 	}
-
-	auto mgr = UnitManager::Instance();
 
 	UnitManager::Instance()->Run();
 
