@@ -27,13 +27,13 @@ bool GameSrv::Init()
 		return false;
 	}
 
-	_server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
+	auto server = std::dynamic_pointer_cast<ServerUnit>(UnitManager::Instance()->Get("SERVER"));
 
-	_server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
-	_server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
-	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
+	server->OnConn([self = shared_from_this()](NETID net_id, IP ip, PORT port){ self->_OnServerConn(net_id, ip, port); });
+	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
+	server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
-	_lb_client.Init(_server, [self = shared_from_this()](){ return 1; }); // TODO
+	_lb_client.Init(server, [self = shared_from_this()](){ return 1; }); // TODO
 
 	return true;
 }
@@ -63,7 +63,6 @@ void GameSrv::Stop()
 
 void GameSrv::Release()
 {
-	_server = nullptr;
 	_lb_client.Release();
 	Unit::Release();
 }

@@ -40,6 +40,13 @@ private:
 	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
 
 private:
+	future<> _ConnectToGameSrvs();
+	void _OnNodePublish(NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port);
+
+	void _ConnectToGameSrv(NODEID node_id, IP ip, PORT port);
+	void _DisconnectToGameSrv(NODEID node_id);
+
+private:
 	NODEID _id;
 	toml::table & _config;
 
@@ -47,6 +54,9 @@ private:
 	std::shared_ptr<ServerUnit> _iserver;
 
 	LBClient _lb_client;
+
+	std::unordered_map<NETID, NODEID> _nid2gamesrv;
+	std::unordered_map<NODEID, NETID> _gamesrvs;
 };
 
 #endif // UFRM_GATEWAY_H

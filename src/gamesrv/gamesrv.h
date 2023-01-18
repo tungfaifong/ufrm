@@ -40,8 +40,6 @@ private:
 	NODEID _id;
 	toml::table & _config;
 
-	std::shared_ptr<ServerUnit> _server;
-
 	LBClient _lb_client;
 };
 

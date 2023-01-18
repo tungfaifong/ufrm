@@ -34,10 +34,13 @@ public:
 
 	static constexpr intvl_t HEART_BEAT_INTERVAL = 30000;
 
+	using LoadFunc = std::function<uint32_t()>;
+	using OnNodePublishFunc = std::function<void(NODETYPE, NODEID, SSLSLCPublish::PUBLISHTYPE, IP, PORT)>;
+
 	LBClient(NODETYPE node_type, NODEID node_id, IP ip, PORT port, NODEID srv_node_id, IP srv_ip, PORT srv_port, uint32_t timeout);
 	~LBClient() = default;
 
-	bool Init(std::shared_ptr<ServerUnit> server, std::function<uint32_t()> load);
+	bool Init(std::shared_ptr<ServerUnit> server, LoadFunc load, OnNodePublishFunc on_node_publish = nullptr);
 	bool Start();
 	void Release();
 
@@ -45,6 +48,7 @@ public:
 	void RegisterToLBSrv(NODETYPE node_type, NODEID node_id, IP ip, PORT port);
 	void UnregisterToLBSrv(NODETYPE node_type, NODEID node_id);
 	void Subscribe(NODETYPE node_type);
+
 	future<const std::unordered_map<NODEID, Node> &> GetAllNodes(NODETYPE node_type);
 	future<Node> GetLeastLoadNode(NODETYPE node_type);
 
@@ -66,8 +70,9 @@ private:
 	std::shared_ptr<ServerUnit> _server;
 	NETID _srv_net_id { INVALID_NET_ID };
 	TIMERID _timer_heart_beat {INVALID_TIMER_ID};
-	std::function<uint32_t()> _load;
+	LoadFunc _load;
 	std::unordered_map<NODEID, Node> _nodes[NODETYPE_ARRAYSIZE];
+	OnNodePublishFunc _on_node_publish;
 };
 
 #endif // UFRM_LB_CLIENT_H

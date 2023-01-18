@@ -37,7 +37,11 @@ bool Gateway::Init()
 	_iserver->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnIServerRecv(net_id, data, size); });
 	_iserver->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnIServerDisc(net_id); });
 
-	_lb_client.Init(_iserver, [self = shared_from_this()](){ return 1; }); // TODO
+	_lb_client.Init(_iserver,
+		[self = shared_from_this()](){ return 1; }, // TODO
+		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
+			self->_OnNodePublish(node_type, node_id, publish_type, ip, port);
+		}); 
 
 	return true;
 }
@@ -52,6 +56,7 @@ bool Gateway::Start()
 	{
 		return false;
 	}
+	CO_SPAWN(_ConnectToGameSrvs());
 	return true;
 }
 
@@ -120,6 +125,12 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 
 void Gateway::_OnIServerDisc(NETID net_id)
 {
+	if(_nid2gamesrv.find(net_id) != _nid2gamesrv.end())
+	{
+		_gamesrvs.erase(_nid2gamesrv[net_id]);
+		_nid2gamesrv.erase(net_id);
+	}
+
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
@@ -146,4 +157,63 @@ void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const 
 void Gateway::_OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
 {
 	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializePartialAsString()));
+}
+
+future<> Gateway::_ConnectToGameSrvs()
+{
+	auto game_srvs = co_await _lb_client.GetAllNodes(GAMESRV);
+	for(const auto & [node_id, game_srv] : game_srvs)
+	{
+		_ConnectToGameSrv(node_id, game_srv.ip, game_srv.port);
+	}
+}
+
+void Gateway::_OnNodePublish(NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port)
+{
+	if(node_type != GAMESRV)
+	{
+		return;
+	}
+	switch(publish_type)
+	{
+	case SSLSLCPublish::REGISTER:
+		{
+			_ConnectToGameSrv(node_id, ip, port);
+		}
+		break;
+	case SSLSLCPublish::CHANGE:
+		{
+			_DisconnectToGameSrv(node_id);
+			_ConnectToGameSrv(node_id, ip, port);
+		}
+		break;
+	case SSLSLCPublish::UNREGISTER:
+		{
+			_DisconnectToGameSrv(node_id);
+		}
+		break;
+	default:
+		break;
+	}
+}
+
+void Gateway::_ConnectToGameSrv(NODEID node_id, IP ip, PORT port)
+{
+	auto net_id = _iserver->Connect(ip, port, _config["GameSrv"]["timeout"].value_or(0));
+	if(net_id == INVALID_NET_ID)
+	{
+		LOGGER_WARN("Connect to GameSrv failed, srv_ip:{} srv_port:{}", ip, port);
+		return;
+	}
+	_nid2gamesrv[net_id] = node_id;
+	_gamesrvs[node_id] = net_id;
+}
+
+void Gateway::_DisconnectToGameSrv(NODEID node_id)
+{
+	if(_gamesrvs.find(node_id) == _gamesrvs.end())
+	{
+		return;
+	}
+	_iserver->Disconnect(_gamesrvs[node_id]);
 }

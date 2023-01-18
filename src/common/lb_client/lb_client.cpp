@@ -14,10 +14,11 @@ LBClient::LBClient(NODETYPE node_type, NODEID node_id, IP ip, PORT port, NODEID 
 
 }
 
-bool LBClient::Init(std::shared_ptr<ServerUnit> server, std::function<uint32_t()> load)
+bool LBClient::Init(std::shared_ptr<ServerUnit> server, LoadFunc load, OnNodePublishFunc on_node_publish /* = nullptr */)
 {
 	_server = server;
 	_load = load;
+	_on_node_publish = on_node_publish;
 	return true;
 }
 
@@ -36,6 +37,7 @@ void LBClient::Release()
 {
 	_server = nullptr;
 	_load = nullptr;
+	_on_node_publish = nullptr;
 }
 
 void LBClient::RegisterToLBSrv(NODETYPE node_type, NODEID node_id, IP ip, PORT port)
@@ -128,30 +130,39 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 	{
 		return;
 	}
-	switch(body.change_type())
+	auto publish_type = body.publish_type();
+	auto ip = body.node().ip();
+	auto port = (PORT)body.node().port();
+	switch(publish_type)
 	{
 	case SSLSLCPublish::REGISTER:
 		{
-			_nodes[node_type][node_id] = Node {body.node().ip(), (PORT)body.node().port()};
+			_nodes[node_type][node_id] = Node {ip, port};
 		}
 		break;
 	case SSLSLCPublish::CHANGE:
 		{
-			_nodes[node_type][node_id].ip = body.node().ip();
-			_nodes[node_type][node_id].port = (PORT)body.node().port();
+			_nodes[node_type][node_id].ip = ip;
+			_nodes[node_type][node_id].port = port;
 		}
 		break;
 	case SSLSLCPublish::UNREGISTER:
 		{
 			if(_nodes[node_type].find(node_id) == _nodes[node_type].end())
 			{
-				return;
+				break;
 			}
+			ip = _nodes[node_type][node_id].ip;
+			port = _nodes[node_type][node_id].port;
 			_nodes[node_type].erase(node_id);
 		}
 		break;
 	default:
 		break;
+	}
+	if(_on_node_publish)
+	{
+		_on_node_publish(node_type, node_id, publish_type, ip, port);
 	}
 }
 

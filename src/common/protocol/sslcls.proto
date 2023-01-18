@@ -39,13 +39,13 @@ message SSLCLSSubscribe
 
 message SSLSLCPublish
 {
-	enum CHANGETYPE
+	enum PUBLISHTYPE
 	{
 		REGISTER = 0;
 		UNREGISTER = 1;
 		CHANGE = 2;
 	}
-	CHANGETYPE change_type = 1;
+	PUBLISHTYPE publish_type = 1;
 	SSLCLSNode node = 2;
 }
 

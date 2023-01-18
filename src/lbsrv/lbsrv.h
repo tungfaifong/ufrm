@@ -55,7 +55,7 @@ private:
 private:
 	void _UnregisterNode(NODETYPE node_type, NODEID node_id);
 	void _Unsubscribe(NETID net_id);
-	void _Publish(SSLSLCPublish::CHANGETYPE change_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port);
+	void _Publish(SSLSLCPublish::PUBLISHTYPE publish_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port);
 
 private:
 	NODEID _id;

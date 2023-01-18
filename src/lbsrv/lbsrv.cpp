@@ -300,11 +300,11 @@ void LBSrv::_Unsubscribe(NETID net_id)
 	}
 }
 
-void LBSrv::_Publish(SSLSLCPublish::CHANGETYPE change_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port)
+void LBSrv::_Publish(SSLSLCPublish::PUBLISHTYPE publish_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port)
 {
 	PKG_CREATE(body, SSLCLSPkgBody);
 	auto publish = body->mutable_publish();
-	publish->set_change_type(change_type);
+	publish->set_publish_type(publish_type);
 	publish->mutable_node()->set_node_type(node_type);
 	publish->mutable_node()->set_node_id(node_id);
 	publish->mutable_node()->set_ip(ip);

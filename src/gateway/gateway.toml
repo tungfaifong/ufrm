@@ -28,3 +28,6 @@ id = 1
 ip = "127.0.0.1"
 port = 6667
 timeout = 3000
+
+[GameSrv]
+timeout = 3000
