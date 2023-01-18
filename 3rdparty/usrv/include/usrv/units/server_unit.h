@@ -67,6 +67,7 @@ private:
 
 	std::thread _io_thread;
 	asio::io_context _io_context;
+	asio::executor_work_guard<asio::io_context::executor_type> _work_guard;
 	asio::steady_timer _timer;
 	intvl_t _io_interval = 0;
 
