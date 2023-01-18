@@ -65,6 +65,7 @@ bool Client::Start()
 	AuthReq();
 	return true;
 }
+
 bool Client::Update(intvl_t interval)
 {
 	return true;
