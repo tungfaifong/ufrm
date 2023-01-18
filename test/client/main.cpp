@@ -41,7 +41,7 @@ public:
 	void CreateRoleReq();
 	void OnCreateRoleRsp(const SCCreateRoleRsp & rsp);
 
-	void LoginReq();
+	void LoginReq(ROLEID role_id);
 	void OnLoginRsp(const SCLoginRsp & rsp);
 
 	void HeartBeat();
@@ -146,7 +146,14 @@ void Client::GetRolesReq()
 
 void Client::OnGetRolesRsp(const SCGetRolesRsp & rsp)
 {
-	CreateRoleReq();
+	if(rsp.role_ids_size() == 0)
+	{
+		CreateRoleReq();
+	}
+	else
+	{
+		LoginReq(rsp.role_ids(0));
+	}
 }
 
 void Client::CreateRoleReq()
@@ -158,12 +165,20 @@ void Client::CreateRoleReq()
 
 void Client::OnCreateRoleRsp(const SCCreateRoleRsp & rsp)
 {
-	// LoginReq();
+	if(rsp.result() == SCCreateRoleRsp::SUCCESS)
+	{
+		LoginReq(rsp.role_id());
+	}
+	else
+	{
+		LOGGER_ERROR("create role failed.");
+	}
 }
 
-void Client::LoginReq()
+void Client::LoginReq(ROLEID role_id)
 {
 	CSLoginReq body;
+	body.set_role_id(role_id);
 	SendToServer(CSID_LOGIN_REQ, &body);
 }
 

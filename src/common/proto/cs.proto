@@ -52,6 +52,7 @@ message SCLoginRsp
 	enum RESULT
 	{
 		SUCCESS = 0;
+		FAILED = 1;
 	}
 	RESULT result = 1;
 }

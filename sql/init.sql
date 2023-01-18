@@ -15,7 +15,7 @@ CREATE TABLE role(
 	`role_id` INT UNSIGNED NOT NULL AUTO_INCREMENT,
 	`name` VARCHAR(30) NOT NULL,
 	`item` MEDIUMBLOB,
-	`logic` MEDIUMBLOB,
+	`role_logics` MEDIUMBLOB,
 	PRIMARY KEY (`role_id`),
 	UNIQUE (`name`)
 );
