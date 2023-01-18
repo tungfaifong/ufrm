@@ -17,7 +17,7 @@ path = "scripts/gamesrv/main.lua"
 
 [GameSrv]
 id = 1
-interval = 1
+interval = 10
 ip = "127.0.0.1"
 port = 6668
 
