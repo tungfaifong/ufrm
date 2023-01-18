@@ -1,5 +1,5 @@
 include ../mk_base.mk
 
-TARGET := cgisrv
+TARGET := iosrv
 
 include ../mk_srv.mk

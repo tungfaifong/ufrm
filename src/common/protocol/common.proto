@@ -7,7 +7,7 @@ enum NODETYPE
 	GAMESRV = 2;
 	PROXY = 3;
 	DBSRV = 4;
-	CGISRV = 5;
+	IOSRV = 5;
 }
 
 message Variant
