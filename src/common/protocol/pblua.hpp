@@ -417,8 +417,20 @@ namespace pblua
 		auto message = std::unique_ptr<google::protobuf::Message>(prototype->New());
 		encode_message(message.get(), descriptor, L, index);
 
-		message->SerializeToArray(data, *size);
-		*size = message->ByteSizeLong();
+		if (data && size)
+		{
+			message->SerializeToArray(data, *size);
+			*size = message->ByteSizeLong();
+		}
+		else 
+		{
+			std::string data;
+			size_t size;
+			message->SerializeToString(&data);
+			size = message->ByteSizeLong();
+			lua_pushlstring(L, data.c_str(), data.size());
+			lua_pushinteger(L, size);
+		}
 
 		return true;
 	}
