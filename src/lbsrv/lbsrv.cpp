@@ -78,7 +78,7 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 		LOGGER_WARN("LBSrv::_OnServerRecv WARN: invalid node_type:{} node_id:{} msg_type:{}", head.from_node_type(), head.from_node_id(), head.msg_type());
 		break;
 	}
-	
+	LOGGER_TRACE("LBSrv::_OnServerRecv node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", head.from_node_type(), head.from_node_id(), head.msg_type(), head.id(), head.rpc_id());
 }
 
 void LBSrv::_OnServerDisc(NETID net_id)
@@ -105,10 +105,11 @@ bool LBSrv::_SendToLBClient(NETID net_id, SSLCLSID id, SSLCLSPkgBody * body, MSG
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("LBClient::_SendToLBClient ERROR: pkg size too long, id:{} size:{}", id, size);
+		LOGGER_ERROR("LBSrv::_SendToLBClient ERROR: pkg size too long, id:{} size:{}", id, size);
 		return false;
 	}
 	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	LOGGER_TRACE("LBSrv::_SendToLBClient node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", node_type, node_id, msg_type, id, rpc_id);
 	return true;
 }
 
@@ -130,10 +131,11 @@ bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSLCLSID id, SSLCLSPkgB
 		auto size = pkg.ByteSizeLong();
 		if(size > UINT16_MAX)
 		{
-			LOGGER_ERROR("LBClient::_SendToLBClient ERROR: pkg size too long, id:{} size:{}", id, size);
+			LOGGER_ERROR("LBSrv::_SendToLBClient ERROR: pkg size too long, id:{} size:{}", id, size);
 			continue;
 		}
 		server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+		LOGGER_TRACE("LBSrv::_SendToLBClient node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", node_type, node_id, msg_type, id, rpc_id);
 	}
 	return true;
 }

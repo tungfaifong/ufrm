@@ -114,6 +114,7 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 		LOGGER_WARN("Gateway::_OnIServerRecv WARN: invalid node_type:{} node_id:{} msg_type:{}", head.from_node_type(), head.from_node_id(), head.msg_type());
 		break;
 	}
+	LOGGER_TRACE("Gateway::_OnIServerRecv node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", head.from_node_type(), head.from_node_id(), head.msg_type(), head.id(), head.rpc_id());
 }
 
 void Gateway::_OnIServerDisc(NETID net_id)

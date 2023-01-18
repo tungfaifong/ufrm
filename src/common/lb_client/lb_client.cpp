@@ -150,6 +150,7 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 		return;
 	}
 	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	LOGGER_TRACE("LBClient::_SendToLBSrv msg_type:{} id:{} rpc_id:{}", msg_type, id, rpc_id);
 }
 
 awaitable_func LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)

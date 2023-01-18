@@ -23,6 +23,7 @@ std::shared_ptr<CoroutineMgr::CoroObj> CoroutineMgr::Insert(std::coroutine_handl
 	coro_obj->coro = coro;
 	coro_obj->timeout = StdNow() + ms_t(TIMEOUT);
 	auto id = _coro_objs.Insert(std::move(coro_obj));
+	_coro_objs[id]->id = id;
 	return _coro_objs[id];
 }
 
