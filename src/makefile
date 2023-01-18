@@ -1,4 +1,4 @@
-PROCESSES = dbsrv gamesrv gateway lbsrv proxy # iosrv 
+PROCESSES = dbsrv gamesrv gateway iosrv lbsrv proxy 
 
 TARGET = SHELL
 
