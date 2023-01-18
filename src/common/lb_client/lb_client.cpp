@@ -70,7 +70,7 @@ void LBClient::GetAllNodes(NODETYPE node_type)
 	
 }
 
-coroutine LBClient::GetLeastLoadNode(NODETYPE node_type)
+future LBClient::GetLeastLoadNode(NODETYPE node_type)
 {
 	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_get_least_load_node_req()->set_node_type(node_type);
@@ -152,9 +152,9 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
 }
 
-awaitable LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)
+awaitable_func LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)
 {
-	return awaitable([this, id, body](COROID coro_id){ _SendToLBSrv(id, body, MSGT_RPCREQ, coro_id); });
+	return awaitable_func([this, id, body](COROID coro_id){ _SendToLBSrv(id, body, MSGT_RPCREQ, coro_id); });
 }
 
 bool LBClient::_Connect()
@@ -170,11 +170,11 @@ bool LBClient::_Connect()
 
 void LBClient::_HeartBeat()
 {
-	CORO_SPAWN([this](){ return _CoroHeartBeat(); });
+	CORO_SPAWN(_CoroHeartBeat());
 	_timer_heart_beat = timer::CreateTimer(HEART_BEAT_INTERVAL, [this](){ _HeartBeat(); });
 }
 
-coroutine LBClient::_CoroHeartBeat()
+future LBClient::_CoroHeartBeat()
 {
 	PKG_CREATE(body, SSLCLSPkgBody);
 	body->mutable_heart_beat_req()->set_load(_load());

@@ -11,55 +11,60 @@
 
 using namespace usrv;
 
-using COROID = size_t;
-enum class CORORESULT
-{
-	SUCCESS = 0,
-	TIMEOUT,
-};
-
 struct promise;
+struct final_awaitable;
+struct future;
 
-struct coroutine : std::coroutine_handle<promise>
-{
-	using promise_type = struct promise;
-
-	COROID id;
-	std_clock_t timeout;
-	CORORESULT result;
-	std::string data;
-};
+using coroutine = std::coroutine_handle<promise>;
 
 struct promise
 {
-	coroutine get_return_object() { return {coroutine::from_promise(*this)}; }
+	future get_return_object();
 	std::suspend_always initial_suspend() noexcept { return {}; }
-	std::suspend_never final_suspend() noexcept { return {}; }
-	void return_void() { coro = nullptr; }
-	void unhandled_exception() { coro = nullptr; }
+	final_awaitable final_suspend() noexcept;
+	void return_void() {}
+	void unhandled_exception() {}
 
-	std::shared_ptr<coroutine> coro;
+	coroutine caller {nullptr};
 };
 
 struct awaitable
 {
-	awaitable(std::function<void(COROID)> func) : coro(nullptr), func(func) {}
 	bool await_ready() { return false; }
-	void await_suspend(std::coroutine_handle<promise> h)
+	auto await_suspend(coroutine caller)
 	{
-		coro = h.promise().coro;
-		func(coro->id);
+		coro.promise().caller = caller;
+		return coro;
 	}
-	auto await_resume()
+	auto await_resume() {}
+
+	coroutine coro;
+};
+
+struct final_awaitable
+{
+	bool await_ready() noexcept { return false; }
+	std::coroutine_handle<> await_suspend(coroutine coro) noexcept
 	{
-		auto result = coro->result;
-		auto data = std::move(coro->data);
-		coro = nullptr;
-		return std::pair<CORORESULT, std::string>(result, data);
+		if(!coro.promise().caller)
+		{
+			return std::noop_coroutine();
+		}
+		return coro.promise().caller;
+	}
+	void await_resume() noexcept {}
+};
+
+struct future
+{
+	using promise_type = struct promise;
+	
+	auto operator co_await()
+	{
+		return awaitable{ coro };
 	}
 
-	std::shared_ptr<coroutine> coro;
-	std::function<void(COROID)> func;
+	coroutine coro;
 };
 
 #endif // UFRM_COROUTINE_H
