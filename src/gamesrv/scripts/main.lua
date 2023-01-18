@@ -11,11 +11,11 @@ end
 function Stop()
 end
 
-function OnConn(net_id, ip, port)
+function OnConn(role_id, ip, port)
 end
 
-function OnRecv(net_id, data)
+function OnRecv(role_id, data)
 end
 
-function OnDisc(net_id)
+function OnDisc(role_id)
 end

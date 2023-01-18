@@ -109,7 +109,6 @@ void GameSrv::_OnServerDisc(NETID net_id)
 		_gateways.erase(_nid2gateway[net_id]);
 		_nid2gateway.erase(net_id);
 	}
-
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
@@ -221,7 +220,8 @@ void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGW
 
 void GameSrv::_OnRecvClient(ROLEID role_id, const CSPkg & pkg)
 {
-	
+	auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
+	lua->OnRecv(role_id, pkg.SerializePartialAsString().c_str(), (uint16_t)pkg.ByteSizeLong());
 }
 
 void GameSrv::_OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body)
