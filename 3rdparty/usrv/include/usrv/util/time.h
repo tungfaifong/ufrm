@@ -21,65 +21,20 @@ static constexpr uint32_t DAY_SEC = 24 * HOUR_SEC;
 static constexpr uint32_t WEEK_SEC = 7 * DAY_SEC;
 static constexpr uint32_t SEC2MILLISEC = 1000;
 
-inline bool CheckSecond(int sec)
+inline sys_clock_t SysNow()
 {
-	return sec >= 0 && sec < 60;
+	return std::chrono::system_clock::now();
 }
 
-inline bool CheckMinute(int min)
+inline std_clock_t StdNow()
 {
-	return min >= 0 && min < 60;
+	return std::chrono::steady_clock::now();
 }
 
-inline bool CheckHour(int hour)
+inline intvl_t Ns2Ms(ns_t ns)
 {
-	return hour >= 0 && hour < 24;
+	return std::chrono::duration_cast<ms_t>(ns).count();
 }
-
-inline bool CheckWDay(int wday)
-{
-	return wday >= 0 && wday < 7;
-}
-
-inline bool CheckMonth(int mon)
-{
-	return mon >= 0 && mon < 12;
-}
-
-inline int GetMaxMDay(int year, int month)
-{
-	static constexpr int MAX_MDAY[12] = { 31,-1,31,30,31,30,31,31,30,31,30,31 };
-	int max_mday = MAX_MDAY[month];
-	if (1 == month) {
-		max_mday = ((((0 == year % 4) && (0 != year % 100)) || (0 == year % 400)) ? 29 : 28);
-	}
-	return max_mday;
-}
-
-inline bool CheckMDay(int mday, int year, int month)
-{
-	return mday > 0 && mday <= GetMaxMDay(year, month);
-}
-
-time_t Now();
-
-sys_clock_t SysNow();
-
-std_clock_t StdNow();
-
-intvl_t Ns2Ms(ns_t ns);
-
-int TimeZone(bool recal = false);
-
-int NextMinuteInterval(int second);
-
-int NextHourInterval(int minute, int second);
-
-int NextDayInterval(int hour, int minute, int second);
-
-int NextWeekInterval(int wday, int hour, int minute, int second);
-
-int NextMonthInterval(int mday, int hour, int minute, int second);
 
 NAMESPACE_CLOSE
 
