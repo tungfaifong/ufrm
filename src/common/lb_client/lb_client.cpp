@@ -75,7 +75,7 @@ future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes
 		auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_ALL_NODES_REQ, body);
 		if(result == CORORESULT::TIMEOUT)
 		{
-			LOGGER_WARN("LBClient::GetAllNodes timeout");
+			LOGGER_WARN("get all nodes timeout");
 			co_return _nodes[node_type];
 		}
 		SSLCLSPkgBody rsp_body;
@@ -96,7 +96,7 @@ future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
 	auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ, body);
 	if(result == CORORESULT::TIMEOUT)
 	{
-		LOGGER_WARN("LBClient::GetLeastLoadNode timeout");
+		LOGGER_WARN("get least load node timeout");
 		co_return Node{DEFAULT_IP, DEFAULT_PORT};
 	}
 	SSLCLSPkgBody rsp_body;
@@ -115,7 +115,7 @@ void LBClient::OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody 
 		}
 		break;
 	default:
-		LOGGER_WARN("LBClient::OnRecv WARN: invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(SSLCLSID(head.id())));
+		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.id()));
 		break;
 	}
 }
@@ -131,9 +131,14 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 	switch(body.change_type())
 	{
 	case SSLSLCPublish::REGISTER:
-	case SSLSLCPublish::CHANGE:
 		{
 			_nodes[node_type][node_id] = Node {body.node().ip(), (PORT)body.node().port()};
+		}
+		break;
+	case SSLSLCPublish::CHANGE:
+		{
+			_nodes[node_type][node_id].ip = body.node().ip();
+			_nodes[node_type][node_id].port = (PORT)body.node().port();
 		}
 		break;
 	case SSLSLCPublish::UNREGISTER:
@@ -150,7 +155,7 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 	}
 }
 
-void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+void LBClient::_SendToLBSrv(SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -165,14 +170,14 @@ void LBClient::_SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type 
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("LBClient::_SendToLBSrv ERROR: pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
 		return;
 	}
 	_server->Send(_srv_net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("LBClient::_SendToLBSrv msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
+	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
 }
 
-awaitable_func LBClient::_RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body)
+awaitable_func LBClient::_RpcLBSrv(SSID id, SSLCLSPkgBody * body)
 {
 	return awaitable_func([this, id, body](COROID coro_id){ _SendToLBSrv(id, body, MSGT_RPCREQ, coro_id); });
 }
@@ -182,7 +187,7 @@ bool LBClient::_Connect()
 	_srv_net_id = _server->Connect(_config.srv_ip, _config.srv_port, _config.timeout);
 	if(_srv_net_id == INVALID_NET_ID)
 	{
-		LOGGER_ERROR("LBClient::_Connect Connect to LBSrv failed, srv_ip:{} srv_port:{}", _config.srv_ip, _config.srv_port);
+		LOGGER_ERROR("Connect to LBSrv failed, srv_ip:{} srv_port:{}", _config.srv_ip, _config.srv_port);
 		return false;
 	}
 	return true;
@@ -201,8 +206,8 @@ future<> LBClient::_CoroHeartBeat()
 	auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_HEART_BEAT_REQ, body);
 	if(result == CORORESULT::TIMEOUT)
 	{
-		LOGGER_WARN("LBClient::_CoroHeartBeat timeout");
+		LOGGER_WARN("heart beat timeout");
 		co_return;
 	}
-	LOGGER_INFO("LBClient::_CoroHeartBeat RSP success");
+	LOGGER_INFO("heart beat RSP success");
 }

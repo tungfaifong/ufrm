@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "common.proto";
+import "ssid.proto";
 import "sslcls.proto";
 
 enum MSGTYPE
@@ -16,7 +17,7 @@ message SSPkgHead
 	uint32 from_node_id = 2;
 	NODETYPE to_node_type = 3;
 	uint32 to_node_id = 4;
-	uint32 id = 5;
+	SSID id = 5;
 	MSGTYPE msg_type = 6;
 	uint64 rpc_id = 7;
 }

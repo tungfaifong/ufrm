@@ -19,7 +19,7 @@ bool LBSrv::Init()
 {
 	if(_id == INVALID_NODE_ID)
 	{
-		LOGGER_ERROR("LBSrv::Init ERROR: gateway_mgr id is INVALID");
+		LOGGER_ERROR("gateway_mgr id is INVALID");
 		return false;
 	}
 
@@ -54,7 +54,7 @@ void LBSrv::Release()
 
 void LBSrv::_OnServerConn(NETID net_id, IP ip, PORT port)
 {
-	LOGGER_INFO("LBSrv::_OnServerConn success net_id:{} ip:{} port:{}", net_id, ip, port);
+	LOGGER_INFO("onconnect success net_id:{} ip:{} port:{}", net_id, ip, port);
 }
 
 void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
@@ -63,7 +63,7 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	LOGGER_TRACE("LBSrv::_OnServerRecv node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(SSLCLSID(head.id())), head.rpc_id());
+	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(head.id()), head.rpc_id());
 	switch(head.msg_type())
 	{
 	case MSGT_NORMAL:
@@ -77,7 +77,7 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 		}
 		break;
 	default:
-		LOGGER_WARN("LBSrv::_OnServerRecv WARN: invalid node_type:{} node_id:{} msg_type:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()));
+		LOGGER_WARN("invalid node_type:{} node_id:{} msg_type:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()));
 		break;
 	}
 }
@@ -87,10 +87,10 @@ void LBSrv::_OnServerDisc(NETID net_id)
 	_Unsubscribe(net_id);
 	auto [node_type, node_id] = _nid2node[net_id];
 	_UnregisterNode(node_type, node_id);
-	LOGGER_INFO("LBSrv::_OnServerDisc success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
+	LOGGER_INFO("ondisconnect success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
 }
 
-bool LBSrv::_SendToLBClient(NETID net_id, SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+bool LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto [node_type, node_id] = _nid2node[net_id];
@@ -106,15 +106,15 @@ bool LBSrv::_SendToLBClient(NETID net_id, SSLCLSID id, SSLCLSPkgBody * body, MSG
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("LBSrv::_SendToLBClient ERROR: pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
 		return false;
 	}
 	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("LBSrv::_SendToLBClient node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
+	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
 	return true;
 }
 
-bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
+bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type /* = MSGT_NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -132,11 +132,11 @@ bool LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSLCLSID id, SSLCLSPkgB
 		auto size = pkg.ByteSizeLong();
 		if(size > UINT16_MAX)
 		{
-			LOGGER_ERROR("LBSrv::_SendToLBClient ERROR: pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+			LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
 			continue;
 		}
 		server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-		LOGGER_TRACE("LBSrv::_SendToLBClient node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
+		LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
 	}
 	return true;
 }
@@ -161,7 +161,7 @@ void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSL
 		}
 		break;
 	default:
-		LOGGER_WARN("LBSrv::_OnServerHandeNormal WARN: invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
+		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
 		break;
 	}
 }
@@ -169,7 +169,7 @@ void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSL
 void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
 {
 	PKG_CREATE(rsp_body, SSLCLSPkgBody);
-	SSLCLSID id;
+	SSID id;
 	switch(head.id())
 	{
 	case SSID_LC_LS_HEART_BEAT_REQ:
@@ -188,7 +188,7 @@ void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSL
 		}
 		break;
 	default:
-		LOGGER_WARN("LBSrv::_OnServerHanleRpcReq WARN: invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
+		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
 		break;
 	}
 	_SendToLBClient(net_id, id, rsp_body, MSGT_RPCRSP, head.rpc_id());
@@ -198,7 +198,7 @@ void LBSrv::_OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSLCLSNo
 {
 	_nid2node[net_id] = std::pair<NODETYPE, NODEID>(body.node().node_type(), body.node().node_id());
 	_nodes[body.node().node_type()][body.node().node_id()] = Node {net_id, body.node().ip(), (PORT)body.node().port(), 0};
-	LOGGER_INFO("LBSrv::_OnNodeRegister success net_id:{} node_type:{} node_id:{} ip:{} port:{}", net_id, ENUM_NAME(body.node().node_type()), body.node().node_id(), body.node().ip(), body.node().port());
+	LOGGER_INFO("success net_id:{} node_type:{} node_id:{} ip:{} port:{}", net_id, ENUM_NAME(body.node().node_type()), body.node().node_id(), body.node().ip(), body.node().port());
 	_Publish(SSLSLCPublish::REGISTER, body.node().node_type(), body.node().node_id(), body.node().ip(), body.node().port());
 }
 
@@ -207,7 +207,7 @@ void LBSrv::_OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSLCLS
 	_UnregisterNode(body.node_type(), body.node_id());
 }
 
-void LBSrv::_OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body)
+void LBSrv::_OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSID & id, SSLCLSPkgBody * rsp_body)
 {
 	auto [node_type, node_id] = _nid2node[net_id];
 	_nodes[node_type][node_id].load = body.load();
@@ -224,7 +224,7 @@ void LBSrv::_OnSubscribe(NETID net_id, const SSPkgHead & head, const SSLCLSSubsc
 	vec.push_back(net_id);
 }
 
-void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body)
+void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSID & id, SSLCLSPkgBody * rsp_body)
 {
 	auto node_type = body.node_type();
 	id = SSID_LS_LC_GET_ALL_NODES_RSP;
@@ -239,7 +239,7 @@ void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, S
 	}
 }
 
-void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSLCLSID & id, SSLCLSPkgBody * rsp_body)
+void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSID & id, SSLCLSPkgBody * rsp_body)
 {
 	auto node_type = body.node_type();
 	NODEID min_node_id = INVALID_NODE_ID;
@@ -282,7 +282,7 @@ void LBSrv::_UnregisterNode(NODETYPE node_type, NODEID node_id)
 	auto port = _nodes[node_type][node_id].port;
 	_nodes[node_type].erase(node_id);
 	_nid2node.erase(net_id);
-	LOGGER_INFO("LBSrv::_UnregisterNode success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
+	LOGGER_INFO("net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
 	_Publish(SSLSLCPublish::UNREGISTER, node_type, node_id, ip, port);
 }
 
@@ -295,7 +295,7 @@ void LBSrv::_Unsubscribe(NETID net_id)
 		if(iter != vec.end())
 		{
 			vec.erase(iter);
-			LOGGER_INFO("LBSrv::_Unsubscribe success net_id:{} node_type:{}", net_id, ENUM_NAME(NODETYPE(i)));
+			LOGGER_INFO("net_id:{} node_type:{}", net_id, ENUM_NAME(NODETYPE(i)));
 		}
 	}
 }

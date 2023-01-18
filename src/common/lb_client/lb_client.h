@@ -54,8 +54,8 @@ private:
 	void _OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPublish & body);
 
 private:
-	void _SendToLBSrv(SSLCLSID id, SSLCLSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
-	awaitable_func _RpcLBSrv(SSLCLSID id, SSLCLSPkgBody * body);
+	void _SendToLBSrv(SSID id, SSLCLSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
+	awaitable_func _RpcLBSrv(SSID id, SSLCLSPkgBody * body);
 
 	bool _Connect();
 	void _HeartBeat();

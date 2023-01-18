@@ -1,6 +1,6 @@
 [Logger]
 level = 0
-file_name = "/logs/lbsrv.log"
+file_name = "/logs/gamesrv.log"
 spsc_blk_num = 524288	# 一个blk为64bytes 512k * 64bytes = 32MB
 
 [Server]
@@ -12,7 +12,17 @@ spsc_blk_num = 524288
 tp_alloc_num = 1024
 ts_alloc_num = 1024
 
+[Lua]
+path = "/scripts/main.lua"
+
+[GameSrv]
+id = 1
+interval = 1
+ip = "127.0.0.1"
+port = 6668
+
 [LBSrv]
 id = 1
-interval = 10
+ip = "127.0.0.1"
 port = 6667
+timeout = 3000

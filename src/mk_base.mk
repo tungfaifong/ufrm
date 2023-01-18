@@ -17,24 +17,25 @@ PATH_3RDPARTY = $(PATH_ROOT)/3rdparty
 PATH_BUILD = out
 
 # include
+INC_COMMON = -I$(PATH_ROOT)/src/common
+INC_USRV = -I$(PATH_3RDPARTY)/usrv/include -I$(PATH_3RDPARTY)/usrv/include/usrv
 INC_ASIO = -I$(PATH_3RDPARTY)/asio-1.20.0
 INC_FMT = -I$(PATH_3RDPARTY)/fmt-8.1.0/include
 INC_LUA = -I$(PATH_3RDPARTY)/lua-5.4.3/include
 INC_LUA_BRIDGE = -I$(PATH_3RDPARTY)/LuaBridge-2.7
 INC_SPDLOG = -I$(PATH_3RDPARTY)/spdlog-1.9.2
-INC_USRV = -I$(PATH_3RDPARTY)/usrv/include -I$(PATH_3RDPARTY)/usrv/include/usrv
 INC_TOML = -I$(PATH_3RDPARTY)/toml++-3.0.1
 INC_PROTOBUF = -I$(PATH_3RDPARTY)/protobuf-3.19.4/include
 INC_MAGIC_ENUM = -I$(PATH_3RDPARTY)/magic_enum-0.7.3
-INC_ALL = -I$(PATH_ROOT)/src/common $(INC_ASIO) $(INC_FMT) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_USRV) $(INC_TOML) $(INC_PROTOBUF) $(INC_MAGIC_ENUM)
+INC_ALL = $(INC_COMMON) $(INC_USRV) $(INC_ASIO) $(INC_FMT) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_TOML) $(INC_PROTOBUF) $(INC_MAGIC_ENUM)
 
 # lib
 LIB_COMMON = -L$(PATH_SRC)/common/out -lcommon
+LIB_USRV = -L$(PATH_3RDPARTY)/usrv/lib -lusrv
 LIB_FMT = -L$(PATH_3RDPARTY)/fmt-8.1.0/lib -lfmt
 LIB_LUA = -L$(PATH_3RDPARTY)/lua-5.4.3/lib -llua
-LIB_USRV = -L$(PATH_3RDPARTY)/usrv/lib -lusrv
 LIB_PROTOBUF = -L$(PATH_3RDPARTY)/protobuf-3.19.4/lib -lprotobuf -lprotobuf-lite
-LIB_ALL = $(LIB_COMMON) $(LIB_FMT) $(LIB_LUA) $(LIB_USRV) $(LIB_PROTOBUF)
+LIB_ALL = $(LIB_COMMON) $(LIB_USRV) $(LIB_FMT) $(LIB_LUA) $(LIB_PROTOBUF)
 
 LINK_FLAGS = $(LIB_ALL) -lpthread -ldl
 
