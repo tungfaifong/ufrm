@@ -34,7 +34,7 @@ INC_MYSQL++ = -I$(PATH_3RDPARTY)/mysql++-3.3.0/include
 INC_ALL = $(INC_COMMON) $(INC_USRV) $(INC_ASIO) $(INC_FMT) $(INC_JEMALLOC) $(INC_LUA) $(INC_LUA_BRIDGE) $(INC_SPDLOG) $(INC_TOML++) $(INC_PROTOBUF) $(INC_MAGIC_ENUM) $(INC_MYSQL) $(INC_MYSQL++)
 
 # lib
-LIB_COMMON = -L$(PATH_SRC)/common/out -lcommon
+LIB_COMMON = -L$(PATH_ROOT)/build/src/common -lcommon
 LIB_USRV = -L$(PATH_3RDPARTY)/usrv/lib -lusrv
 LIB_FMT = -L$(PATH_3RDPARTY)/fmt-8.1.0/lib -lfmt
 LIB_JEMALLOC = -L$(PATH_3RDPARTY)/jemalloc-5.3.0/lib -ljemalloc
