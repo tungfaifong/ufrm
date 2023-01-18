@@ -21,7 +21,7 @@ ts_alloc_num = 1024
 id = 1
 interval = 1
 ip = "127.0.0.1"
-port = 6671
+port = 6670
 
 [LBSrv]
 id = 1

@@ -44,7 +44,6 @@ bool DBSrv::Init()
 
 bool DBSrv::Start()
 {
-	server::Listen(_config["DBSrv"]["port"].value_or(DEFAULT_PORT));
 	if(!_lb_client.Start())
 	{
 		return false;
