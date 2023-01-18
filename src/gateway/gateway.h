@@ -10,7 +10,6 @@
 #include "usrv/units/server_unit.h"
 #include "usrv/unit.h"
 
-#include "db_client/db_client.h"
 #include "lb_client/lb_client.h"
 #include "protocol/cs.pb.h"
 #include "protocol/sslcls.pb.h"
@@ -89,7 +88,6 @@ private:
 
 	LBClient _lb_client;
 	PXClient _px_client;
-	DBClient _db_client;
 };
 
 #endif // UFRM_GATEWAY_H
