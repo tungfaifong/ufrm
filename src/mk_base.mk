@@ -2,7 +2,7 @@ CC = gcc
 CXX = g++
 AR = ar crv
 
-CXX_FLAGS = -Wall -fdiagnostics-color=always -g -std=c++20 -O2
+CXX_FLAGS = -Wall -fdiagnostics-color=always -g -std=c++20
 
 # ifeq ($(MAKECMDGOALS), debug)
 # 	CXX_FLAGS = -Wall -fdiagnostics-color=always -g -std=c++20
