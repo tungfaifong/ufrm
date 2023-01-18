@@ -2,12 +2,13 @@
 
 Role = Role or BaseClass()
 
-function Role:__init(role_id)
+function Role:__init()
 	if self._instance then
 		return
 	end
 
-	self._id = role_id
+	self._id = 0
+	self._user_id = 0
 	self._role_logics = {}
 	self._recv_handler = {}
 
@@ -54,8 +55,20 @@ function Role:RegisterRecvHandler(handlers)
 	end
 end
 
+function Role:SetID(id)
+	self._id = id
+end
+
 function Role:ID()
 	return self._id
+end
+
+function Role:SetUserID(user_id)
+	self._user_id = user_id
+end
+
+function Role:UserID()
+	return self._user_id
 end
 
 function Role:_RegisterRoleLogic(key, logic)

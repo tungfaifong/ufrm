@@ -23,10 +23,10 @@ class Gateway : public Unit, public std::enable_shared_from_this<Gateway>
 public:
 	static constexpr intvl_t HEART_BEAT_INTERVAL = 30000;
 
-	struct Role
+	struct User
 	{
 		NETID net_id;
-		ROLEID role_id;
+		USERID user_id;
 		NODEID game_id;
 	};
 
@@ -49,7 +49,7 @@ private:
 
 	void _SendToGameSrv(NODEID node_id, SSID id, google::protobuf::Message * body, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	awaitable_func _RpcGameSrv(NODEID node_id, SSID id, google::protobuf::Message * body);
-	void _SendToClient(ROLEID role_id, const CSPkg & pkg);
+	void _SendToClient(USERID user_id, const CSPkg & pkg);
 	void _SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	void _BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
@@ -68,7 +68,7 @@ private:
 	void _HeartBeat();
 	future<> _CoroHeartBeat(NODEID node_id);
 
-	future<> _OnAuth(NETID net_id, ROLEID role_id, NODEID game_id, std::string token);
+	future<> _OnAuth(NETID net_id, USERID user_id, std::string token);
 	void _ForwardToGameSrv(NETID net_id, const CSPkg & pkg);
 
 private:
@@ -83,8 +83,8 @@ private:
 
 	TIMERID _timer_heart_beat {INVALID_TIMER_ID};
 
-	std::unordered_map<NETID, ROLEID> _nid2role;
-	std::unordered_map<ROLEID, Role> _roles;
+	std::unordered_map<NETID, USERID> _nid2user;
+	std::unordered_map<USERID, User> _users;
 
 	LBClient _lb_client;
 	PXClient _px_client;

@@ -4,9 +4,8 @@ syntax = "proto3";
 
 message SSGWIOAuthReq
 {
-    uint32 role_id = 1;
-	uint32 game_id = 2;
-    string token = 3;
+    uint32 user_id = 1;
+    string token = 2;
 }
 
 message SSIOGWAuthRsp

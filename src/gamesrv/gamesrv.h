@@ -33,7 +33,7 @@ public:
 	virtual void Release() override final;
 
 public:
-	void SendToClient(ROLEID role_id, CSID id, google::protobuf::Message * body);
+	void SendToClient(USERID user_id, CSID id, google::protobuf::Message * body);
 	void SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	void BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
@@ -71,7 +71,7 @@ private:
 	std::unordered_map<NETID, NODEID> _nid2gateway;
 	std::unordered_map<NODEID, NETID> _gateways;
 
-	std::unordered_map<ROLEID, NODEID> _roles;
+	std::unordered_map<USERID, NODEID> _users;
 
 	LBClient _lb_client;
 	PXClient _px_client;

@@ -49,9 +49,9 @@ end
 function OnServerHandleNormal(net_id, head, data)
 	if head.id == SSID.SSID_GW_GS_FORWAR_CS_PKG then
 		local pkg = pblua.Decode("SSGWGSForwardCSPkg", data)
-		local role = RoleMgr:Instance():GetRole(pkg.role_id)
+		local role = RoleMgr:Instance():GetRoleByUserID(pkg.user_id)
 		if not role then
-			role = RoleMgr:Instance():CreateRole(pkg.role_id)
+			role = RoleMgr:Instance():CreateRole(pkg.user_id)
 		end
 		role:OnRecv(pkg.cs_pkg)
 	end

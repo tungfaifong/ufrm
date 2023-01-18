@@ -23,7 +23,7 @@ std::unordered_map<NETID, std::shared_ptr<Client>> g_Clients;
 class Client : public Unit, public std::enable_shared_from_this<Client>
 {
 public:
-	Client(ROLEID role_id):_role_id(role_id) {}
+	Client(USERID user_id):_user_id(user_id) {}
 	~Client() = default;
 
 	virtual bool Start();
@@ -43,7 +43,7 @@ public:
 
 private:
 	NETID _net_id = INVALID_NET_ID;
-	ROLEID _role_id;
+	USERID _user_id;
 	std::chrono::steady_clock::time_point _start;
 	std::chrono::steady_clock::time_point _end;
 };
@@ -110,15 +110,14 @@ void Client::SendToServer(CSID id, google::protobuf::Message * body)
 void Client::AuthReq()
 {
 	CSAuthReq body;
-	body.set_role_id(_role_id);
-	body.set_game_id(1);
+	body.set_user_id(_user_id);
 	SendToServer(CSID_AUTH_REQ, &body);
 }
 
 void Client::OnAuthRsp(const SCAuthRsp & rsp)
 {
 	LoginReq();
-	LOGGER_INFO("OnAuthRsp:{} {}", _role_id, rsp.result());
+	LOGGER_INFO("OnAuthRsp:{} {}", _user_id, rsp.result());
 }
 
 void Client::LoginReq()
@@ -130,7 +129,7 @@ void Client::LoginReq()
 void Client::OnLoginRsp(const SCLoginRsp & rsp)
 {
 	HeartBeat();
-	LOGGER_INFO("OnLoginRsp:{} {}", _role_id, rsp.result());
+	LOGGER_INFO("OnLoginRsp:{} {}", _user_id, rsp.result());
 }
 
 void Client::HeartBeat()

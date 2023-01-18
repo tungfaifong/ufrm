@@ -18,7 +18,6 @@ message SSGSGWHertBeatRsp
 
 message SSGWGSForwardCSPkg
 {
-	uint32 role_id = 1;
-	uint32 game_id = 2;
-	CSPkg cs_pkg = 3;
+	uint32 user_id = 1;
+	CSPkg cs_pkg = 2;
 }

@@ -27,7 +27,7 @@ timeout = 1000
 timeout = 1000
 
 [MySql]
-db_name = "db_test"
+db_name = "game"
 ip = "127.0.0.1"
 username = "root"
 password = "123456"

@@ -37,7 +37,7 @@ bool GameSrv::Init()
 	_server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
 	_lb_client.Init(_server,
-		[self = shared_from_this()](){ return self->_roles.size(); },
+		[self = shared_from_this()](){ return self->_users.size(); },
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
 			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
 		});
@@ -87,18 +87,17 @@ void GameSrv::Release()
 	Unit::Release();
 }
 
-void GameSrv::SendToClient(ROLEID role_id, CSID id, google::protobuf::Message * body)
+void GameSrv::SendToClient(USERID user_id, CSID id, google::protobuf::Message * body)
 {
-	if(_roles.find(role_id) == _roles.end())
+	if(_users.find(user_id) == _users.end())
 	{
 		return;
 	}
 	SSGWGSForwardCSPkg pkg;
-	pkg.set_role_id(role_id);
-	pkg.set_game_id(_id);
+	pkg.set_user_id(user_id);
 	pkg.mutable_cs_pkg()->mutable_head()->set_id(id);
 	body->SerializeToString(pkg.mutable_cs_pkg()->mutable_data());
-	_SendToGateway(_roles[role_id], SSID_GS_GW_FORWAR_SC_PKG, &pkg);
+	_SendToGateway(_users[user_id], SSID_GS_GW_FORWAR_SC_PKG, &pkg);
 }
 
 void GameSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
@@ -298,22 +297,22 @@ void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
 	{
 	case CSID_LOGIN_REQ:
 		{
-			if(_roles.find(pkg.role_id()) != _roles.end())
+			if(_users.find(pkg.user_id()) != _users.end())
 			{
-				LOGGER_WARN("CSID_LOGIN_REQ role:{} repeated old_gateway_node_id:{} new_gateway_node_id:{}", pkg.role_id(), _roles[pkg.role_id()], gateway_node_id);
+				LOGGER_WARN("CSID_LOGIN_REQ user:{} repeated old_gateway_node_id:{} new_gateway_node_id:{}", pkg.user_id(), _users[pkg.user_id()], gateway_node_id);
 			}
-			_roles[pkg.role_id()] = gateway_node_id;
+			_users[pkg.user_id()] = gateway_node_id;
 		}
 		break;
 	case CSID_LOGOUT_REQ:
 		{
-			if(_roles.find(pkg.role_id()) != _roles.end())
+			if(_users.find(pkg.user_id()) != _users.end())
 			{
-				_roles.erase(pkg.role_id());
+				_users.erase(pkg.user_id());
 			}
 			else
 			{
-				LOGGER_WARN("CSID_LOGOUT_REQ invalid role:{}", pkg.role_id());
+				LOGGER_WARN("CSID_LOGOUT_REQ invalid user:{}", pkg.user_id());
 			}
 		}
 		break;

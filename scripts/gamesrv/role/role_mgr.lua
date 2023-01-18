@@ -10,6 +10,7 @@ function RoleMgr:__init()
 	end
 
 	self._roles = {}
+	self._user_id_2_roles = {}
 end
 
 function RoleMgr:Instance()
@@ -23,9 +24,14 @@ function RoleMgr:GetRole(role_id)
 	return self._roles[role_id]
 end
 
-function RoleMgr:CreateRole(role_id)
-	self._roles[role_id] = Role.New(role_id)
-	self._roles[role_id]:Init()
-	return self._roles[role_id]
+function RoleMgr:GetRoleByUserID(user_id)
+	return self._user_id_2_roles[user_id]
+end
+
+function RoleMgr:CreateRole(user_id)
+	self._user_id_2_roles[user_id] = Role.New()
+	self._user_id_2_roles[user_id]:SetUserID(user_id)
+	self._user_id_2_roles[user_id]:Init()
+	return self._user_id_2_roles[user_id]
 end
 

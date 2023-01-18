@@ -26,6 +26,7 @@ enum class VARIANTIDX
 };
 
 using NODEID = uint32_t;
+using USERID = uint32_t;
 using ROLEID = uint32_t;
 
 static constexpr NODEID INVALID_NODE_ID = 0;

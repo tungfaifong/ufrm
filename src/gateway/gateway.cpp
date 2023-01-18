@@ -39,7 +39,7 @@ bool Gateway::Init()
 	_iserver->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnIServerDisc(net_id); });
 
 	_lb_client.Init(_iserver,
-		[self = shared_from_this()](){ return self->_roles.size(); },
+		[self = shared_from_this()](){ return self->_users.size(); },
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
 			self->_OnNodePublish(node_type, node_id, publish_type, ip, port);
 			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
@@ -104,7 +104,7 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	case CSID_AUTH_REQ:
 		{
 			UNPACK(CSAuthReq, body, pkg.data());
-			CO_SPAWN(_OnAuth(net_id, body.role_id(), body.game_id(), body.token()));
+			CO_SPAWN(_OnAuth(net_id, body.user_id(), body.token()));
 		}
 		break;
 	default:
@@ -117,18 +117,18 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 
 void Gateway::_OnServerDisc(NETID net_id)
 {
-	if(_nid2role.find(net_id) != _nid2role.end())
+	if(_nid2user.find(net_id) != _nid2user.end())
 	{
-		auto role = _roles[_nid2role[net_id]];
+		auto user = _users[_nid2user[net_id]];
 
+		// todo by agua
 		SSGWGSForwardCSPkg body;
-		body.set_role_id(role.role_id);
-		body.set_game_id(role.game_id);
+		body.set_user_id(user.user_id);
 		body.mutable_cs_pkg()->mutable_head()->set_id(CSID_LOGOUT_REQ);
-		_SendToGameSrv(role.game_id, SSID_GW_GS_FORWAR_CS_PKG, &body);
+		_SendToGameSrv(user.game_id, SSID_GW_GS_FORWAR_CS_PKG, &body);
 
-		_roles.erase(role.role_id);
-		_nid2role.erase(net_id);
+		_users.erase(user.user_id);
+		_nid2user.erase(net_id);
 	}
 
 	LOGGER_INFO("on client disconnect success net_id:{}", net_id);
@@ -192,15 +192,15 @@ awaitable_func Gateway::_RpcGameSrv(NODEID node_id, SSID id, google::protobuf::M
 	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToGameSrv(node_id, id, body, SSPkgHead::CPP, SSPkgHead::RPCREQ, coro_id); });
 }
 
-void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
+void Gateway::_SendToClient(USERID user_id, const CSPkg & pkg)
 {
-	if(_roles.find(role_id) == _roles.end())
+	if(_users.find(user_id) == _users.end())
 	{
-		LOGGER_ERROR("role_id:{} is invalid", role_id);
+		LOGGER_ERROR("user_id:{} is invalid", user_id);
 		return;
 	}
-	auto role = _roles[role_id];
-	auto net_id = role.net_id;
+	auto user = _users[user_id];
+	auto net_id = user.net_id;
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
@@ -253,7 +253,7 @@ void Gateway::_OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const std::st
 	case SSID_GS_GW_FORWAR_SC_PKG:
 		{
 			UNPACK(SSGWGSForwardCSPkg, body, data);
-			_SendToClient(body.role_id(), body.cs_pkg());
+			_SendToClient(body.user_id(), body.cs_pkg());
 		}
 		break;
 	default:
@@ -346,13 +346,12 @@ future<> Gateway::_CoroHeartBeat(NODEID node_id)
 	}
 }
 
-future<> Gateway::_OnAuth(NETID net_id, ROLEID role_id, NODEID game_id, std::string token)
+future<> Gateway::_OnAuth(NETID net_id, USERID user_id, std::string token)
 {
 	auto io_node = co_await _lb_client.GetLeastLoadNode(IOSRV);
 
 	SSGWIOAuthReq body;
-	body.set_role_id(role_id);
-	body.set_game_id(game_id);
+	body.set_user_id(user_id);
 	body.set_token(token);
 	auto [result, data] = co_await _px_client.RpcProxy(IOSRV, io_node.node_id, SSID_GW_IO_AUTH_REQ, &body, INVALID_NODE_ID, SSPkgHead::LUA);
 	if(result == CORORESULT::TIMEOUT)
@@ -366,15 +365,18 @@ future<> Gateway::_OnAuth(NETID net_id, ROLEID role_id, NODEID game_id, std::str
 
 	if(rsp_body.result() == SSIOGWAuthRsp::SUCCESS)
 	{
-		_nid2role[net_id] = role_id;
-		_roles[role_id] = Role {net_id, role_id, game_id};
+		_nid2user[net_id] = user_id;
+		
+		auto gamesrv = co_await _lb_client.GetLeastLoadNode(GAMESRV);
+
+		_users[user_id] = User {net_id, user_id, gamesrv.node_id};
 
 		CSPkg pkg;
 		pkg.mutable_head()->set_id(SCID_AUTH_RSP);
 		SCAuthRsp body;
 		body.set_result(SCAuthRsp::SUCCESS);
 		body.SerializeToString(pkg.mutable_data());
-		_SendToClient(role_id, pkg);
+		_SendToClient(user_id, pkg);
 	}
 	else
 	{
@@ -384,14 +386,14 @@ future<> Gateway::_OnAuth(NETID net_id, ROLEID role_id, NODEID game_id, std::str
 
 void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 {
-	if(_nid2role.find(net_id) == _nid2role.end())
+	if(_nid2user.find(net_id) == _nid2user.end())
 	{
 		LOGGER_ERROR("net_id:{} is invalid", net_id);
 		return;
 	}
-	auto role_id = _nid2role[net_id];
-	auto role = _roles[role_id];
-	auto game_id = role.game_id;
+	auto user_id = _nid2user[net_id];
+	auto user = _users[user_id];
+	auto game_id = user.game_id;
 	if(_gamesrvs.find(game_id) == _gamesrvs.end())
 	{
 		LOGGER_ERROR("gamesrv:{} is invalid", game_id);
@@ -405,8 +407,7 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 	}
 
 	SSGWGSForwardCSPkg body;
-	body.set_role_id(role_id);
-	body.set_game_id(game_id);
+	body.set_user_id(user_id);
 	auto cs_pkg = body.mutable_cs_pkg();
 	*cs_pkg = pkg;
 	_SendToGameSrv(game_id, SSID_GW_GS_FORWAR_CS_PKG, &body, logic_type);
