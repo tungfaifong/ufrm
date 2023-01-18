@@ -200,9 +200,100 @@ void DBSrv::_OnSelectReq(const SSDCDSSelectReq & req, SSID & id, SSDSDCSelectRsp
 	{
 		auto rsp_row = rsp->add_result();
 		auto & pb_value = *rsp_row->mutable_value();
-		for(auto & [k, v] : row)
+		for(size_t i = 0; i < ret.num_fields(); ++i)
 		{
-			ConvertVariant2PBVariant(v, pb_value[k]);
+			auto key = ret.field_name(i).c_str();
+			auto & value = row[key];
+			auto type = value.type();
+			if (type == typeid(bool) || type == typeid(mysqlpp::sql_bool) || type == typeid(mysqlpp::sql_bool_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_bool_(false);
+				}
+				else
+				{
+					pb_value[key].set_bool_((bool)value);
+				}
+			}
+			else if(type == typeid(uint32_t) || type == typeid(mysqlpp::sql_int_unsigned_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_uint32_(0);
+				}
+				else
+				{
+					pb_value[key].set_uint32_((uint32_t)value);
+				}
+			}
+			else if(type == typeid(int32_t) || type == typeid(mysqlpp::sql_int_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_int32_(0);
+				}
+				else
+				{
+					pb_value[key].set_int32_((int32_t)value);
+				}
+			}
+			else if(type == typeid(uint64_t) || type == typeid(mysqlpp::sql_bigint_unsigned_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_uint64_(0);
+				}
+				else
+				{
+					pb_value[key].set_uint64_((uint64_t)value);
+				}
+			}
+			else if(type == typeid(int64_t) || type == typeid(mysqlpp::sql_bigint_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_int64_(0);
+				}
+				else
+				{
+					pb_value[key].set_int64_((int64_t)value);
+				}
+			}
+			else if(type == typeid(float) || type == typeid(mysqlpp::sql_float_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_float_(0);
+				}
+				else
+				{
+					pb_value[key].set_float_((float)value);
+				}
+			}
+			else if(type == typeid(double) || type == typeid(mysqlpp::sql_double_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_double_(0);
+				}
+				else
+				{
+					pb_value[key].set_double_((double)value);
+				}
+			}
+			else if(type == typeid(std::string) || type == typeid(mysqlpp::sql_blob) ||
+					type == typeid(mysqlpp::sql_text_null) || type == typeid(mysqlpp::sql_blob_null))
+			{
+				if(value.is_null())
+				{
+					pb_value[key].set_string_("");
+				}
+				else
+				{
+					pb_value[key].set_string_((std::string)value);
+				}
+			}
 		}
 	}
 }
@@ -255,7 +346,7 @@ void DBSrv::_OnDeleteReq(const SSDCDSDeleteReq & req, SSID & id, SSDSDCDeleteRsp
 	rsp->set_result(ret);
 }
 
-std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where)
+mysqlpp::StoreQueryResult DBSrv::_Select(const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where)
 {
 	auto c =  _GetVecStr(column);
 	c = c == "" ? "*" : c;
@@ -263,54 +354,17 @@ std::vector<std::unordered_map<std::string, variant_t>> DBSrv::_Select(const std
 	w = w == "" ? w : " where " + w;
 	auto sql = fmt::format("select {} from {}{};", c, tb_name, w);
 	LOGGER_TRACE("sql:{}", sql);
-	auto query = _mysql_connection.query(sql);
-	auto ret = std::vector< std::unordered_map<std::string, variant_t> >();
-	auto store = query.store();
-	for(auto & row : store)
+	try
 	{
-		auto map = std::unordered_map<std::string, variant_t>();
-		for (size_t i = 0; i < store.num_fields(); ++i)
-		{
-			auto key = store.field_name(i).c_str();
-			auto type = store.field_type(i);
-			if (type == typeid(bool))
-			{
-				map[key] = (bool)row[key];
-			}
-			else if(type == typeid(mysqlpp::sql_smallint_unsigned) ||
-					type == typeid(mysqlpp::sql_int_unsigned) ||
-					type == typeid(mysqlpp::sql_mediumint_unsigned))
-			{
-				map[key] = (uint32_t)row[key];
-			}
-			else if(type == typeid(int32_t))
-			{
-				map[key] = (int32_t)row[key];
-			}
-			else if(type == typeid(uint64_t))
-			{
-				map[key] = (uint64_t)row[key];
-			}
-			else if(type == typeid(int64_t))
-			{
-				map[key] = (int64_t)row[key];
-			}
-			else if(type == typeid(float))
-			{
-				map[key] = (float)row[key];
-			}
-			else if(type == typeid(double))
-			{
-				map[key] = (double)row[key];
-			}
-			else if(type == typeid(std::string))
-			{
-				map[key] = (std::string)row[key];
-			}
-		}
-		ret.push_back(map);
+		auto query = _mysql_connection.query(sql);
+		auto ret = std::vector< std::unordered_map<std::string, mysqlpp::String> >();
+		return query.store();
 	}
-	return ret;
+	catch(const std::exception& e)
+	{
+		LOGGER_ERROR("select error:{}", e.what());
+		return {};
+	}
 }
 
 bool DBSrv::_Insert(const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value)
@@ -318,7 +372,15 @@ bool DBSrv::_Insert(const std::string & tb_name, const std::vector<std::string> 
 	auto sql = fmt::format("insert into {} ({}) values ({});", tb_name, _GetVecStr(column), _GetVecStr(value));
 	LOGGER_TRACE("sql:{}", sql);
 	auto query = _mysql_connection.query(sql);
-	return query.exec();
+	try
+	{
+		return query.exec();
+	}
+	catch(const std::exception& e)
+	{
+		LOGGER_ERROR("insert error:{}", e.what());
+		return false;
+	}
 }
 
 bool DBSrv::_Update(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & value, const std::unordered_map<std::string, variant_t> & where)
@@ -328,7 +390,15 @@ bool DBSrv::_Update(const std::string & tb_name, const std::unordered_map<std::s
 	auto sql = fmt::format("update {} set {}{};", tb_name, _GetMapStr(value), w);
 	LOGGER_TRACE("sql:{}", sql);
 	auto query = _mysql_connection.query(sql);
-	return query.exec();
+	try
+	{
+		return query.exec();
+	}
+	catch(const std::exception& e)
+	{
+		LOGGER_ERROR("update error:{}", e.what());
+		return false;
+	}
 }
 
 bool DBSrv::_Delete(const std::string & tb_name, const std::unordered_map<std::string, variant_t> & where)
@@ -338,7 +408,15 @@ bool DBSrv::_Delete(const std::string & tb_name, const std::unordered_map<std::s
 	auto sql = fmt::format("delete from {}{};", tb_name, w);
 	LOGGER_TRACE("sql:{}", sql);
 	auto query = _mysql_connection.query(sql);
-	return query.exec();
+	try
+	{
+		return query.exec();
+	}
+	catch(const std::exception& e)
+	{
+		LOGGER_ERROR("delete error:{}", e.what());
+		return false;
+	}
 }
 
 std::string DBSrv::_GetVecStr(const std::vector<std::string> & vec)
