@@ -12,6 +12,12 @@ enum NODETYPE
 	CGISRV = 5;
 }
 
+enum MSGTYPE
+{
+	NORMAL = 0;
+	RPC = 1;
+}
+
 message SSPkgHead
 {
 	NODETYPE from_node_type = 1;
@@ -19,6 +25,8 @@ message SSPkgHead
 	NODETYPE to_node_type = 3;
 	uint32 to_node_id = 4;
 	uint32 id = 5;
+	MSGTYPE msg_type = 6;
+	uint64 rpc_id = 7;
 }
 
 message SSPkgBody

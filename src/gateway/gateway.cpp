@@ -38,7 +38,7 @@ bool Gateway::Init()
 
 bool Gateway::Start()
 {
-	if(!_lb_client.Start(_config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), _config["LBSrv"]["timeout"].value_or(0)))
+	if(!_lb_client.Connect(_config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), _config["LBSrv"]["timeout"].value_or(0)))
 	{
 		return false;
 	}
@@ -82,6 +82,8 @@ void Gateway::_OnIServerConn(NETID net_id, IP ip, PORT port)
 
 void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 {
+	SSPkg pkg;
+	
 }
 
 void Gateway::_OnIServerDisc(NETID net_id)

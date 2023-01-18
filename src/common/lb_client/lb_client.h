@@ -16,19 +16,23 @@ public:
 	~LBClient() = default;
 
 	bool Init(std::shared_ptr<ServerUnit> server);
-	bool Start(IP srv_ip, PORT srv_port, uint32_t timeout);
 
 public:
+	bool Connect(IP srv_ip, PORT srv_port, uint32_t timeout);
 	void RegisterToLBSrv(NODETYPE node_type, IP ip, PORT port);
 	void GetAllNodes(NODETYPE node_type);
 	void GetLeastLoadNode(NODETYPE node_type);
+
+	void OnRecv(SSPkg * pkg);
+
+	NETID SrvNetId() { return _srv_net_id; }
 
 private:
 	bool _SendToLBSrv();
 
 private:
 	std::shared_ptr<ServerUnit> _server;
-	NETID _srv_net_id;
+	NETID _srv_net_id { INVALID_NET_ID };
 };
 
 #endif // UFRM_LB_CLIENT_H

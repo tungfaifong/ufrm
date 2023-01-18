@@ -30,7 +30,7 @@ private:
 	void _CheckTimeout();
 
 private:
-	ObjectMap<coroutine> _coroutines {TIMEOUT};
+	ObjectMap<coroutine> _coroutines {ALLOC_NUM};
 	TIMERID _timer_handler {INVALID_TIMER_ID};
 };
 
