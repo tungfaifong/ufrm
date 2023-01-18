@@ -31,14 +31,14 @@ using PORT = uint16_t;
 using TIMERID = size_t;
 
 static constexpr NETID INVALID_NET_ID = -1;
-static const IP DEFAULT_IP {""};
+extern IP DEFAULT_IP; // {""}
 static constexpr PORT DEFAULT_PORT = 0;
 static constexpr TIMERID INVALID_TIMER_ID = -1;
 
 static constexpr uint16_t MESSAGE_HEAD_SIZE = sizeof(uint16_t);
 static constexpr uint16_t MESSAGE_BODY_SIZE = UINT16_MAX;
 
-static std::string PATH_ROOT = getcwd(NULL, 1024);
+extern std::string PATH_ROOT; // getcwd(NULL, 1024)
 
 NAMESPACE_CLOSE
 

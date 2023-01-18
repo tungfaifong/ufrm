@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <vector>
+#include <iostream>
 
 #include "common.h"
 
@@ -38,6 +39,11 @@ public:
 	{
 		--_size;
 		_objects[_size] = std::move(obj);
+		if(_objects.capacity() - _size > 2 * _alloc_num)
+		{
+			_objects.erase(_objects.end() - _alloc_num, _objects.end());
+			_objects.shrink_to_fit();
+		}
 	}
 
 private:
