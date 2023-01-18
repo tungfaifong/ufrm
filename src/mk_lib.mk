@@ -11,15 +11,15 @@ all: $(PATH_BUILD)/$(TARGET)
 debug: $(PATH_BUILD)/$(TARGET)
 
 $(PATH_BUILD)/$(TARGET): $(OBJ_FILE)
-	$(AR) -o $@ $(OBJ_FILE)
+	@$(AR) -o $@ $(OBJ_FILE)
 	@echo Build: $@
 
 $(PATH_BUILD)/%.o: %.cpp
-	$(CXX) -c $(CXX_FLAGS) $(DEFINE) -MMD $(INC_ALL) $< -o $@
+	@$(CXX) -c $(CXX_FLAGS) $(DEFINE) -MMD $(INC_ALL) $< -o $@
 	@echo compiled: $<
 
 $(PATH_BUILD)/%.o: %.cc
-	$(CXX) -c $(CXX_FLAGS) $(DEFINE) -MMD $(INC_ALL) $< -o $@
+	@$(CXX) -c $(CXX_FLAGS) $(DEFINE) -MMD $(INC_ALL) $< -o $@
 	@echo compiled: $<
 
 ifneq ($(MAKECMDGOALS), clean)
