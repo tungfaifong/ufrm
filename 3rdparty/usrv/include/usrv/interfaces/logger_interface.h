@@ -14,6 +14,16 @@ NAMESPACE_OPEN
 namespace logger
 {
 
+inline void OnAbort()
+{
+	std::dynamic_pointer_cast<LoggerUnit>(UnitManager::Instance()->Get("LOGGER"))->OnAbort();
+}
+
+inline LoggerUnit::LEVEL Level()
+{
+	return std::dynamic_pointer_cast<LoggerUnit>(UnitManager::Instance()->Get("LOGGER"))->Level();
+}
+
 template<typename ... Args>
 inline void log(LoggerUnit::LEVEL level, fmt::format_string<Args...> fmt, Args && ... args)
 {
@@ -24,11 +34,6 @@ template<typename ... Args>
 inline void log(const char * file, int32_t line, const char * func, LoggerUnit::LEVEL level, fmt::format_string<Args...> fmt, Args && ... args)
 {
 	log(level, "[{}:{}:{}()] {}", file, line, func, fmt::format(fmt, std::forward<Args>(args)...));
-}
-
-inline void on_abort()
-{
-	std::dynamic_pointer_cast<LoggerUnit>(UnitManager::Instance()->Get("LOGGER"))->OnAbort();
 }
 
 #define LOGGER_TRACE(fmt, ...) logger::log(__FILE__, __LINE__, __func__, LoggerUnit::LEVEL::TRACE, fmt, ##__VA_ARGS__)

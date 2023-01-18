@@ -43,6 +43,7 @@ public:
 	template<typename ... Args> void Log(LEVEL level, fmt::format_string<Args...> fmt, Args && ... args);
 	void Flush();
 	void OnAbort();
+	LEVEL Level() { return _level; }
 
 private:
 	void _Init();
