@@ -23,6 +23,11 @@ message SCLoginRsp
 
 }
 
+message CSLogoutReq
+{
+
+}
+
 // pkg
 message CSPkgHead
 {

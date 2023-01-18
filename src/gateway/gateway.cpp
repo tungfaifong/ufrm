@@ -239,6 +239,7 @@ future<> Gateway::_ConnectToGameSrvs()
 		_ConnectToGameSrv(node_id, game_srv.ip, game_srv.port);
 	}
 	_HeartBeat();
+	_lb_client.Subscribe(GAMESRV);
 }
 
 void Gateway::_OnNodePublish(NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port)
