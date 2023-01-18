@@ -12,6 +12,7 @@
 
 #include "protocol/pblua.hpp"
 
+#include "common/interface.h"
 #include "gamesrv.h"
 
 using namespace usrv;
@@ -31,7 +32,13 @@ void LuaExpose(luabridge::Namespace ns)
 			.addFunction("parse", pblua::parse)
 			.addFunction("encode", pblua::encode)
 			.addFunction("decode", pblua::decode)
+		.endNamespace()
+		.beginNamespace("gamesrv")
+			.addFunction("SendToClient", SendToClient)
+			.addFunction("SendToProxy", SendToProxy)
+			.addFunction("BroadcastToProxy", BroadcastToProxy)
 		.endNamespace();
+
 }
 
 int main(int argc, char * argv[])

@@ -1,6 +1,8 @@
 $(shell if [ ! -e $(PATH_BUILD) ];then mkdir -p $(PATH_BUILD); fi)
 $(shell for dir in $(SUB_DIR); do if [ ! -e $(PATH_BUILD)/$$dir ];then mkdir -p $(PATH_BUILD)/$$dir; fi; done)
 
+INC_ALL += -I./
+
 SOURCE_FILE := $(foreach d, $(SUB_DIR), $(wildcard ./$(d)/*.cpp))
 SOURCE_FILE += $(wildcard ./*.cpp)
 
