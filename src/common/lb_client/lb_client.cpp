@@ -71,7 +71,7 @@ future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes
 	{
 		PKG_CREATE(body, SSLCLSPkgBody);
 		body->mutable_get_all_nodes_req()->set_node_type(node_type);
-		auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ, body);
+		auto [result, data] = co_await _RpcLBSrv(SSID_LC_LS_GET_ALL_NODES_REQ, body);
 		if(result == CORORESULT::TIMEOUT)
 		{
 			LOGGER_WARN("LBClient::GetAllNodes timeout");
