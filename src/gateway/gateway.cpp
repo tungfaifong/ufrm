@@ -191,6 +191,25 @@ awaitable_func Gateway::_RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * bod
 	return awaitable_func([this, node_id, id, body](COROID coro_id){ _SendToGameSrv(node_id, id, body, MSGT_RPCREQ, coro_id); });
 }
 
+void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
+{
+	if(_roles.find(role_id) == _roles.end())
+	{
+		LOGGER_ERROR("role_id:{} is invalid", role_id);
+		return;
+	}
+	auto role = _roles[role_id];
+	auto net_id = role.net_id;
+	auto size = pkg.ByteSizeLong();
+	if(size > UINT16_MAX)
+	{
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(pkg.head().id()), size);
+		return;
+	}
+	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
+	LOGGER_TRACE("send client msg id:{}", ENUM_NAME(pkg.head().id()));
+}
+
 void Gateway::_OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
 	switch (head.from_node_type())
@@ -222,7 +241,7 @@ void Gateway::_OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const SSGWGSP
 	{
 	case SSID_GS_GW_FORWAR_SC_PKG:
 		{
-			_ForwardToClient(body.forward_cs_pkg().role_id(), body.forward_cs_pkg().cs_pkg());
+			_SendToClient(body.forward_cs_pkg().role_id(), body.forward_cs_pkg().cs_pkg());
 		}
 		break;
 	default:
@@ -327,7 +346,7 @@ void Gateway::_OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & bo
 	PKG_CREATE(pkg, CSPkg);
 	pkg->mutable_head()->set_id(SCID_AUTH_RSP);
 	pkg->mutable_body()->mutable_auth_rsp()->set_result(SCAuthRsp::SUCCESS);
-	_ForwardToClient(role_id, *pkg);
+	_SendToClient(role_id, *pkg);
 }
 
 void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
@@ -352,23 +371,4 @@ void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)
 	auto cs_pkg = body->mutable_forward_cs_pkg()->mutable_cs_pkg();
 	*cs_pkg = pkg;
 	_SendToGameSrv(game_id, SSID_GW_GS_FORWAR_CS_PKG, body);
-}
-
-void Gateway::_ForwardToClient(ROLEID role_id, const CSPkg & pkg)
-{
-	if(_roles.find(role_id) == _roles.end())
-	{
-		LOGGER_ERROR("role_id:{} is invalid", role_id);
-		return;
-	}
-	auto role = _roles[role_id];
-	auto net_id = role.net_id;
-	auto size = pkg.ByteSizeLong();
-	if(size > UINT16_MAX)
-	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(pkg.head().id()), size);
-		return;
-	}
-	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send client msg id:{}", ENUM_NAME(pkg.head().id()));
 }

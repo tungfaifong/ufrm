@@ -48,6 +48,7 @@ private:
 
 	void _SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, MSGTYPE msg_type = MSGT_NORMAL, size_t rpc_id = -1);
 	awaitable_func _RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body);
+	void _SendToClient(ROLEID role_id, const CSPkg & pkg);
 
 	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
 	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
@@ -66,7 +67,6 @@ private:
 
 	void _OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & body);
 	void _ForwardToGameSrv(NETID net_id, const CSPkg & pkg);
-	void _ForwardToClient(ROLEID role_id, const CSPkg & pkg);
 
 private:
 	NODEID _id;
