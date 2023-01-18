@@ -1,0 +1,30 @@
+-- function CreateCSPkg(id, key, body)
+-- 	local cs_pkg = {}
+-- 	cs_pkg.head = {}
+-- 	cs_pkg.head.id = id
+-- 	cs_pkg.body = {}
+-- 	cs_pkg.body[key] = body
+-- 	return cs_pkg
+-- end
+
+-- function SendToGateway(net_id, id, forward_cs_pkg)
+-- 	local sspkg = {}
+-- 	sspkg.head = {}
+-- 	sspkg.head.from_node_type = GAMESRV
+-- 	sspkg.head.from_node_id = 0 -- todo
+-- 	sspkg.head.to_node_type = GATEWAY
+-- 	sspkg.head.to_node_id = 0 -- todo
+-- 	sspkg.head.id = id
+-- 	sspkg.head.msg_type = 0 -- todo
+-- 	sspkg.head.rpc_id = 0 -- todo
+-- 	sspkg.gwgs_body = {}
+-- 	sspkg.gwgs_body.forward_cs_pkg = forward_cs_pkg
+-- end
+
+-- function SendToClient(net_id, role_id, game_id, cs_pkg)
+-- 	local pkg = {}
+-- 	pkg.role_id = role_id
+-- 	pkg.game_id = game_id
+-- 	pkg.cs_pkg = cs_pkg
+-- 	SendToGateway(net_id, )
+-- end
