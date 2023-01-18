@@ -155,7 +155,10 @@ void Client::LoginReq()
 
 void Client::OnLoginRsp(const SCLoginRsp & rsp)
 {
-	HeartBeat();
+	for(auto i = 0; i < 1000; ++i)
+	{
+		HeartBeat();
+	}
 	LOGGER_INFO("OnLoginRsp:{} {}", _role_id, rsp.result());
 }
 
@@ -164,18 +167,20 @@ void Client::HeartBeat()
 	CSHeartBeatReq body;
 	SendToServer(CSID_HEART_BEAT_REQ, &body);
 	_start = std::chrono::steady_clock::now();
-	timer::CreateTimer(1000, [self = shared_from_this()](){ self->HeartBeat(); });
 }
 
 void Client::OnHeartBeatRsp()
 {
-	_end = std::chrono::steady_clock::now();
-	LOGGER_INFO("heart beat avg delay:{}", std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count());
+	// _end = std::chrono::steady_clock::now();
+	// LOGGER_INFO("heart beat avg delay:{}", std::chrono::duration_cast<std::chrono::milliseconds>(_end - _start).count());
+	++g_TotalCnt;
+	HeartBeat();
 }
 
 int main(int argc, char * argv[])
 {
 	g_ClientNum = atoi(argv[1]);
+	auto time = atoi(argv[2]) * 1000;
 	UnitManager::Instance()->Init(10);
 	UnitManager::Instance()->Register("LOGGER", std::move(std::make_shared<LoggerUnit>(LoggerUnit::LEVEL::INFO, "/logs/client.log", 1 Mi)));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(1 Ki, 1 Ki)));
@@ -183,13 +188,17 @@ int main(int argc, char * argv[])
 	{
 		auto server_key = "SERVER#"+std::to_string(i+1);
 		auto client_key = "CLIENT#"+std::to_string(i+1);
-		if(!UnitManager::Instance()->Register(server_key.c_str(), std::move(std::make_shared<ServerUnit>(16, 16, 4 Mi))) || !UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(i+1))))
+		if(!UnitManager::Instance()->Register(server_key.c_str(), std::move(std::make_shared<ServerUnit>(512, 512, 1 Ki))) || !UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(i+1))))
 		{
 			LOGGER_ERROR("key:{} error", server_key);
 		}
 	}
 
+	timer::CreateTimer(time, [](){UnitManager::Instance()->SetExit(true);});
+
 	UnitManager::Instance()->Run();
+
+	LOGGER_INFO("total cnt:{}", g_TotalCnt);
 
 	return true;
 }
