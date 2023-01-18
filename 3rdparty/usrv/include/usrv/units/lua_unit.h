@@ -34,7 +34,7 @@ public:
 	template<typename T>
 	void OnConn(T id, const IP & ip, PORT port);
 	template<typename T>
-	void OnRecv(T id, char * data, uint16_t size);
+	void OnRecv(T id, const char * data, uint16_t size);
 	template<typename T>
 	void OnDisc(T id);
 	static void OnException(const luabridge::LuaException & e);
@@ -69,7 +69,7 @@ void LuaUnit::OnConn(T id, const IP & ip, PORT port)
 }
 
 template<typename T>
-void LuaUnit::OnRecv(T id, char * data, uint16_t size)
+void LuaUnit::OnRecv(T id, const char * data, uint16_t size)
 {
 	try
 	{
