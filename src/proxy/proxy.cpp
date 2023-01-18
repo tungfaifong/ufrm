@@ -33,7 +33,7 @@ bool Proxy::Init()
 	server->OnRecv([self = shared_from_this()](NETID net_id, char * data, uint16_t size){ self->_OnServerRecv(net_id, data, size); });
 	server->OnDisc([self = shared_from_this()](NETID net_id){ self->_OnServerDisc(net_id); });
 
-	_lb_client.Init(server, [self = shared_from_this()](){ return 1; }); // TODO
+	_lb_client.Init(server, [self = shared_from_this()](){ return 0; });
 
 	return true;
 }
