@@ -21,14 +21,20 @@ void SignalHandler(int signum)
 	}
 }
 
-int main()
+int main(int argc, char * argv[])
 {
+	if(argc != 2)
+	{
+		std::cerr << "arg invalid: lbsrv config_path" << std::endl;
+		return 1;
+	}
+
 	signal(SIGUSR1, SignalHandler);
 
 	toml::table config;
 	try
 	{
-		config = toml::parse_file(PATH_ROOT + "/config/lbsrv.toml");
+		config = toml::parse_file(PATH_ROOT + argv[1]);
 	}
 	catch (const toml::parse_error& err)
 	{
