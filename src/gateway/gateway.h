@@ -12,6 +12,7 @@
 
 #include "common.h"
 #include "protocol/ssgwgm.pb.h"
+#include "protocol/ssgwgs.pb.h"
 
 using namespace usrv;
 
@@ -29,7 +30,7 @@ public:
 
 public:
 	bool SendToGatewayMgr(SSGWGMID id, SSGWGMPkgBody * body);
-	bool SendToGamesrv(PROCID id);
+	bool SendToGamesrv(PROCID proc_id, SSGWGSID id, SSGWGSPkgBody * body);
 
 private:
 	bool _ConnectToGatewayMgr();
@@ -43,11 +44,12 @@ private:
 	void _OnIServerDisc(NETID net_id);
 
 	void _OnGatewayMgrRecv(SSGWGMID id, const SSGWGMPkgBody & body);
-	void _OnGamesrvRecv();
+	void _OnGamesrvRecv(PROCID proc_id, SSGWGSID id, const SSGWGSPkgBody & body);
 
 private:
 	void _HeartBeat();
-	void _OnHeartBeatRsp();
+	void _OnGMHeartBeatRsp();
+	void _OnGSHeartBeatRsp();
 
 private:
 	PROCID _id;

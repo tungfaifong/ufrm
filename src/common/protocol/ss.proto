@@ -1,6 +1,7 @@
 syntax = "proto3";
 
 import "ssgwgm.proto";
+import "ssgwgs.proto";
 
 enum PROCTYPE
 {
@@ -35,6 +36,7 @@ message SSPkgBody
 	oneof body
 	{
 		SSGWGMPkgBody gwgm_body = 1;
+		SSGWGSPkgBody gwgs_body = 2;
 	}
 }
 

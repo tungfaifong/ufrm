@@ -1,6 +1,7 @@
 include ../mk_base.mk
 
-$(shell $(BIN_PROTOBUF)/protoc --proto_path=./protocol --cpp_out=./protocol common.proto ssgwgm.proto ss.proto)
+PROTO_FILE = $(wildcard ./protocol/*.proto)
+$(shell $(BIN_PROTOBUF)/protoc --proto_path=./protocol --cpp_out=./protocol $(PROTO_FILE))
 
 TARGET := libcommon.a
 SUB_DIR = protocol
