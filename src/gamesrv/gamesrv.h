@@ -6,6 +6,8 @@
 #include <map>
 #include <vector>
 
+#include "lua.hpp"
+#include "LuaBridge/LuaBridge.h"
 #include "toml++/toml.h"
 #include "usrv/units/server_unit.h"
 #include "usrv/unit.h"
@@ -74,6 +76,8 @@ private:
 	LBClient _lb_client;
 	PXClient _px_client;
 	DBClient _db_client;
+
+	std::shared_ptr<luabridge::LuaRef> _lua_on_recv_pkg;
 };
 
 #endif // UFRM_GAMESRV_H

@@ -30,11 +30,10 @@ function OnConn(net_id, ip, port)
 end
 
 function OnRecv(net_id, data)
-	local pkg = pblua.decode("SSPkg", data)
 end
 
 function OnRecvPkg(net_id, pkg)
-	local a = pkg
+	logger.debug("Serialize:" .. Serialize(pkg))
 end
 
 function OnDisc(net_id)

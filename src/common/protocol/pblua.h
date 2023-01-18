@@ -6,6 +6,7 @@
 #include "google/protobuf/compiler/importer.h"
 #include "google/protobuf/dynamic_message.h"
 #include "lua.hpp"
+#include "LuaBridge/LuaBridge.h"
 
 namespace pblua
 {
@@ -33,6 +34,8 @@ namespace pblua
 	int Encode(lua_State * L);
 	// obj = pblua.decode("Obj", data)
 	int Decode(lua_State * L);
+	
+	luabridge::LuaRef PB2LuaRef(const char * proto, lua_State * L, const google::protobuf::Message & message);
 
 	void Init();
 }

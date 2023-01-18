@@ -534,6 +534,15 @@ namespace pblua
 		return lua_gettop(L) - 2;
 	}
 
+	luabridge::LuaRef PB2LuaRef(const char * proto, lua_State * L, const google::protobuf::Message & message)
+	{
+		auto descriptor = message.GetDescriptor();
+
+		DecodeMessage(message, descriptor, L);
+		
+		return luabridge::LuaRef::fromStack(L);
+	}
+
 	void Init()
 	{
 		source_tree = new google::protobuf::compiler::DiskSourceTree();

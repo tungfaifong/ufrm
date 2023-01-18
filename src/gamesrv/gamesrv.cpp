@@ -8,6 +8,7 @@
 #include "usrv/interfaces/timer_interface.h"
 
 #include "coroutine/coroutine_mgr.h"
+#include "protocol/pblua.h"
 #include "protocol/ss.pb.h"
 #include "define.h"
 
@@ -58,6 +59,10 @@ bool GameSrv::Start()
 		return false;
 	}
 	if(!_px_client.Start())
+	{
+		return false;
+	}
+	if(!std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"))->InitFunc(_lua_on_recv_pkg, "OnRecvPkg"))
 	{
 		return false;
 	}
@@ -169,7 +174,7 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	if(head.logic_type() == SSPkgHead::LUA || head.logic_type() == SSPkgHead::BOTH)
 	{
 		auto lua = std::dynamic_pointer_cast<LuaUnit>(UnitManager::Instance()->Get("LUA"));
-		lua->OnRecv(net_id, data, size);
+		(*_lua_on_recv_pkg)(net_id, pblua::PB2LuaRef("SSPkg", lua->GetLuaState(), pkg));
 	}
 }
 
