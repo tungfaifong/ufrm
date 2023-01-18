@@ -17,4 +17,5 @@ SHELL:
 	done
 
 clean:
+	cd ./common && make $(MAKECMDGOALS);
 	@for dir in $(PROCESSES); do( $(MAKE) -C $$dir clean ) done

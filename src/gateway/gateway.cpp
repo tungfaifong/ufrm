@@ -240,9 +240,9 @@ void Gateway::_HeartBeat()
 	SendToGatewayMgr(SSID_GW_GM_HEAT_BEAT_REQ, &gm_body);
 
 	SSGWGSPkgBody gs_body;
-	for(auto & gamesrv_net_id : _gamesrv_net_ids)
+	for(auto & [proc_id, net_id] : _gamesrv_net_ids)
 	{
-		SendToGamesrv(gamesrv_net_id.first, SSID_GW_GS_HEAT_BEAT_REQ, &gs_body);
+		SendToGamesrv(net_id, SSID_GW_GS_HEAT_BEAT_REQ, &gs_body);
 	}
 
 	timer::CreateTimer(30 * SEC2MILLISEC, std::bind(&Gateway::_HeartBeat, shared_from_this()));
