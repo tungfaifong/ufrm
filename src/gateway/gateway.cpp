@@ -14,7 +14,8 @@
 Gateway::Gateway(NODEID id, toml::table & config) : _id(id), _config(config), 
 	_lb_client(GATEWAY, _id, _config["Gateway"]["ip"].value_or(DEFAULT_IP), _config["Gateway"]["port"].value_or(DEFAULT_PORT), \
 	_config["LBSrv"]["id"].value_or(INVALID_NODE_ID), _config["LBSrv"]["ip"].value_or(DEFAULT_IP), _config["LBSrv"]["port"].value_or(DEFAULT_PORT), \
-	_config["LBSrv"]["timeout"].value_or(0))
+	_config["LBSrv"]["timeout"].value_or(0)), 
+	_px_client(GATEWAY, _id, _config["Proxy"]["timeout"].value_or(0), _lb_client)
 {
 
 }
@@ -41,7 +42,10 @@ bool Gateway::Init()
 		[self = shared_from_this()](){ return 1; }, // TODO
 		[self = shared_from_this()](NODETYPE node_type, NODEID node_id, SSLSLCPublish::PUBLISHTYPE publish_type, IP ip, PORT port){
 			self->_OnNodePublish(node_type, node_id, publish_type, ip, port);
-		}); 
+			self->_px_client.OnNodePublish(node_type, node_id, publish_type, ip, port);
+		});
+	
+	_px_client.Init(_iserver);
 
 	return true;
 }
@@ -58,6 +62,10 @@ bool Gateway::Start()
 		return false;
 	}
 	CO_SPAWN(_ConnectToGameSrvs());
+	if(!_px_client.Start())
+	{
+		return false;
+	}
 	return true;
 }
 
@@ -75,6 +83,7 @@ void Gateway::Release()
 {
 	_server = nullptr;
 	_iserver = nullptr;
+	_px_client.Release();
 	_lb_client.Release();
 	Unit::Release();
 }
@@ -154,6 +163,8 @@ void Gateway::_OnIServerDisc(NETID net_id)
 		_gamesrvs.erase(_nid2gamesrv[net_id]);
 		_nid2gamesrv.erase(net_id);
 	}
+
+	_px_client.OnDisconnect(net_id);
 
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }

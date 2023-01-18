@@ -10,8 +10,6 @@ message SSPCPXNodeRegister
 
 message SSPCPXNodeUnregister
 {
-	NODETYPE node_type = 1;
-	uint32 node_id = 2;
 }
 
 message SSPCPXHeartBeatReq

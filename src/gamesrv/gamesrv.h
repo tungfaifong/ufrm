@@ -12,6 +12,7 @@
 
 #include "lb_client/lb_client.h"
 #include "protocol/sslcls.pb.h"
+#include "px_client/px_client.h"
 #include "common.h"
 
 using namespace usrv;
@@ -56,6 +57,8 @@ private:
 
 	std::unordered_map<NETID, NODEID> _nid2gateway;
 	std::unordered_map<NODEID, NETID> _gateways;
+
+	PXClient _px_client;
 };
 
 #endif // UFRM_GAMESRV_H

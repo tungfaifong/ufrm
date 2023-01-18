@@ -31,3 +31,6 @@ timeout = 3000
 
 [GameSrv]
 timeout = 3000
+
+[Proxy]
+timeout = 3000

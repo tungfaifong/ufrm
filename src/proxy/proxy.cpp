@@ -267,7 +267,7 @@ void Proxy::_OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSPCPXNo
 
 void Proxy::_OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSPCPXNodeUnregister & body)
 {
-	_UnregisterNode(body.node_type(), body.node_id());
+	_UnregisterNode(head.from_node_type(), head.from_node_id());
 }
 
 void Proxy::_OnHeartBeatReq(NETID net_id, const SSPCPXHeartBeatReq & body, SSID & id, SSPCPXPkgBody * rsp_body)

@@ -13,6 +13,7 @@
 #include "lb_client/lb_client.h"
 #include "protocol/cs.pb.h"
 #include "protocol/sslcls.pb.h"
+#include "px_client/px_client.h"
 #include "common.h"
 
 using namespace usrv;
@@ -84,6 +85,8 @@ private:
 
 	std::unordered_map<NETID, ROLEID> _nid2role;
 	std::unordered_map<ROLEID, Role> _roles;
+
+	PXClient _px_client;
 };
 
 #endif // UFRM_GATEWAY_H
