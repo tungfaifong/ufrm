@@ -39,7 +39,8 @@ bool GameSrv::Init()
 }
 
 bool GameSrv::Start()
-{	
+{
+	server::Listen(_config["GameSrv"]["port"].value_or(DEFAULT_PORT));
 	if(!CoroutineMgr::Instance()->Start())
 	{
 		return false;

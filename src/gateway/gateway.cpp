@@ -47,7 +47,8 @@ bool Gateway::Init()
 }
 
 bool Gateway::Start()
-{	
+{
+	_server->Listen(_config["Gateway"]["port"].value_or(DEFAULT_PORT));
 	if(!CoroutineMgr::Instance()->Start())
 	{
 		return false;
