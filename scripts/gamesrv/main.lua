@@ -11,17 +11,7 @@ require "common.net"
 require "role.role_mgr"
 
 function Start()
-	pblua.Parse("common.proto")
-	pblua.Parse("cs.proto")
-	pblua.Parse("csid.proto")
-	pblua.Parse("io.proto")
-	pblua.Parse("ioid.proto")
-	pblua.Parse("ss.proto")
-	pblua.Parse("ssdcds.proto")
-	pblua.Parse("ssgwgs.proto")
-	pblua.Parse("ssid.proto")
-	pblua.Parse("sslcls.proto")
-	pblua.Parse("sspcpx.proto")
+	PBParse()
 
 	CoroutineMgr:Instance():Start()
 

@@ -50,7 +50,7 @@ int main(int argc, char * argv[])
 	UnitManager::Instance()->Register("SERVER", std::move(std::make_shared<ServerUnit>(config["Server"]["pp_alloc_num"].value_or(1 Ki), config["Server"]["ps_alloc_num"].value_or(1 Ki), config["Server"]["spsc_blk_num"].value_or(512 Ki))));
 	UnitManager::Instance()->Register("TIMER", std::move(std::make_shared<TimerUnit>(config["Timer"]["tp_alloc_num"].value_or(1 Ki), config["Timer"]["ts_alloc_num"].value_or(1 Ki))));
 	UnitManager::Instance()->Register("LUA", std::move(std::make_shared<LuaUnit>(config["Lua"]["path"].value_or(""), LuaExpose)));
-	UnitManager::Instance()->Register("COMMONSRV", std::move(std::make_shared<CommonSrv>((NODETYPE)config["CommonSrv"]["type"].value_or((uint32_t)INVALID_NOTE_TYPE), config["CommonSrv"]["id"].value_or(INVALID_NODE_ID), config)));
+	UnitManager::Instance()->Register("COMMONSRV", std::move(std::make_shared<CommonSrv>((NODETYPE)config["CommonSrv"]["type"].value_or((uint32_t)INVALID_NODE_TYPE), config["CommonSrv"]["id"].value_or(INVALID_NODE_ID), config)));
 
 	UnitManager::Instance()->Run();
 

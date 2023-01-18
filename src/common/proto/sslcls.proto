@@ -1,4 +1,4 @@
-// ss protocol lbclt to lbsrv
+// ss protocol lbclt <-> lbsrv
 
 syntax = "proto3";
 

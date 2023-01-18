@@ -9,20 +9,18 @@ require "common.coroutine_mgr"
 require "common.db_client"
 require "common.net"
 
-function Start()
-	pblua.Parse("common.proto")
-	pblua.Parse("cs.proto")
-	pblua.Parse("csid.proto")
-	pblua.Parse("io.proto")
-	pblua.Parse("ioid.proto")
-	pblua.Parse("ss.proto")
-	pblua.Parse("ssdcds.proto")
-	pblua.Parse("ssgwgs.proto")
-	pblua.Parse("ssid.proto")
-	pblua.Parse("sslcls.proto")
-	pblua.Parse("sspcpx.proto")
+require "auth"
 
+local RPC_REQ_HANDLER = {}
+
+function Start()
+	PBParse()
+	
 	CoroutineMgr:Instance():Start()
+
+	RPC_REQ_HANDLER = {
+		[SSID.SSID_GW_IO_AUTH_REQ] = OnAuth,
+	}
 
 	return true
 end
@@ -61,7 +59,12 @@ function OnServerHandleNormal(net_id, head, body)
 end
 
 function OnServerHandleRpcReq(net_id, head, body)
-
+	if not RPC_REQ_HANDLER[head.id] then
+		return
+	end
+	local id, logic_type, rsp_body = RPC_REQ_HANDLER[head.id](body)
+	logger.error("id, logic_type, rsp_body" .. id .. " " .. logic_type .. " " .. Serialize(rsp_body))
+	SendToProxy(head.from_node_type, head.from_node_id, id, rsp_body, 0, logic_type, SSPkgHead.MSGTYPE.RPCRSP, head.rpc_id)
 end
 
 function OnserverHandleRpcRsp(net_id, head, body)

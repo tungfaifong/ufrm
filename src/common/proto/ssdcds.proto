@@ -1,4 +1,4 @@
-// ss protocol dbclt to dbsrv
+// ss protocol dbclt <-> dbsrv
 
 syntax = "proto3";
 

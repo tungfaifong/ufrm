@@ -68,7 +68,7 @@ private:
 	void _HeartBeat();
 	future<> _CoroHeartBeat(NODEID node_id);
 
-	void _OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & body);
+	future<> _OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & req);
 	void _ForwardToGameSrv(NETID net_id, const CSPkg & pkg);
 
 private:

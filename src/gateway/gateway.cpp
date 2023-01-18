@@ -104,7 +104,7 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	{
 	case CSID_AUTH_REQ:
 		{
-			_OnAuth(net_id, head, body.auth_req());
+			CO_SPAWN(_OnAuth(net_id, head, body.auth_req()));
 		}
 		break;
 	default:
@@ -347,18 +347,41 @@ future<> Gateway::_CoroHeartBeat(NODEID node_id)
 	}
 }
 
-void Gateway::_OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & body)
+future<> Gateway::_OnAuth(NETID net_id, const CSPkgHead & head, const CSAuthReq & req)
 {
-	// todo 先做简易鉴权
-	auto role_id = body.role_id();
-	auto game_id = body.game_id();
-	_nid2role[net_id] = role_id;
-	_roles[role_id] = Role {net_id, role_id, game_id};
+	auto io_node = co_await _lb_client.GetLeastLoadNode(IOSRV);
 
-	PKG_CREATE(pkg, CSPkg);
-	pkg->mutable_head()->set_id(SCID_AUTH_RSP);
-	pkg->mutable_body()->mutable_auth_rsp()->set_result(SCAuthRsp::SUCCESS);
-	_SendToClient(role_id, *pkg);
+	PKG_CREATE(body, SSPkgBody);
+	body->mutable_gwio_body()->mutable_auth_req()->set_role_id(req.role_id());
+	body->mutable_gwio_body()->mutable_auth_req()->set_game_id(req.game_id());
+	body->mutable_gwio_body()->mutable_auth_req()->set_token(req.token());
+	auto [result, data] = co_await _px_client.RpcProxy(IOSRV, io_node.node_id, SSID_GW_IO_AUTH_REQ, body, INVALID_NODE_ID, SSPkgHead::LUA);
+	if(result == CORORESULT::TIMEOUT)
+	{
+		LOGGER_WARN("auth timeout");
+		co_return;
+	}
+
+	SSPkgBody rsp_body;
+	rsp_body.ParseFromString(data);
+	auto rsp = rsp_body.gwio_body().auth_rsp();
+
+	if(rsp.result() == SSIOGWAuthRsp::SUCCESS)
+	{
+		auto role_id = req.role_id();
+		auto game_id = req.game_id();
+		_nid2role[net_id] = role_id;
+		_roles[role_id] = Role {net_id, role_id, game_id};
+
+		PKG_CREATE(pkg, CSPkg);
+		pkg->mutable_head()->set_id(SCID_AUTH_RSP);
+		pkg->mutable_body()->mutable_auth_rsp()->set_result(SCAuthRsp::SUCCESS);
+		_SendToClient(role_id, *pkg);
+	}
+	else
+	{
+		// todo 断开连接
+	}
 }
 
 void Gateway::_ForwardToGameSrv(NETID net_id, const CSPkg & pkg)

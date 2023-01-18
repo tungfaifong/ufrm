@@ -28,6 +28,8 @@ public:
 
 	struct Node
 	{
+		NODETYPE node_type;
+		NODEID node_id;
 		IP ip;
 		PORT port;
 	};

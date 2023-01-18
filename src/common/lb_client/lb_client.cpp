@@ -85,7 +85,7 @@ future<const std::unordered_map<NODEID, LBClient::Node> &> LBClient::GetAllNodes
 		auto rsp = rsp_body.lcls_body().get_all_nodes_rsp();
 		for(auto & node : rsp.nodes())
 		{
-			_nodes[node_type][node.node_id()] = Node{node.ip(), (PORT)node.port()};
+			_nodes[node_type][node.node_id()] = Node{node.node_type(), node.node_id(), node.ip(), (PORT)node.port()};
 		}
 	}
 	co_return _nodes[node_type];
@@ -99,12 +99,12 @@ future<LBClient::Node> LBClient::GetLeastLoadNode(NODETYPE node_type)
 	if(result == CORORESULT::TIMEOUT)
 	{
 		LOGGER_WARN("get least load node timeout");
-		co_return Node{DEFAULT_IP, DEFAULT_PORT};
+		co_return Node{INVALID_NODE_TYPE, INVALID_NODE_ID, DEFAULT_IP, DEFAULT_PORT};
 	}
 	SSPkgBody rsp_body;
 	rsp_body.ParseFromString(data);
 	auto rsp = rsp_body.lcls_body().get_least_load_node_rsp();
-	co_return Node{rsp.node().ip(), (PORT)rsp.node().port()};
+	co_return Node{rsp.node().node_type(), rsp.node().node_id(), rsp.node().ip(), (PORT)rsp.node().port()};
 }
 
 void LBClient::OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
@@ -137,7 +137,7 @@ void LBClient::_OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPubl
 	{
 	case SSLSLCPublish::REGISTER:
 		{
-			_nodes[node_type][node_id] = Node {ip, port};
+			_nodes[node_type][node_id] = Node {node_type, node_id, ip, port};
 		}
 		break;
 	case SSLSLCPublish::CHANGE:

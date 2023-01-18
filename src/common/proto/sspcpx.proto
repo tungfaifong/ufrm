@@ -1,4 +1,4 @@
-// ss protocol pxclt to proxy
+// ss protocol pxclt <-> proxy
 
 syntax = "proto3";
 

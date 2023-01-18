@@ -2,7 +2,7 @@ syntax = "proto3";
 
 enum NODETYPE
 {
-	INVALID_NOTE_TYPE = 0;
+	INVALID_NODE_TYPE = 0;
 	GATEWAY = 1;
 	LBSRV = 2;
 	GAMESRV = 3;

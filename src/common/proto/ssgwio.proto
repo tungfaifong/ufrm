@@ -1,0 +1,28 @@
+// ss protocol gateway <-> iosrv
+
+syntax = "proto3";
+
+message SSGWIOAuthReq
+{
+    uint32 role_id = 1;
+	uint32 game_id = 2;
+    string token = 3;
+}
+
+message SSIOGWAuthRsp
+{
+    enum RESULT
+	{
+		SUCCESS = 0;
+	}
+	RESULT result = 1;
+}
+
+message SSGWIOPkgBody
+{
+	oneof body
+	{
+		SSGWIOAuthReq auth_req = 1;
+		SSIOGWAuthRsp auth_rsp = 2;
+	}
+}

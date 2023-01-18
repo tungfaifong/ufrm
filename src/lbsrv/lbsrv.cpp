@@ -229,7 +229,7 @@ void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq
 	uint32_t min_load = 0;
 	for(auto & [node_id, node] : _nodes[node_type])
 	{
-		if(node.load > min_load)
+		if(node.load >= min_load)
 		{
 			min_node_id = node_id;
 		}

@@ -80,6 +80,21 @@ function ConvertPBVariant2Variant(pb_v)
 	end
 end
 
+function PBParse()
+	pblua.Parse("common.proto")
+	pblua.Parse("cs.proto")
+	pblua.Parse("csid.proto")
+	pblua.Parse("io.proto")
+	pblua.Parse("ioid.proto")
+	pblua.Parse("ss.proto")
+	pblua.Parse("ssdcds.proto")
+	pblua.Parse("ssgwgs.proto")
+	pblua.Parse("ssgwio.proto")
+	pblua.Parse("ssid.proto")
+	pblua.Parse("sslcls.proto")
+	pblua.Parse("sspcpx.proto")
+end
+
 -- engine
 -- engine.Now()
 -- engine.NowMs()

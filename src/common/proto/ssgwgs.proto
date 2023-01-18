@@ -1,4 +1,4 @@
-// ss protocol gateway to gamesrv
+// ss protocol gateway <-> gamesrv
 
 syntax = "proto3";
 

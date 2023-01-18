@@ -23,7 +23,7 @@ CommonSrv::CommonSrv(NODETYPE type, NODEID id, toml::table & config) : _type(typ
 
 bool CommonSrv::Init()
 {
-	if(_type == INVALID_NOTE_TYPE || _id == INVALID_NODE_ID)
+	if(_type == INVALID_NODE_TYPE || _id == INVALID_NODE_ID)
 	{
 		LOGGER_ERROR("commonsrv type or id is INVALID");
 		return false;
