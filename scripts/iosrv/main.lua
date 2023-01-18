@@ -63,7 +63,6 @@ function OnServerHandleRpcReq(net_id, head, body)
 		return
 	end
 	local id, logic_type, rsp_body = RPC_REQ_HANDLER[head.id](body)
-	logger.error("id, logic_type, rsp_body" .. id .. " " .. logic_type .. " " .. Serialize(rsp_body))
 	SendToProxy(head.from_node_type, head.from_node_id, id, rsp_body, 0, logic_type, SSPkgHead.MSGTYPE.RPCRSP, head.rpc_id)
 end
 
