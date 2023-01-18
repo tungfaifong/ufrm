@@ -12,10 +12,10 @@
 using namespace usrv;
 
 using COROID = size_t;
-enum CORORESULT
+enum class CORORESULT
 {
-	CR_SUCCESS = 0,
-	CR_TIMEOUT,
+	SUCCESS = 0,
+	TIMEOUT,
 };
 
 struct promise;
@@ -25,9 +25,9 @@ struct coroutine : std::coroutine_handle<promise>
 	using promise_type = struct promise;
 
 	COROID id;
+	std_clock_t timeout;
 	CORORESULT result;
 	std::string data;
-	std_clock_t timeout;
 };
 
 struct promise
@@ -43,21 +43,23 @@ struct promise
 
 struct awaitable
 {
+	awaitable(std::function<void(COROID)> func) : coro(nullptr), func(func) {}
 	bool await_ready() { return false; }
 	void await_suspend(std::coroutine_handle<promise> h)
 	{
 		coro = h.promise().coro;
-		func();
+		func(coro->id);
 	}
-	CORORESULT await_resume()
+	auto await_resume()
 	{
 		auto result = coro->result;
+		auto data = std::move(coro->data);
 		coro = nullptr;
-		return result;
+		return std::pair<CORORESULT, std::string>(result, data);
 	}
 
 	std::shared_ptr<coroutine> coro;
-	std::function<void()> func;
+	std::function<void(COROID)> func;
 };
 
 #endif // UFRM_COROUTINE_H

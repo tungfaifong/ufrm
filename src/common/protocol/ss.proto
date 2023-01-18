@@ -5,9 +5,9 @@ import "sslcls.proto";
 
 enum MSGTYPE
 {
-	NORMAL = 0;
-	RPC_REQ = 1;
-	RPC_RSP = 2;
+	MSGT_NORMAL = 0;
+	MSGT_RPCREQ = 1;
+	MSGT_RPCRSP = 2;
 }
 
 message SSPkgHead

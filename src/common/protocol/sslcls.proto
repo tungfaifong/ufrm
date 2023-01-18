@@ -6,16 +6,16 @@ import "common.proto";
 
 enum SSLCLSID
 {
-	SSID_LC_LS_NODE_INIT = 0;
+	SSID_LC_LS_NODE_REGISTER = 0;
 	SSID_LC_LS_HEAT_BEAT_REQ = 1;
 	SSID_LS_LC_HEAT_BEAT_RSP = 2;
 }
 
-message SSLCLSNodeInit
+message SSLCLSNodeRegister
 {
 	NODETYPE node_type = 1;
 	string ip = 2;
-	uint32 port = 3; 
+	uint32 port = 3;
 }
 
 message SSLCLSHeartBeatReq
@@ -32,7 +32,7 @@ message SSLCLSPkgBody
 {
 	oneof body
 	{
-		SSLCLSNodeInit node_init = 1;
+		SSLCLSNodeRegister node_register = 1;
 		SSLCLSHeartBeatReq heart_beat_req = 2;
 		SSLSLCHeartBeatRsp heart_beat_rsp = 3;
 	}

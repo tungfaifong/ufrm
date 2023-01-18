@@ -20,6 +20,7 @@ void CoroutineMgr::Spawn(std::function<coroutine()> func)
 {
 	auto id = _coroutines.Insert(std::move(std::make_shared<coroutine>(func())));
 	auto coro = _coroutines[id];
+	coro->id = id;
 	coro->timeout = StdNow() + ms_t(TIMEOUT);
 	coro->promise().coro = coro;
 	coro->resume();
@@ -46,10 +47,10 @@ void CoroutineMgr::_CheckTimeout()
 	auto now = StdNow();
 	for(auto iter = _coroutines.begin(); iter != _coroutines.end();)
 	{
-		auto coro = (*iter).second;
+		auto coro = iter->second;
 		if(now >= coro->timeout)
 		{
-			coro->result = CORORESULT::CR_TIMEOUT;
+			coro->result = CORORESULT::TIMEOUT;
 			coro->resume();
 			iter = _coroutines.Erase(iter);
 		}

@@ -36,6 +36,9 @@ private:
 	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnIServerDisc(NETID net_id);
 
+	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
+	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
+
 private:
 	NODEID _id;
 	toml::table & _config;
