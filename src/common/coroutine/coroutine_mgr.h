@@ -13,7 +13,7 @@ using namespace usrv;
 
 using COROID = size_t;
 
-enum class CoroResult
+enum class CORORESULT
 {
 	SUCCESS = 0,
 	TIMEOUT,
@@ -30,7 +30,7 @@ public:
 		std::coroutine_handle<> coro;
 		COROID id;
 		std_clock_t timeout;
-		CoroResult result;
+		CORORESULT result;
 		std::string data;
 	};
 
@@ -42,7 +42,7 @@ public:
 
 public:
 	std::shared_ptr<CoroutineMgr::CoroObj> Insert(std::coroutine_handle<> & coro);
-	void Resume(COROID coro_id, CoroResult result, std::string && data);
+	void Resume(COROID coro_id, CORORESULT result, std::string && data);
 	void Update();
 
 private:
@@ -66,7 +66,7 @@ struct awaitable_func
 		auto result = coro_obj->result;
 		auto data = std::move(coro_obj->data);
 		coro_obj = nullptr;
-		return std::pair<CoroResult, std::string>(result, data);
+		return std::pair<CORORESULT, std::string>(result, data);
 	}
 
 	std::function<void(COROID)> func;

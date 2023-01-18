@@ -11,7 +11,7 @@ using namespace usrv;
 
 using uint128_t = __uint128_t;
 using variant_t = std::variant<bool, uint32_t, int32_t, uint64_t, int64_t, float, double, std::string>;
-enum class VariantIdx
+enum class VARIANTIDX
 {
     BOOL = 0,
     UINT32,

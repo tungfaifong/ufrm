@@ -183,7 +183,7 @@ future<> PXClient::_CoroHeartBeat(NODEID node_id)
 {
 	PKG_CREATE(body, SSPkgBody);
 	auto [result, data] = co_await _RpcProxy(node_id, SSID_PC_PX_HEART_BEAT_REQ, body);
-	if(result == CoroResult::TIMEOUT)
+	if(result == CORORESULT::TIMEOUT)
 	{
 		LOGGER_WARN("heart beat timeout");
 		co_return;

@@ -233,7 +233,7 @@ void Proxy::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSP
 
 void Proxy::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CoroResult::SUCCESS, std::move(body.SerializePartialAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializePartialAsString()));
 }
 
 void Proxy::_OnRecvPXClient(NETID net_id, const SSPkgHead & head, const SSPCPXPkgBody & body)
