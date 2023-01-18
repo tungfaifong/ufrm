@@ -3,6 +3,7 @@
 #ifndef USRV_OBJECT_MAP_HPP
 #define USRV_OBJECT_MAP_HPP
 
+#include <memory>
 #include <vector>
 
 #include "common.h"

@@ -3,6 +3,7 @@
 #ifndef USRV_OBJECT_POOL_HPP
 #define USRV_OBJECT_POOL_HPP
 
+#include <memory>
 #include <vector>
 
 #include "common.h"
