@@ -79,7 +79,7 @@ void Proxy::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(head.id()), head.rpc_id());
+	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), SSID_Name(head.id()), head.rpc_id());
 	switch(head.proxy_type())
 	{
 		case SSPkgHead::END:
@@ -148,11 +148,11 @@ bool Proxy::_SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHe
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
 		return false;
 	}
 	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
+	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
 	return true;
 }
 
@@ -169,11 +169,11 @@ bool Proxy::_SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg)
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(head->id()), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(head->id()), size);
 		return false;
 	}
 	server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), ENUM_NAME(head->id()), head->rpc_id());
+	LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), SSID_Name(head->id()), head->rpc_id());
 	return true;
 }
 
@@ -187,11 +187,11 @@ bool Proxy::_SendToNodes(NODETYPE node_type, SSPkg & pkg)
 		auto size = pkg.ByteSizeLong();
 		if(size > UINT16_MAX)
 		{
-			LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(head->id()), size);
+			LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(head->id()), size);
 			continue;
 		}
 		server::Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-		LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), ENUM_NAME(head->id()), head->rpc_id());
+		LOGGER_TRACE("send msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(node_type), node_id, ENUM_NAME(head->msg_type()), SSID_Name(head->id()), head->rpc_id());
 	}
 	return true;
 }

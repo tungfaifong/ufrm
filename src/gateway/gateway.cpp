@@ -99,7 +99,7 @@ void Gateway::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	LOGGER_TRACE("recv client msg net_id:{} id:{}", net_id, ENUM_NAME(head.id()));
+	LOGGER_TRACE("recv client msg net_id:{} id:{}", net_id, CSID_Name(head.id()));
 	switch (head.id())
 	{
 	case CSID_AUTH_REQ:
@@ -137,7 +137,7 @@ void Gateway::_OnIServerRecv(NETID net_id, char * data, uint16_t size)
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
 	auto body = pkg.body();
-	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), ENUM_NAME(head.id()), head.rpc_id());
+	LOGGER_TRACE("recv msg node_type:{} node_id:{} msg_type:{} id:{} rpc_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), ENUM_NAME(head.msg_type()), SSID_Name(head.id()), head.rpc_id());
 	switch (head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
@@ -191,11 +191,11 @@ void Gateway::_SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
 		return;
 	}
 	_iserver->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
+	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
 }
 
 awaitable_func Gateway::_RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body)
@@ -215,11 +215,11 @@ void Gateway::_SendToClient(ROLEID role_id, const CSPkg & pkg)
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(pkg.head().id()), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", CSID_Name(pkg.head().id()), size);
 		return;
 	}
 	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send client msg id:{}", ENUM_NAME(pkg.head().id()));
+	LOGGER_TRACE("send client msg id:{}", CSID_Name(pkg.head().id()));
 }
 
 void Gateway::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
@@ -267,7 +267,7 @@ void Gateway::_OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const SSGWGSP
 		}
 		break;
 	default:
-		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), head.id());
+		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), SSID_Name(head.id()));
 		break;
 	}
 }

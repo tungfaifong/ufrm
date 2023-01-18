@@ -118,11 +118,11 @@ void PXClient::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBo
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
-		LOGGER_ERROR("pkg size too long, id:{} size:{}", ENUM_NAME(id), size);
+		LOGGER_ERROR("pkg size too long, id:{} size:{}", SSID_Name(id), size);
 		return;
 	}
 	_server->Send(net_id, pkg.SerializeAsString().c_str(), (uint16_t)size);
-	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), ENUM_NAME(id), rpc_id);
+	LOGGER_TRACE("send msg msg_type:{} id:{} rpc_id:{}", ENUM_NAME(msg_type), SSID_Name(id), rpc_id);
 }
 
 awaitable_func PXClient::_RpcProxy(NODEID node_id, SSID id, SSPkgBody * body)
