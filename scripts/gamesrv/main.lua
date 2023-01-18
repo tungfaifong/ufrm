@@ -3,6 +3,7 @@
 package.path = package.path .. ';./scripts/?.lua;./scripts/gamesrv/?.lua'
 
 require "common.util"
+require "common.net"
 
 function Start()
 	pblua.parse("common.proto")
@@ -34,7 +35,20 @@ end
 
 function OnRecvPkg(net_id, pkg)
 	logger.debug("Serialize:" .. Serialize(pkg))
+	local head = pkg["head"]
+	local body = pkg["body"]
 end
 
 function OnDisc(net_id)
+end
+
+function OnServerHandleNormal(net_id, head, body)
+
+end
+
+function OnServerHandleRpcReq(net_id, head, body)
+
+end
+
+function OnserverHandleRpcRsp(net_id, head, body)
 end
