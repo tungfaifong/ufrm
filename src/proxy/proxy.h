@@ -31,20 +31,20 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
-	void _SendToPXClient(NETID net_id, SSID id, SSPCPXPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToPXClient(NETID net_id, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 	void _SendToNode(NODETYPE node_type, NODEID node_id, SSPkg & pkg);
 	void _SendToNodes(NODETYPE node_type, SSPkg & pkg);
 
-	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
-	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPCPXPkgBody & body);
-	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data);
 
-	void _OnRecvPXClient(NETID net_id, const SSPkgHead & head, const SSPCPXPkgBody & body);
+	void _OnRecvPXClient(NETID net_id, const SSPkgHead & head, const std::string & data);
 
 private:
 	void _OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSPCPXNodeRegister & body);
 	void _OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSPCPXNodeUnregister & body);
-	void _OnHeartBeatReq(NETID net_id, const SSPCPXHeartBeatReq & body, SSID & id, SSPCPXPkgBody * rsp_body);
+	void _OnHeartBeatReq(NETID net_id, const SSPCPXHeartBeatReq & body, SSID & id, SSPXPCHeartBeatRsp * rsp_body);
 
 private:
 	void _UnregisterNode(NODETYPE node_type, NODEID node_id);

@@ -68,20 +68,3 @@ message SSLSLCGetLeastLoadNodeRsp
 {
 	SSLCLSNode node = 1;
 }
-
-message SSLCLSPkgBody
-{
-	oneof body
-	{
-		SSLCLSNodeRegister node_register = 1;
-		SSLCLSNodeUnregister node_unregister = 2;
-		SSLCLSHeartBeatReq heart_beat_req = 3;
-		SSLSLCHeartBeatRsp heart_beat_rsp = 4;
-		SSLCLSSubscribe subscribe = 5;
-		SSLSLCPublish publish = 6;
-		SSLCLSGetAllNodesReq get_all_nodes_req = 7;
-		SSLSLCGetAllNodesRsp get_all_nodes_rsp = 8;
-		SSLCLSGetLeastLoadNodeReq get_least_load_node_req = 9;
-		SSLSLCGetLeastLoadNodeRsp get_least_load_node_rsp = 10;
-	}
-}

@@ -86,12 +86,12 @@ void CommonSrv::Release()
 	Unit::Release();
 }
 
-void CommonSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void CommonSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, msg_type, rpc_id);
 }
 
-void CommonSrv::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
+void CommonSrv::BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
 {
 	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
 }
@@ -106,7 +106,6 @@ void CommonSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	auto body = pkg.body();
 	TraceMsg("recv ss", &pkg);
 	if(head.logic_type() == SSPkgHead::CPP || head.logic_type() == SSPkgHead::BOTH)
 	{
@@ -114,17 +113,17 @@ void CommonSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 		{
 		case SSPkgHead::NORMAL:
 			{
-				_OnServerHandeNormal(net_id, head, body);
+				_OnServerHandeNormal(net_id, head, pkg.data());
 			}
 			break;
 		case SSPkgHead::RPCREQ:
 			{
-				_OnServerHanleRpcReq(net_id, head, body);
+				_OnServerHanleRpcReq(net_id, head, pkg.data());
 			}
 			break;
 		case SSPkgHead::RPCRSP:
 			{
-				_OnServerHanleRpcRsp(net_id, head, body);
+				_OnServerHanleRpcRsp(net_id, head, pkg.data());
 			}
 			break;
 		default:
@@ -154,13 +153,13 @@ void CommonSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void CommonSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void CommonSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch (head.from_node_type())
 	{
 	case LBSRV:
 		{
-			_lb_client.OnRecv(net_id, head, body.lcls_body());
+			_lb_client.OnRecv(net_id, head, data);
 		}
 		break;
 	default:
@@ -169,11 +168,11 @@ void CommonSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const
 	}
 }
 
-void CommonSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void CommonSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 }
 
-void CommonSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void CommonSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, data);
 }

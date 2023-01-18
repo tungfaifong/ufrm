@@ -88,23 +88,22 @@ void DBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	auto body = pkg.body();
 	TraceMsg("recv ss", &pkg);
 	switch (head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
 		{
-			_OnServerHandeNormal(net_id, head, body);
+			_OnServerHandeNormal(net_id, head, pkg.data());
 		}
 		break;
 	case SSPkgHead::RPCREQ:
 		{
-			_OnServerHanleRpcReq(net_id, head, body);
+			_OnServerHanleRpcReq(net_id, head, pkg.data());
 		}
 		break;
 	case SSPkgHead::RPCRSP:
 		{
-			_OnServerHanleRpcRsp(net_id, head, body);
+			_OnServerHanleRpcRsp(net_id, head, pkg.data());
 		}
 		break;
 	default:
@@ -120,23 +119,23 @@ void DBSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void DBSrv::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void DBSrv::_SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, msg_type, rpc_id);
 }
 
-void DBSrv::_BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
+void DBSrv::_BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
 {
 	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
 }
 
-void DBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void DBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch (head.from_node_type())
 	{
 	case LBSRV:
 		{
-			_lb_client.OnRecv(net_id, head, body.lcls_body());
+			_lb_client.OnRecv(net_id, head, data);
 		}
 		break;
 	default:
@@ -145,42 +144,50 @@ void DBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSP
 	}
 }
 
-void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void DBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
-	PKG_CREATE(rsp_body, SSPkgBody);
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
 	SSID id;
 	switch(head.id())
 	{
 	case SSID_DC_DS_SELECT_REQ:
 		{
-			_OnSelectReq(body.dcds_body().select_req(), id, rsp_body->mutable_dcds_body()->mutable_select_rsp());
+			UNPACK(SSDCDSSelectReq, body, data);
+			message = std::make_shared<SSDSDCSelectRsp>();
+			_OnSelectReq(body, id, (SSDSDCSelectRsp*)message.get());
 		}
 		break;
 	case SSID_DC_DS_INSERT_REQ:
 		{
-			_OnInsertReq(body.dcds_body().insert_req(), id, rsp_body->mutable_dcds_body()->mutable_insert_rsp());
+			UNPACK(SSDCDSInsertReq, body, data);
+			message = std::make_shared<SSDSDCInsertRsp>();
+			_OnInsertReq(body, id, (SSDSDCInsertRsp*)message.get());
 		}
 		break;
 	case SSID_DC_DS_UPDATE_REQ:
 		{
-			_OnUpdateReq(body.dcds_body().update_req(), id, rsp_body->mutable_dcds_body()->mutable_update_rsp());
+			UNPACK(SSDCDSUpdateReq, body, data);
+			message = std::make_shared<SSDSDCUpdateRsp>();
+			_OnUpdateReq(body, id, (SSDSDCUpdateRsp*)message.get());
 		}
 		break;
 	case SSID_DC_DS_DELETE_REQ:
 		{
-			_OnDeleteReq(body.dcds_body().delete_req(), id, rsp_body->mutable_dcds_body()->mutable_delete_rsp());
+			UNPACK(SSDCDSDeleteReq, body, data);
+			message = std::make_shared<SSDSDCDeleteRsp>();
+			_OnDeleteReq(body, id, (SSDSDCDeleteRsp*)message.get());
 		}
 		break;
 	default:
 		LOGGER_WARN("invalid node_type:{} node_id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id());
 		break;
 	}
-	_SendToProxy(head.from_node_type(), head.from_node_id(), id, rsp_body, INVALID_NODE_ID, head.logic_type(), SSPkgHead::RPCRSP, head.rpc_id());
+	_SendToProxy(head.from_node_type(), head.from_node_id(), id, message.get(), INVALID_NODE_ID, head.logic_type(), SSPkgHead::RPCRSP, head.rpc_id());
 }
 
-void DBSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void DBSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, data);
 }
 
 void DBSrv::_OnSelectReq(const SSDCDSSelectReq & req, SSID & id, SSDSDCSelectRsp * rsp)

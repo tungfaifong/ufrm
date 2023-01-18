@@ -9,25 +9,25 @@
 #include "define.h"
 #include "gamesrv.h"
 
-void SendToClient(ROLEID role_id, uint32_t id, luabridge::LuaRef lua_ref)
+void SendToClient(ROLEID role_id, uint32_t id, const std::string & proto, luabridge::LuaRef lua_ref)
 {
-	PKG_CREATE(body, CSPkgBody);
-	pblua::LuaRef2PB(body, lua_ref);
-	std::dynamic_pointer_cast<GameSrv>(UnitManager::Instance()->Get("GAMESRV"))->SendToClient(role_id, (CSID)id, body);
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
+	pblua::LuaRef2PB(message, proto, lua_ref);
+	std::dynamic_pointer_cast<GameSrv>(UnitManager::Instance()->Get("GAMESRV"))->SendToClient(role_id, (CSID)id, message.get());
 }
 
-void SendToProxy(uint16_t node_type, NODEID node_id, uint32_t id, luabridge::LuaRef lua_ref, NODEID proxy_id, uint16_t logic_type, uint16_t msg_type, size_t rpc_id)
+void SendToProxy(uint16_t node_type, NODEID node_id, uint32_t id, const std::string & proto, luabridge::LuaRef lua_ref, NODEID proxy_id, uint16_t logic_type, uint16_t msg_type, size_t rpc_id)
 {
-	PKG_CREATE(body, SSPkgBody);
-	pblua::LuaRef2PB(body, lua_ref);
-	std::dynamic_pointer_cast<GameSrv>(UnitManager::Instance()->Get("GAMESRV"))->SendToProxy((NODETYPE)node_type, node_id, (SSID)id, body, proxy_id, (SSPkgHead::LOGICTYPE)logic_type, (SSPkgHead::MSGTYPE)msg_type, rpc_id);
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
+	pblua::LuaRef2PB(message, proto, lua_ref);
+	std::dynamic_pointer_cast<GameSrv>(UnitManager::Instance()->Get("GAMESRV"))->SendToProxy((NODETYPE)node_type, node_id, (SSID)id, message.get(), proxy_id, (SSPkgHead::LOGICTYPE)logic_type, (SSPkgHead::MSGTYPE)msg_type, rpc_id);
 }
 
-void BroadcastToProxy(uint16_t node_type, uint32_t id, luabridge::LuaRef lua_ref, NODEID proxy_id, uint16_t logic_type)
+void BroadcastToProxy(uint16_t node_type, uint32_t id, const std::string & proto, luabridge::LuaRef lua_ref, NODEID proxy_id, uint16_t logic_type)
 {
-	PKG_CREATE(body, SSPkgBody);
-	pblua::LuaRef2PB(body, lua_ref);
-	std::dynamic_pointer_cast<GameSrv>(UnitManager::Instance()->Get("GAMESRV"))->BroadcastToProxy((NODETYPE)node_type, (SSID)id, body, proxy_id, (SSPkgHead::LOGICTYPE)logic_type);
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
+	pblua::LuaRef2PB(message, proto, lua_ref);
+	std::dynamic_pointer_cast<GameSrv>(UnitManager::Instance()->Get("GAMESRV"))->BroadcastToProxy((NODETYPE)node_type, (SSID)id, message.get(), proxy_id, (SSPkgHead::LOGICTYPE)logic_type);
 }
 
 void LuaExpose(luabridge::Namespace ns)

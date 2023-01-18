@@ -33,9 +33,9 @@ public:
 	virtual void Release() override final;
 
 public:
-	void SendToClient(ROLEID role_id, CSID id, CSPkgBody * body);
-	void SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	void BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
+	void SendToClient(ROLEID role_id, CSID id, google::protobuf::Message * body);
+	void SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
 	future<std::vector<std::unordered_map<std::string, variant_t>>> DBSelect(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::unordered_map<std::string, variant_t> & where);
 	future<bool> DBInsert(NODEID node_id, const std::string & tb_name, const std::vector<std::string> & column, const std::vector<variant_t> & value);
@@ -47,20 +47,20 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
-	void _SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToGateway(NODEID node_id, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 
-	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
-	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
-	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data);
 
-	void _OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
-	void _OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
+	void _OnRecvGateway(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const std::string & data);
 
 	void _OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg);
 
 private:
 	void _OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSInit & body);
-	void _OnGatewayHeartBeatReq(NETID net_id, const SSPkgHead & head, const SSGWGSHertBeatReq & body, SSID & id, SSGWGSPkgBody * rsp_body);
+	void _OnGatewayHeartBeatReq(NETID net_id, const SSPkgHead & head, const SSGWGSHertBeatReq & body, SSID & id, SSGSGWHertBeatRsp * rsp_body);
 
 private:
 	NODEID _id;

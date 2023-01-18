@@ -541,6 +541,15 @@ namespace pblua
 		return EncodeMessage(message, descriptor, lua_ref.state(), lua_absindex(lua_ref.state(), -1));
 	}
 
+	bool LuaRef2PB(std::shared_ptr<google::protobuf::Message> & message, const std::string & proto, luabridge::LuaRef & lua_ref)
+	{
+		auto descriptor = importer->pool()->FindMessageTypeByName(proto);
+		auto prototype = message_factory->GetPrototype(descriptor);
+		message = std::shared_ptr<google::protobuf::Message>(prototype->New());
+		lua_ref.push();
+		return EncodeMessage(message.get(), descriptor, lua_ref.state(), lua_absindex(lua_ref.state(), -1));
+	}
+
 	luabridge::LuaRef PB2LuaRef(const google::protobuf::Message & message, lua_State * L)
 	{
 		auto descriptor = message.GetDescriptor();

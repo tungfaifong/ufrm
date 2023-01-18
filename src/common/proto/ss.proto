@@ -42,20 +42,8 @@ message SSPkgHead
 	optional LOGICTYPE logic_type = 9;
 }
 
-message SSPkgBody
-{
-	oneof body
-	{
-		SSLCLSPkgBody lcls_body = 1;
-		SSGWGSPkgBody gwgs_body = 2;
-		SSGWIOPkgBody gwio_body = 3;
-		SSPCPXPkgBody pcpx_body = 4;
-		SSDCDSPkgBody dcds_body = 5;
-	}
-}
-
 message SSPkg
 {
 	SSPkgHead head = 1;
-	SSPkgBody body = 2;
+	bytes data = 2;
 }

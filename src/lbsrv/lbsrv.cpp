@@ -62,18 +62,17 @@ void LBSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	auto body = pkg.body();
 	TraceMsg("recv ss", &pkg);
 	switch(head.msg_type())
 	{
 	case SSPkgHead::NORMAL:
 		{
-			_OnServerHandeNormal(net_id, head, body.lcls_body());
+			_OnServerHandeNormal(net_id, head, pkg.data());
 		}
 		break;
 	case SSPkgHead::RPCREQ:
 		{
-			_OnServerHanleRpcReq(net_id, head, body.lcls_body());
+			_OnServerHanleRpcReq(net_id, head, pkg.data());
 		}
 		break;
 	default:
@@ -90,13 +89,13 @@ void LBSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{} node_type:{} node_id:{}", net_id, ENUM_NAME(node_type), node_id);
 }
 
-void LBSrv::_SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void LBSrv::_SendToLBClient(NETID net_id, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	auto [node_type, node_id] = _nid2node[net_id];
-	SEND_SSPKG(_server, net_id, LBSRV, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_lcls_body, body);
+	SEND_SSPKG(_server, net_id, LBSRV, _id, node_type, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, body);
 }
 
-void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	SSPkg pkg;
 	auto head = pkg.mutable_head();
@@ -107,7 +106,7 @@ void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody 
 	head->set_rpc_id(rpc_id);
 	head->set_proxy_type(SSPkgHead::END);
 	head->set_logic_type(SSPkgHead::CPP);
-	pkg.mutable_body()->set_allocated_lcls_body(body);
+	body->SerializeToString(pkg.mutable_data());
 	for(auto & net_id : net_ids)
 	{
 		auto [node_type, node_id] = _nid2node[net_id];
@@ -124,23 +123,26 @@ void LBSrv::_SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody 
 	}
 }
 
-void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
+void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch(head.id())
 	{
 	case SSID_LC_LS_NODE_REGISTER:
 		{
-			_OnNodeRegister(net_id, head, body.node_register());
+			UNPACK(SSLCLSNodeRegister, body, data);
+			_OnNodeRegister(net_id, head, body);
 		}
 		break;
 	case SSID_LC_LS_NODE_UNREGISTER:
 		{
-			_OnNodeUnregister(net_id, head, body.node_unregister());
+			UNPACK(SSLCLSNodeUnregister, body, data);
+			_OnNodeUnregister(net_id, head, body);
 		}
 		break;
 	case SSID_LC_LS_SUBSCRIBE:
 		{
-			_OnSubscribe(net_id, head, body.subscribe());
+			UNPACK(SSLCLSSubscribe, body, data);
+			_OnSubscribe(net_id, head, body);
 		}
 		break;
 	default:
@@ -149,32 +151,38 @@ void LBSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSL
 	}
 }
 
-void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body)
+void LBSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
-	PKG_CREATE(rsp_body, SSLCLSPkgBody);
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
 	SSID id;
 	switch(head.id())
 	{
 	case SSID_LC_LS_HEART_BEAT_REQ:
 		{
-			_OnHeartBeatReq(net_id, body.heart_beat_req(), id, rsp_body);
+			UNPACK(SSLCLSHeartBeatReq, body, data);
+			message = std::make_shared<SSLSLCHeartBeatRsp>();
+			_OnHeartBeatReq(net_id, body, id, (SSLSLCHeartBeatRsp*)message.get());
 		}
 		break;
 	case SSID_LC_LS_GET_ALL_NODES_REQ:
 		{
-			_OnGetAllNodesReq(net_id, body.get_all_nodes_req(), id, rsp_body);
+			UNPACK(SSLCLSGetAllNodesReq, body, data);
+			message = std::make_shared<SSLSLCGetAllNodesRsp>();
+			_OnGetAllNodesReq(net_id, body, id, (SSLSLCGetAllNodesRsp*)message.get());
 		}
 		break;
 	case SSID_LC_LS_GET_LEAST_LOAD_NODE_REQ:
 		{
-			_OnGetLeastLoadNodeReq(net_id, body.get_least_load_node_req(), id, rsp_body);
+			UNPACK(SSLCLSGetLeastLoadNodeReq, body, data);
+			message = std::make_shared<SSLSLCGetLeastLoadNodeRsp>();
+			_OnGetLeastLoadNodeReq(net_id, body, id, (SSLSLCGetLeastLoadNodeRsp*)message.get());
 		}
 		break;
 	default:
 		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), SSID_Name(head.id()));
 		return;
 	}
-	_SendToLBClient(net_id, id, rsp_body, SSPkgHead::RPCRSP, head.rpc_id());
+	_SendToLBClient(net_id, id, message.get(), SSPkgHead::RPCRSP, head.rpc_id());
 }
 
 void LBSrv::_OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeRegister & body)
@@ -190,7 +198,7 @@ void LBSrv::_OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSLCLS
 	_UnregisterNode(body.node_type(), body.node_id());
 }
 
-void LBSrv::_OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSID & id, SSLCLSPkgBody * rsp_body)
+void LBSrv::_OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSID & id, SSLSLCHeartBeatRsp * rsp_body)
 {
 	auto [node_type, node_id] = _nid2node[net_id];
 	_nodes[node_type][node_id].load = body.load();
@@ -207,14 +215,13 @@ void LBSrv::_OnSubscribe(NETID net_id, const SSPkgHead & head, const SSLCLSSubsc
 	vec.push_back(net_id);
 }
 
-void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSID & id, SSLCLSPkgBody * rsp_body)
+void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSID & id, SSLSLCGetAllNodesRsp * rsp_body)
 {
 	auto node_type = body.node_type();
 	id = SSID_LS_LC_GET_ALL_NODES_RSP;
-	auto rsp = rsp_body->mutable_get_all_nodes_rsp();
 	for(auto & [node_id, node] :_nodes[node_type])
 	{
-		auto rsp_node = rsp->add_nodes();
+		auto rsp_node = rsp_body->add_nodes();
 		rsp_node->set_node_type(node_type);
 		rsp_node->set_node_id(node_id);
 		rsp_node->set_ip(node.ip);
@@ -222,7 +229,7 @@ void LBSrv::_OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, S
 	}
 }
 
-void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSID & id, SSLCLSPkgBody * rsp_body)
+void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSID & id, SSLSLCGetLeastLoadNodeRsp * rsp_body)
 {
 	auto node_type = body.node_type();
 	NODEID min_node_id = INVALID_NODE_ID;
@@ -243,11 +250,10 @@ void LBSrv::_OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq
 		port = min_node.port;
 	}
 	id = SSID_LS_LC_GET_LEAST_LOAD_NODE_RSP;
-	auto rsp = rsp_body->mutable_get_least_load_node_rsp();
-	rsp->mutable_node()->set_node_type(node_type);
-	rsp->mutable_node()->set_node_id(min_node_id);
-	rsp->mutable_node()->set_ip(ip);
-	rsp->mutable_node()->set_port(port);
+	rsp_body->mutable_node()->set_node_type(node_type);
+	rsp_body->mutable_node()->set_node_id(min_node_id);
+	rsp_body->mutable_node()->set_ip(ip);
+	rsp_body->mutable_node()->set_port(port);
 }
 
 void LBSrv::_UnregisterNode(NODETYPE node_type, NODEID node_id)
@@ -285,12 +291,11 @@ void LBSrv::_Unsubscribe(NETID net_id)
 
 void LBSrv::_Publish(SSLSLCPublish::PUBLISHTYPE publish_type, NODETYPE node_type, NODEID node_id, IP ip, PORT port)
 {
-	PKG_CREATE(body, SSLCLSPkgBody);
-	auto publish = body->mutable_publish();
-	publish->set_publish_type(publish_type);
-	publish->mutable_node()->set_node_type(node_type);
-	publish->mutable_node()->set_node_id(node_id);
-	publish->mutable_node()->set_ip(ip);
-	publish->mutable_node()->set_port(port);
-	_SendToLBClients(_subscriber[node_type], SSID_LS_LC_PUBLISH, body);
+	SSLSLCPublish body;
+	body.set_publish_type(publish_type);
+	body.mutable_node()->set_node_type(node_type);
+	body.mutable_node()->set_node_id(node_id);
+	body.mutable_node()->set_ip(ip);
+	body.mutable_node()->set_port(port);
+	_SendToLBClients(_subscriber[node_type], SSID_LS_LC_PUBLISH, &body);
 }

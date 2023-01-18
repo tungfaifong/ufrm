@@ -33,8 +33,8 @@ public:
 	virtual void Release() override final;
 
 public:
-	void SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	void BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
+	void SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
 
 private:
@@ -42,9 +42,9 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
-	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
-	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
-	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data);
 
 private:
 	NODETYPE _type;

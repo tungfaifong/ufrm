@@ -36,6 +36,8 @@ namespace pblua
 	int Decode(lua_State * L);
 	
 	bool LuaRef2PB(google::protobuf::Message * message, luabridge::LuaRef & lua_ref);
+	bool LuaRef2PB(const std::string & proto, luabridge::LuaRef & lua_ref);
+	bool LuaRef2PB(std::shared_ptr<google::protobuf::Message> & message, const std::string & proto, luabridge::LuaRef & lua_ref);
 	luabridge::LuaRef PB2LuaRef(const google::protobuf::Message & message, lua_State * L);
 
 	void Init();

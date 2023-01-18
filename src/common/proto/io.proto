@@ -33,19 +33,8 @@ message IOPkgHead
 	IOID id = 1;
 }
 
-message IOPkgBody
-{
-	oneof body
-	{
-		IORegisterReq register_req = 1;
-		IORegisterRsp register_rsp = 2;
-		IOAuthReq auth_req = 3;
-		IOAuthRsp auth_rsp = 4;
-	}
-}
-
 message IOPkg
 {
 	IOPkgHead head = 1;
-	IOPkgBody body = 2;
+	bytes data = 2;
 }

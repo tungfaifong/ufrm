@@ -39,19 +39,19 @@ private:
 	void _OnServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnServerDisc(NETID net_id);
 
-	void _SendToLBClient(NETID net_id, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	void _SendToLBClients(std::vector<NETID> net_ids, SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToLBClient(NETID net_id, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _SendToLBClients(std::vector<NETID> net_ids, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
 
-	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
-	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
+	void _OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data);
 
 private:
 	void _OnNodeRegister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeRegister & body);
 	void _OnNodeUnregister(NETID net_id, const SSPkgHead & head, const SSLCLSNodeUnregister & body);
-	void _OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSID & id, SSLCLSPkgBody * rsp_body);
+	void _OnHeartBeatReq(NETID net_id, const SSLCLSHeartBeatReq & body, SSID & id, SSLSLCHeartBeatRsp * rsp_body);
 	void _OnSubscribe(NETID net_id, const SSPkgHead & head, const SSLCLSSubscribe & body);
-	void _OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSID & id, SSLCLSPkgBody * rsp_body);
-	void _OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSID & id, SSLCLSPkgBody * rsp_body);
+	void _OnGetAllNodesReq(NETID net_id, const SSLCLSGetAllNodesReq & body, SSID & id, SSLSLCGetAllNodesRsp * rsp_body);
+	void _OnGetLeastLoadNodeReq(NETID net_id, const SSLCLSGetLeastLoadNodeReq & body, SSID & id, SSLSLCGetLeastLoadNodeRsp * rsp_body);
 
 private:
 	void _UnregisterNode(NODETYPE node_type, NODEID node_id);

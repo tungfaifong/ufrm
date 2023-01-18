@@ -17,14 +17,3 @@ message SSPCPXHeartBeatReq
 message SSPXPCHeartBeatRsp
 {
 }
-
-message SSPCPXPkgBody
-{
-	oneof body
-	{
-		SSPCPXNodeRegister node_register = 1;
-		SSPCPXNodeUnregister node_unregister = 2;
-		SSPCPXHeartBeatReq heart_beat_req = 3;
-		SSPXPCHeartBeatRsp heart_beat_rsp = 4;
-	}
-}

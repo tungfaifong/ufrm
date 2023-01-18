@@ -27,7 +27,7 @@ std::shared_ptr<CoroutineMgr::CoroObj> CoroutineMgr::Insert(std::coroutine_handl
 	return _coro_objs[id];
 }
 
-void CoroutineMgr::Resume(COROID coro_id, CORORESULT result, std::string && data)
+void CoroutineMgr::Resume(COROID coro_id, CORORESULT result, const std::string & data)
 {
 	auto coro_obj = _coro_objs[coro_id];
 	if(!coro_obj)
@@ -35,7 +35,7 @@ void CoroutineMgr::Resume(COROID coro_id, CORORESULT result, std::string && data
 		return;
 	}
 	coro_obj->result = result;
-	coro_obj->data = std::move(data);
+	coro_obj->data = data;
 	coro_obj->coro.resume();
 	if(coro_obj->coro.done())
 	{

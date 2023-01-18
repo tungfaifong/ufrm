@@ -87,26 +87,26 @@ void GameSrv::Release()
 	Unit::Release();
 }
 
-void GameSrv::SendToClient(ROLEID role_id, CSID id, CSPkgBody * body)
+void GameSrv::SendToClient(ROLEID role_id, CSID id, google::protobuf::Message * body)
 {
 	if(_roles.find(role_id) == _roles.end())
 	{
 		return;
 	}
-	PKG_CREATE(pkg, SSGWGSPkgBody);
-	pkg->mutable_forward_cs_pkg()->set_role_id(role_id);
-	pkg->mutable_forward_cs_pkg()->set_game_id(_id);
-	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->mutable_head()->set_id(id);
-	pkg->mutable_forward_cs_pkg()->mutable_cs_pkg()->set_allocated_body(body);
-	_SendToGateway(_roles[role_id], SSID_GS_GW_FORWAR_SC_PKG, pkg);
+	SSGWGSForwardCSPkg pkg;
+	pkg.set_role_id(role_id);
+	pkg.set_game_id(_id);
+	pkg.mutable_cs_pkg()->mutable_head()->set_id(id);
+	body->SerializeToString(pkg.mutable_cs_pkg()->mutable_data());
+	_SendToGateway(_roles[role_id], SSID_GS_GW_FORWAR_SC_PKG, &pkg);
 }
 
-void GameSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void GameSrv::SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	_px_client.SendToProxy(node_type, node_id, id, body, proxy_id, logic_type, msg_type, rpc_id);
 }
 
-void GameSrv::BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
+void GameSrv::BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id /* = INVALID_NODE_ID */, SSPkgHead::LOGICTYPE logic_type /* = SSPkgHead::CPP */)
 {
 	_px_client.BroadcastToProxy(node_type, id, body, proxy_id, logic_type);
 }
@@ -145,7 +145,6 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 	SSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	auto body = pkg.body();
 	TraceMsg("recv ss", &pkg);
 	if(head.logic_type() == SSPkgHead::CPP || head.logic_type() == SSPkgHead::BOTH)
 	{
@@ -153,17 +152,17 @@ void GameSrv::_OnServerRecv(NETID net_id, char * data, uint16_t size)
 		{
 		case SSPkgHead::NORMAL:
 			{
-				_OnServerHandeNormal(net_id, head, body);
+				_OnServerHandeNormal(net_id, head, pkg.data());
 			}
 			break;
 		case SSPkgHead::RPCREQ:
 			{
-				_OnServerHanleRpcReq(net_id, head, body);
+				_OnServerHanleRpcReq(net_id, head, pkg.data());
 			}
 			break;
 		case SSPkgHead::RPCRSP:
 			{
-				_OnServerHanleRpcRsp(net_id, head, body);
+				_OnServerHanleRpcRsp(net_id, head, pkg.data());
 			}
 			break;
 		default:
@@ -199,7 +198,7 @@ void GameSrv::_OnServerDisc(NETID net_id)
 	LOGGER_INFO("ondisconnect success net_id:{}", net_id);
 }
 
-void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
+void GameSrv::_SendToGateway(NODEID node_id, SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type /* = SSPkgHead::NORMAL */, size_t rpc_id /* = -1 */)
 {
 	if(_gateways.find(node_id) == _gateways.end())
 	{
@@ -207,21 +206,21 @@ void GameSrv::_SendToGateway(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPk
 		return;
 	}
 	auto net_id = _gateways[node_id];
-	SEND_SSPKG(_server, net_id, GAMESRV, _id, GATEWAY, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, mutable_body()->set_allocated_gwgs_body, body);
+	SEND_SSPKG(_server, net_id, GAMESRV, _id, GATEWAY, node_id, id, msg_type, rpc_id, SSPkgHead::END, SSPkgHead::CPP, body);
 }
 
-void GameSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void GameSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch (head.from_node_type())
 	{
 	case LBSRV:
 		{
-			_lb_client.OnRecv(net_id, head, body.lcls_body());
+			_lb_client.OnRecv(net_id, head, data);
 		}
 		break;
 	case GATEWAY:
 		{
-			_OnRecvGateway(net_id, head, body.gwgs_body());
+			_OnRecvGateway(net_id, head, data);
 		}
 		break;
 	default:
@@ -230,13 +229,13 @@ void GameSrv::_OnServerHandeNormal(NETID net_id, const SSPkgHead & head, const S
 	}
 }
 
-void GameSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void GameSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch (head.from_node_type())
 	{
 	case GATEWAY:
 		{
-			_OnRecvGatewayRpc(net_id, head, body.gwgs_body());
+			_OnRecvGatewayRpc(net_id, head, data);
 		}
 		break;
 	default:
@@ -245,23 +244,25 @@ void GameSrv::_OnServerHanleRpcReq(NETID net_id, const SSPkgHead & head, const S
 	}
 }
 
-void GameSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body)
+void GameSrv::_OnServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
-	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, std::move(body.SerializeAsString()));
+	CoroutineMgr::Instance()->Resume(head.rpc_id(), CORORESULT::SUCCESS, data);
 }
 
-void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body)
+void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
 	switch(head.id())
 	{
 	case SSID_GW_GS_INIT:
 		{
-			_OnGatewayInit(net_id, head, body.init());
+			UNPACK(SSGWGSInit, body, data);
+			_OnGatewayInit(net_id, head, body);
 		}
 		break;
 	case SSID_GW_GS_FORWAR_CS_PKG:
 		{
-			_OnRecvClient(net_id, body.forward_cs_pkg());
+			UNPACK(SSGWGSForwardCSPkg, body, data);
+			_OnRecvClient(net_id, body);
 		}
 		break;
 	default:
@@ -270,22 +271,24 @@ void GameSrv::_OnRecvGateway(NETID net_id, const SSPkgHead & head, const SSGWGSP
 	}
 }
 
-void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body)
+void GameSrv::_OnRecvGatewayRpc(NETID net_id, const SSPkgHead & head, const std::string & data)
 {
-	PKG_CREATE(rsp_body, SSGWGSPkgBody);
+	std::shared_ptr<google::protobuf::Message> message = nullptr;
 	SSID id;
 	switch(head.id())
 	{
 	case SSID_GW_GS_HEART_BEAT_REQ:
 		{
-			_OnGatewayHeartBeatReq(net_id, head, body.heart_beat_req(), id, rsp_body);
+			UNPACK(SSGWGSHertBeatReq, body, data);
+			message = std::make_shared<SSGSGWHertBeatRsp>();
+			_OnGatewayHeartBeatReq(net_id, head, body, id, (SSGSGWHertBeatRsp*)message.get());
 		}
 		break;
 	default:
 		LOGGER_WARN("invalid node_type:{} node_id:{} id:{}", ENUM_NAME(head.from_node_type()), head.from_node_id(), SSID_Name(head.id()));
-		break;
+		return;
 	}
-	_SendToGateway(head.from_node_id(), id, rsp_body, SSPkgHead::RPCRSP, head.rpc_id());
+	_SendToGateway(head.from_node_id(), id, message.get(), SSPkgHead::RPCRSP, head.rpc_id());
 }
 
 void GameSrv::_OnRecvClient(NETID net_id, const SSGWGSForwardCSPkg & pkg)
@@ -326,7 +329,7 @@ void GameSrv::_OnGatewayInit(NETID net_id, const SSPkgHead & head, const SSGWGSI
 	_gateways[node_id] = net_id;
 }
 
-void GameSrv::_OnGatewayHeartBeatReq(NETID net_id, const SSPkgHead & head, const SSGWGSHertBeatReq & body, SSID & id, SSGWGSPkgBody * rsp_body)
+void GameSrv::_OnGatewayHeartBeatReq(NETID net_id, const SSPkgHead & head, const SSGWGSHertBeatReq & body, SSID & id, SSGSGWHertBeatRsp * rsp_body)
 {
 	id = SSID_GS_GW_HEART_BEAT_RSP;
 }

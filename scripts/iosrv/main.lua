@@ -41,31 +41,30 @@ end
 
 function OnRecvPkg(net_id, pkg)
 	local head = pkg.head
-	local body = pkg.body
 	if head.msg_type == SSPkgHead.MSGTYPE.NORMAL then
-		OnServerHandleNormal(net_id, head, body)
+		OnServerHandleNormal(net_id, head, pkg.data)
 	elseif head.msg_type == SSPkgHead.MSGTYPE.RPCREQ then
-		OnServerHandleRpcReq(net_id, head, body)
+		OnServerHandleRpcReq(net_id, head, pkg.data)
 	elseif head.msg_type == SSPkgHead.MSGTYPE.RPCRSP then
-		OnserverHandleRpcRsp(net_id, head, body)
+		OnserverHandleRpcRsp(net_id, head, pkg.data)
 	end
 end
 
 function OnDisc(net_id)
 end
 
-function OnServerHandleNormal(net_id, head, body)
+function OnServerHandleNormal(net_id, head, data)
 	
 end
 
-function OnServerHandleRpcReq(net_id, head, body)
+function OnServerHandleRpcReq(net_id, head, data)
 	if not RPC_REQ_HANDLER[head.id] then
 		return
 	end
-	local id, logic_type, rsp_body = RPC_REQ_HANDLER[head.id](body)
-	SendToProxy(head.from_node_type, head.from_node_id, id, rsp_body, 0, logic_type, SSPkgHead.MSGTYPE.RPCRSP, head.rpc_id)
+	local id, logic_type, proto, rsp_body = RPC_REQ_HANDLER[head.id](data)
+	SendToProxy(head.from_node_type, head.from_node_id, id, proto, rsp_body, 0, logic_type, SSPkgHead.MSGTYPE.RPCRSP, head.rpc_id)
 end
 
-function OnserverHandleRpcRsp(net_id, head, body)
-	CoroutineMgr:Instance():Resume(head.rpc_id, CORORESULT.SUCCESS, body)
+function OnserverHandleRpcRsp(net_id, head, data)
+	CoroutineMgr:Instance():Resume(head.rpc_id, CORORESULT.SUCCESS, data)
 end

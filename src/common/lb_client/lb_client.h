@@ -54,14 +54,14 @@ public:
 	future<const std::unordered_map<NODEID, Node> &> GetAllNodes(NODETYPE node_type);
 	future<Node> GetLeastLoadNode(NODETYPE node_type);
 
-	void OnRecv(NETID net_id, const SSPkgHead & head, const SSLCLSPkgBody & body);
+	void OnRecv(NETID net_id, const SSPkgHead & head, const std::string & data);
 
 private:
 	void _OnPublish(NETID net_id, const SSPkgHead & head, const SSLSLCPublish & body);
 
 private:
-	void _SendToLBSrv(SSID id, SSLCLSPkgBody * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	awaitable_func _RpcLBSrv(SSID id, SSLCLSPkgBody * body);
+	void _SendToLBSrv(SSID id, google::protobuf::Message * body, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	awaitable_func _RpcLBSrv(SSID id, google::protobuf::Message * body);
 
 	bool _Connect();
 	void _HeartBeat();

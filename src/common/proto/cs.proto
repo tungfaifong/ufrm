@@ -52,22 +52,8 @@ message CSPkgHead
 	optional CSID id = 1;
 }
 
-message CSPkgBody
-{
-	oneof body
-	{
-		CSAuthReq auth_req = 1;
-		SCAuthRsp auth_rsp = 2;
-		CSLoginReq login_req = 3;
-		SCLoginRsp login_rsp = 4;
-		CSLogoutReq logout_req = 5;
-		CSHeartBeatReq heart_beat_req = 6;
-		SCHeartBeatRsp heart_beat_rsp = 7;
-	}
-}
-
 message CSPkg
 {
 	CSPkgHead head = 1;
-	CSPkgBody body = 2;
+	bytes data = 2;
 }

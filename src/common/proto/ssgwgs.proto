@@ -22,14 +22,3 @@ message SSGWGSForwardCSPkg
 	uint32 game_id = 2;
 	CSPkg cs_pkg = 3;
 }
-
-message SSGWGSPkgBody
-{
-	oneof body
-	{
-		SSGWGSInit init = 1;
-		SSGWGSHertBeatReq heart_beat_req = 2;
-		SSGSGWHertBeatRsp heart_beat_rsp = 3;
-		SSGWGSForwardCSPkg forward_cs_pkg = 4;
-	}
-}

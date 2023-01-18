@@ -17,12 +17,3 @@ message SSIOGWAuthRsp
 	}
 	RESULT result = 1;
 }
-
-message SSGWIOPkgBody
-{
-	oneof body
-	{
-		SSGWIOAuthReq auth_req = 1;
-		SSIOGWAuthRsp auth_rsp = 2;
-	}
-}

@@ -34,22 +34,21 @@ end
 
 function OnRecvPkg(net_id, pkg)
 	local head = pkg.head
-	local body = pkg.body
 	if head.msg_type == SSPkgHead.MSGTYPE.NORMAL then
-		OnServerHandleNormal(net_id, head, body)
+		OnServerHandleNormal(net_id, head, pkg.data)
 	elseif head.msg_type == SSPkgHead.MSGTYPE.RPCREQ then
-		OnServerHandleRpcReq(net_id, head, body)
+		OnServerHandleRpcReq(net_id, head, pkg.data)
 	elseif head.msg_type == SSPkgHead.MSGTYPE.RPCRSP then
-		OnserverHandleRpcRsp(net_id, head, body)
+		OnserverHandleRpcRsp(net_id, head, pkg.data)
 	end
 end
 
 function OnDisc(net_id)
 end
 
-function OnServerHandleNormal(net_id, head, body)
+function OnServerHandleNormal(net_id, head, data)
 	if head.id == SSID.SSID_GW_GS_FORWAR_CS_PKG then
-		local pkg = body.gwgs_body.forward_cs_pkg
+		local pkg = pblua.Decode("SSGWGSForwardCSPkg", data)
 		local role = RoleMgr:Instance():GetRole(pkg.role_id)
 		if not role then
 			role = RoleMgr:Instance():CreateRole(pkg.role_id)
@@ -58,10 +57,10 @@ function OnServerHandleNormal(net_id, head, body)
 	end
 end
 
-function OnServerHandleRpcReq(net_id, head, body)
+function OnServerHandleRpcReq(net_id, head, data)
 
 end
 
-function OnserverHandleRpcRsp(net_id, head, body)
-	CoroutineMgr:Instance():Resume(head.rpc_id, CORORESULT.SUCCESS, body)
+function OnserverHandleRpcRsp(net_id, head, data)
+	CoroutineMgr:Instance():Resume(head.rpc_id, CORORESULT.SUCCESS, data)
 end

@@ -42,7 +42,7 @@ public:
 
 public:
 	std::shared_ptr<CoroutineMgr::CoroObj> Insert(std::coroutine_handle<> & coro);
-	void Resume(COROID coro_id, CORORESULT result, std::string && data);
+	void Resume(COROID coro_id, CORORESULT result, const std::string & data);
 
 private:
 	void _CheckTimeout();

@@ -47,16 +47,16 @@ private:
 	void _OnIServerRecv(NETID net_id, char * data, uint16_t size);
 	void _OnIServerDisc(NETID net_id);
 
-	void _SendToGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	awaitable_func _RpcGameSrv(NODEID node_id, SSID id, SSGWGSPkgBody * body);
+	void _SendToGameSrv(NODEID node_id, SSID id, google::protobuf::Message * body, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	awaitable_func _RpcGameSrv(NODEID node_id, SSID id, google::protobuf::Message * body);
 	void _SendToClient(ROLEID role_id, const CSPkg & pkg);
-	void _SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
-	void _BroadcastToProxy(NODETYPE node_type, SSID id, SSPkgBody * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
+	void _SendToProxy(NODETYPE node_type, NODEID node_id, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP, SSPkgHead::MSGTYPE msg_type = SSPkgHead::NORMAL, size_t rpc_id = -1);
+	void _BroadcastToProxy(NODETYPE node_type, SSID id, google::protobuf::Message * body, NODEID proxy_id = INVALID_NODE_ID, SSPkgHead::LOGICTYPE logic_type = SSPkgHead::CPP);
 
-	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
-	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const SSPkgBody & body);
+	void _OnIServerHandeNormal(NETID net_id, const SSPkgHead & head, const std::string & data);
+	void _OnIServerHanleRpcRsp(NETID net_id, const SSPkgHead & head, const std::string & data);
 
-	void _OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const SSGWGSPkgBody & body);
+	void _OnRecvGameSrv(NETID net_id, const SSPkgHead & head, const std::string & data);
 
 private:
 	future<> _ConnectToGameSrvs();

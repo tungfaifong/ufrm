@@ -30,7 +30,7 @@ public:
 
 	void OnRecv(NETID net_id, char * data, uint16_t size);
 
-	void SendToServer(CSID id, CSPkgBody * body);
+	void SendToServer(CSID id, google::protobuf::Message * body);
 
 	void AuthReq();
 	void OnAuthRsp(const SCAuthRsp & rsp);
@@ -92,18 +92,19 @@ void Client::OnRecv(NETID net_id, char * data, uint16_t size)
 	CSPkg pkg;
 	pkg.ParseFromArray(data, size);
 	auto head = pkg.head();
-	auto body = pkg.body();
 	LOGGER_TRACE("recv server msg net_id:{} id:{}", net_id, ENUM_NAME(head.id()));
 	switch (head.id())
 	{
 	case SCID_AUTH_RSP:
 		{
-			OnAuthRsp(body.auth_rsp());
+			UNPACK(SCAuthRsp, body, pkg.data());
+			OnAuthRsp(body);
 		}
 		break;
 	case SCID_LOGIN_RSP:
 		{
-			OnLoginRsp(body.login_rsp());
+			UNPACK(SCLoginRsp, body, pkg.data());
+			OnLoginRsp(body);
 		}
 		break;
 	case SCID_HEART_BEAT_RSP:
@@ -116,12 +117,12 @@ void Client::OnRecv(NETID net_id, char * data, uint16_t size)
 	}
 }
 
-void Client::SendToServer(CSID id, CSPkgBody * body)
+void Client::SendToServer(CSID id, google::protobuf::Message * body)
 {
 	CSPkg pkg;
 	auto head = pkg.mutable_head();
 	head->set_id(id);
-	pkg.set_allocated_body(body);
+	body->SerializeToString(pkg.mutable_data());
 	auto size = pkg.ByteSizeLong();
 	if(size > UINT16_MAX)
 	{
@@ -134,11 +135,10 @@ void Client::SendToServer(CSID id, CSPkgBody * body)
 
 void Client::AuthReq()
 {
-	PKG_CREATE(body, CSPkgBody);
-	auto req =body->mutable_auth_req();
-	req->set_role_id(_role_id);
-	req->set_game_id(1);
-	SendToServer(CSID_AUTH_REQ, body);
+	CSAuthReq body;
+	body.set_role_id(_role_id);
+	body.set_game_id(1);
+	SendToServer(CSID_AUTH_REQ, &body);
 }
 
 void Client::OnAuthRsp(const SCAuthRsp & rsp)
@@ -149,9 +149,8 @@ void Client::OnAuthRsp(const SCAuthRsp & rsp)
 
 void Client::LoginReq()
 {
-	PKG_CREATE(body, CSPkgBody);
-	auto req = body->mutable_login_req();
-	SendToServer(CSID_LOGIN_REQ, body);
+	CSLoginReq body;
+	SendToServer(CSID_LOGIN_REQ, &body);
 }
 
 void Client::OnLoginRsp(const SCLoginRsp & rsp)
@@ -162,9 +161,8 @@ void Client::OnLoginRsp(const SCLoginRsp & rsp)
 
 void Client::HeartBeat()
 {
-	PKG_CREATE(body, CSPkgBody);
-	auto req =body->mutable_heart_beat_req();
-	SendToServer(CSID_HEART_BEAT_REQ, body);
+	CSHeartBeatReq body;
+	SendToServer(CSID_HEART_BEAT_REQ, &body);
 	_start = std::chrono::steady_clock::now();
 	timer::CreateTimer(1000, [self = shared_from_this()](){ self->HeartBeat(); });
 }
