@@ -22,6 +22,7 @@ set(PATH_INC_3RD
 	${PATH_3RD}/asio-1.20.0
 	${PATH_3RD}/fmt-8.1.0/include
 	${PATH_3RD}/jemalloc-5.3.0/include
+	${PATH_3RD}/jwt-cpp/include
 	${PATH_3RD}/lua-5.4.3/include
 	${PATH_3RD}/LuaBridge-2.7
 	${PATH_3RD}/spdlog-1.9.2
@@ -41,7 +42,7 @@ set(PATH_LIB_3RD
 	${PATH_3RD}/mysql++-3.3.0/lib)
 
 # lib
-set(LIB_3RD usrv fmt jemalloc lua protobuf protobuf-lite mysqlclient mysqlpp pthread dl)
+set(LIB_3RD usrv fmt jemalloc lua protobuf protobuf-lite mysqlclient mysqlpp pthread dl crypto)
 
 set(CMAKE_INSTALL_RPATH ${PATH_3RD}/mysql++-3.3.0/lib)  
 set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)

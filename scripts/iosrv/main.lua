@@ -24,6 +24,7 @@ function Start()
 
 	IO_NORMAL_HANDLER = {
 		[IOID.IOID_REGISTER_REQ] = OnRegister,
+		[IOID.IOID_AUTH_REQ] = OnIOAuth,
 	}
 
 	RPC_REQ_HANDLER = {

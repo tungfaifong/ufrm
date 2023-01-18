@@ -25,7 +25,7 @@ std::unordered_map<NETID, std::shared_ptr<Client>> g_IOClients;
 class Client : public Unit, public std::enable_shared_from_this<Client>
 {
 public:
-	Client(USERID user_id, uint32_t req_num):_user_id(user_id), _req_num(req_num) {}
+	Client(uint32_t req_num):_req_num(req_num) {}
 	~Client() = default;
 
 	virtual bool Start();
@@ -38,7 +38,10 @@ public:
 
 	void RegisterReq(std::string username, std::string password);
 
-	void AuthReq();
+	void IOAuthReq_(std::string username, std::string password);
+	void OnIOAuthRsp(const IOAuthRsp & rsp);
+
+	void AuthReq(std::string token);
 	void OnAuthRsp(const SCAuthRsp & rsp);
 
 	void GetRolesReq();
@@ -80,7 +83,7 @@ bool Client::Start()
 	}
 	g_IOClients[_io_net_id] = shared_from_this();
 
-	// AuthReq();
+	IOAuthReq_("user2", "password");
 	// RegisterReq("testrole1", "password");
 
 	return true;
@@ -141,6 +144,12 @@ void Client::OnIORecv(NETID net_id, char * data, uint16_t size)
 			UNPACK(IORegisterRsp, body, pkg.data());
 		}
 		break;
+	case IOID_AUTH_RSP:
+		{
+			UNPACK(IOAuthRsp, body, pkg.data());
+			OnIOAuthRsp(body);
+		}
+		break;
 	default:
 		break;
 	}
@@ -186,16 +195,41 @@ void Client::RegisterReq(std::string username, std::string password)
 	SendToIOServer(IOID_REGISTER_REQ, &body);
 }
 
-void Client::AuthReq()
+void Client::IOAuthReq_(std::string username, std::string password)
+{
+	IOAuthReq body;
+	body.set_username(username);
+	body.set_password(password);
+	SendToIOServer(IOID_AUTH_REQ, &body);
+}
+
+void Client::OnIOAuthRsp(const IOAuthRsp & rsp)
+{
+	if(rsp.result() != IOAuthRsp::SUCCESS)
+	{
+		LOGGER_INFO("ioauth failed");
+		return;
+	}
+
+	_user_id = rsp.user_id();
+	AuthReq(rsp.token());
+}
+
+void Client::AuthReq(std::string token)
 {
 	CSAuthReq body;
 	body.set_user_id(_user_id);
+	body.set_token(token);
 	SendToServer(CSID_AUTH_REQ, &body);
+	LOGGER_INFO("auth req user_id:{} token:{}", _user_id, token);
 }
 
 void Client::OnAuthRsp(const SCAuthRsp & rsp)
 {
-	GetRolesReq();
+	if(rsp.result() == SCAuthRsp::SUCCESS)
+	{
+		GetRolesReq();
+	}
 	LOGGER_INFO("OnAuthRsp:{} {}", _user_id, rsp.result());
 }
 
@@ -280,7 +314,7 @@ int main(int argc, char * argv[])
 	for(int i = 0; i < g_ClientNum; ++i)
 	{
 		auto client_key = "CLIENT#"+std::to_string(i+1);
-		if(!UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(i+1, req_num))))
+		if(!UnitManager::Instance()->Register(client_key.c_str(), std::move(std::make_shared<Client>(req_num))))
 		{
 			LOGGER_ERROR("key:{} error", client_key);
 		}

@@ -21,8 +21,8 @@ message IORegisterRsp
 
 message IOAuthReq
 {
-	uint32 role_id = 1;
-	uint32 game_id = 2;
+	string username = 1;
+	string password = 2;
 }
 
 message IOAuthRsp
@@ -30,8 +30,11 @@ message IOAuthRsp
 	enum RESULT
 	{
 		SUCCESS = 0;
+		FAILED = 1;
 	}
-	RESULT result = 1;
+	optional RESULT result = 1;
+	uint32 user_id = 2;
+	string token = 3;
 }
 
 // pkg

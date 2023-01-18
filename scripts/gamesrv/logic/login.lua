@@ -17,7 +17,7 @@ end
 function LoginLogic:_OnGetRolesReq(user_id, data)
 	CO_SPAWN(function(coro_id)
 		local rows = db_client.Select(coro_id, 1, "user_role", {"user_id", "role_id"}, {["user_id"] = user_id})
-		if not rows then
+		if not rows or #rows == 0 then
 			logger.error("GetRolesReq Select failed user_id:{}", user_id)
 			return 
 		end
