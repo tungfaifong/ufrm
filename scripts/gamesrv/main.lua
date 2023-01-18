@@ -31,7 +31,10 @@ end
 
 function OnRecv(net_id, data)
 	local pkg = pblua.decode("SSPkg", data)
-	logger.debug("Serialize:" .. Serialize(pkg))
+end
+
+function OnRecvPkg(net_id, pkg)
+	local a = pkg
 end
 
 function OnDisc(net_id)

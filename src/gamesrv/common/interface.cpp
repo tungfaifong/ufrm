@@ -4,7 +4,7 @@
 
 #include "usrv/unit_manager.h"
 
-#include "protocol/pblua.hpp"
+#include "protocol/pblua.h"
 #include "define.h"
 #include "gamesrv.h"
 
@@ -34,11 +34,11 @@ void BroadcastToProxy(uint16_t node_type, uint32_t id, const char * data, uint16
 
 void LuaExpose(luabridge::Namespace ns)
 {
-	pblua::init();
+	pblua::Init();
 	ns.beginNamespace("pblua")
-			.addFunction("parse", pblua::parse)
-			.addFunction("encode", pblua::encode)
-			.addFunction("decode", pblua::decode)
+			.addFunction("parse", pblua::Parse)
+			.addFunction("encode", pblua::Encode)
+			.addFunction("decode", pblua::Decode)
 		.endNamespace()
 		.beginNamespace("gamesrv")
 			.addFunction("SendToClient", SendToClient)

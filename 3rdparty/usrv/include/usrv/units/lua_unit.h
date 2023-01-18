@@ -28,8 +28,8 @@ public:
 
 public:
 	lua_State * GetLuaState();
-	inline luabridge::LuaRef GetGlobal(const char * name);
-	inline luabridge::Namespace GetGlobalNamespace();
+	luabridge::LuaRef GetGlobal(const char * name);
+	luabridge::Namespace GetGlobalNamespace();
 
 	void OnConn(NETID net_id, const IP & ip, PORT port);
 	void OnRecv(NETID net_id, const char * data, uint16_t size);
