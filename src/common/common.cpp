@@ -109,6 +109,11 @@ void ConvertPBVariant2Variant(const Variant & pb_v, variant_t & v)
 
 void TraceMsg(const std::string & prefix, const google::protobuf::Message * pkg)
 {
+	if(logger::Level() > LoggerUnit::LEVEL::TRACE)
+	{
+		return;
+	}
+
 	if(pkg->GetTypeName() == "CSPkgHead")
 	{
 		CSPkgHead * head = (CSPkgHead *)pkg;
@@ -159,7 +164,7 @@ void SignalHandler(int signo)
 		case SIGSYS:
 		{
 			signal(signo, SIG_DFL);
-			logger::on_abort();
+			logger::OnAbort();
 		}
 		break;
 		case SIGUSR1:
