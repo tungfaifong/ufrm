@@ -3,7 +3,9 @@
 #ifndef USRV_LOOP_HPP
 #define USRV_LOOP_HPP
 
+#include <condition_variable>
 #include <functional>
+#include <mutex>
 #include <thread>
 
 #include "util/common.h"
@@ -43,7 +45,10 @@ public:
 			}
 			else
 			{
-				std::this_thread::sleep_for(ms_t(_interval - interval));
+				std::unique_lock<std::mutex> lock(_mutex);
+				_ready = false;
+				_cv.wait_for(lock, ms_t(_interval - interval), [this]{ return this->_ready; });
+				busy = true;
 			}
 		}
 	}
@@ -57,10 +62,22 @@ public:
 
 	intvl_t Interval() { return _interval; }
 
+	void Notify()
+	{
+		{
+			std::unique_lock<std::mutex> lock(_mutex);
+			_ready = true;
+		}
+		_cv.notify_one();
+	}
+
 private:
 	bool _exit = false;
 	intvl_t _interval;
 	UpdateFunc _update;
+	bool _ready = false;
+	std::condition_variable _cv;
+	std::mutex _mutex;
 };
 
 NAMESPACE_CLOSE

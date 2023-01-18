@@ -26,6 +26,7 @@ public:
 	void Run();
 	void SetExit(bool exit);
 	intvl_t Interval();
+	void LoopNotify();
 
 private:
 	bool _Init();
