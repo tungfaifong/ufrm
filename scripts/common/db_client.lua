@@ -37,6 +37,7 @@ db_client.Insert = function(coro_id, node_id, tb_name, column, value)
 	body.dcds_body.insert_req = {}
 	body.dcds_body.insert_req.tb_name = tb_name
 	body.dcds_body.insert_req.column = column
+	body.dcds_body.insert_req.value = {}
 	for k, v in pairs(value) do
 		body.dcds_body.insert_req.value[k] = {}
 		ConvertVariant2PBVariant(v, body.dcds_body.insert_req.value[k])
@@ -55,6 +56,8 @@ db_client.Update = function(coro_id, node_id, tb_name, value, where)
 	body.dcds_body = {}
 	body.dcds_body.update_req = {}
 	body.dcds_body.update_req.tb_name = tb_name
+	body.dcds_body.update_req.value = {}
+	body.dcds_body.update_req.where = {}
 	for k, v in pairs(value) do
 		body.dcds_body.update_req.value[k] = {}
 		ConvertVariant2PBVariant(v, body.dcds_body.update_req.value[k])
@@ -77,6 +80,7 @@ db_client.Delete = function(coro_id, node_id, tb_name, where)
 	body.dcds_body = {}
 	body.dcds_body.delete_req = {}
 	body.dcds_body.delete_req.tb_name = tb_name
+	body.dcds_body.delete_req.where = {}
 	for k, v in pairs(where) do
 		body.dcds_body.delete_req.where[k] = {}
 		ConvertVariant2PBVariant(v, body.dcds_body.delete_req.where[k])
